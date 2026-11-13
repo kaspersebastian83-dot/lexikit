@@ -1,0 +1,1195 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<!-- Kein Netz: connect-src 'self' (nur die eigenen App-Dateien für den Offline-Speicher), keine fremden Skripte -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>LexiKit · Spektron</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#17222c">
+<style>
+/* ===== SPEKTRON-LOOK v1 – gemeinsames Aussehen der Spektron-Apps (byte-gleich in jeder App; Prüfung: tests/leiste.cjs) =====
+   Nur Tokens (--sp-*) und allgemeine Bausteine, keine App-Farbe: jede App setzt --sp-app / --sp-app-dunkel AUSSERHALB dieses
+   Blocks auf ihre Farbe aus der Spektron-Leiste. Ändern nur hier und dann in alle Apps kopieren (wie MOSAIK-LEISTE). */
+:root{
+  --sp-bg:#f3f5f7; --sp-panel:#fff; --sp-panel2:#f7f9fb; --sp-line:#dfe6ec; --sp-line2:#b9c8d3; --sp-text:#17222c; --sp-muted:#5b6b78;
+  --sp-ok:#2e7d4f; --sp-err:#c0392b; --sp-gap:#fff3a6; --sp-pille:#e4c04a; --sp-app:#5b6b78; --sp-app-dunkel:#3f4b55;
+  --sp-font:"Segoe UI",system-ui,-apple-system,Arial,sans-serif; --sp-radius:14px; --sp-radius-k:10px;
+  --sp-h:44px; --sp-h-haupt:50px; --sp-h-gross:56px; --sp-schatten:0 1px 4px rgba(0,0,0,.08);
+}
+body{font-family:var(--sp-font);background:var(--sp-bg);color:var(--sp-text)}
+.sp-karte{background:var(--sp-panel);border-radius:var(--sp-radius);box-shadow:var(--sp-schatten)}
+.sp-knopf{height:var(--sp-h);padding:0 16px;border-radius:var(--sp-radius-k);border:1.5px solid var(--sp-line2);background:var(--sp-panel);color:var(--sp-text);font:inherit;font-size:15px;cursor:pointer}
+.sp-knopf:hover{border-color:var(--sp-app);color:var(--sp-text)}
+.sp-knopf-app{border-color:var(--sp-app-dunkel);background:var(--sp-app-dunkel);color:#fff;font-weight:700}
+.sp-knopf-app:hover{background:var(--sp-app);border-color:var(--sp-app-dunkel);color:#fff}
+.sp-haupt{height:var(--sp-h-haupt);padding:0 24px;border-radius:12px;border:0;background:var(--sp-app-dunkel);color:#fff;font:inherit;font-size:17px;font-weight:700;cursor:pointer}
+.sp-haupt:hover{background:var(--sp-app);color:#fff}
+.sp-knopf:focus-visible,.sp-haupt:focus-visible,.sp-kachel:focus-visible{outline:3px solid var(--sp-text);outline-offset:3px}
+/* Auswahl als Kacheln (z. B. BerichtKit „Welcher Bericht?“ / „Welche Form?“): Frage links, Kacheln, Notiz rechts */
+.sp-wahl{background:var(--sp-panel);border-radius:var(--sp-radius);box-shadow:var(--sp-schatten);padding:16px 20px 18px;display:flex;flex-direction:column;gap:12px}
+.sp-wahl-zeile{display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap}
+.sp-wahl-frage{flex:none;width:150px;font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--sp-muted)}
+.sp-wahl-kacheln{display:flex;gap:10px;flex-wrap:wrap}
+.sp-kachel{width:150px;min-height:64px;margin:0;padding:6px 8px;border-radius:var(--sp-radius-k);border:1.5px dashed var(--sp-line2);background:var(--sp-bg);color:var(--sp-text);font:inherit;font-size:14px;font-weight:600;line-height:1.2;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;opacity:1}
+.sp-kachel.flach{width:auto;min-width:150px;min-height:52px;padding:6px 18px}
+.sp-kachel:hover:not(:disabled):not([aria-pressed="true"]){border-style:solid;border-color:var(--sp-app);background:var(--sp-panel);color:var(--sp-text)}
+.sp-kachel[aria-pressed="true"]{border:1.5px solid var(--sp-panel);background:var(--sp-panel);box-shadow:0 0 0 3px var(--sp-app);font-weight:700;cursor:default}
+.sp-kachel:disabled{border-color:var(--sp-line);color:#8a9aa6;cursor:not-allowed;opacity:1}
+.sp-kachel svg{width:22px;height:22px;flex:none}
+.sp-kachel small{font-size:11.5px;font-weight:400;color:inherit}
+.sp-kachel .sp-tag{font-size:11px;font-weight:600;color:var(--sp-ok)}
+.sp-wahl-notiz{flex:1 1 200px;min-width:0;font-size:12.5px;color:var(--sp-muted)}
+.sp-wahl-notiz b.sp-ok{color:var(--sp-ok)}
+/* Rückfrage im Ablauf (statt Browser-Dialog): Satz + zwei Knöpfe */
+.sp-rueckfrage{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:#fdf0e6;border:1px solid #e3b58f;border-radius:var(--sp-radius-k);padding:10px 14px;font-size:13.5px}
+.sp-rueckfrage > span{flex:1 1 260px}
+.sp-rueckfrage .sp-knopf{height:38px;font-size:14px}
+/* Zähler offener Stellen als gelbe Pille */
+.sp-pille{display:inline-flex;align-items:center;gap:10px;height:40px;padding:0 16px;border-radius:20px;border:0;background:var(--sp-pille);color:var(--sp-text);font:inherit;font-size:14px;font-weight:700;cursor:pointer}
+@media print{.sp-wahl,.sp-rueckfrage{display:none!important}}
+/* ===== Ende SPEKTRON-LOOK v1 ===== */
+</style>
+<style>
+:root{
+  /* LexiKit-Farbe (Platzhalter aus dem Mock-up, noch nicht festgelegt) – nach dem Spektron-Look gesetzt */
+  --sp-app:#3a8a83; --sp-app-dunkel:#2b6f6a;
+  --mark:#f3dc86;
+}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh}
+a{color:var(--sp-app-dunkel)}a:hover{color:#1d4f4b}
+button{font-family:inherit;cursor:pointer}
+input,textarea{font-family:inherit}
+[hidden]{display:none!important}
+button:focus-visible,input:focus-visible,textarea:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid var(--sp-app-dunkel);outline-offset:2px}
+mark{background:var(--mark);color:var(--sp-text);border-radius:3px;padding:0 2px}
+.leise{color:var(--sp-muted)}
+/* Kopf */
+.kopf{background:var(--sp-panel);border-bottom:1px solid var(--sp-line)}
+.kopf-in{max-width:1240px;margin:0 auto;padding:12px 24px;display:flex;flex-wrap:wrap;align-items:center;gap:16px}
+.home{display:flex;align-items:center;gap:8px;min-height:44px;padding:0 14px;border:1px solid var(--sp-line2);border-radius:10px;color:var(--sp-text);text-decoration:none;font-weight:600}
+.home:hover{border-color:var(--sp-app);color:var(--sp-text)}
+.marke{display:flex;align-items:baseline;gap:10px;flex-grow:1;flex-wrap:wrap}
+.marke b{font-size:22px;color:var(--sp-app-dunkel)}
+.marke span{font-size:15px;color:var(--sp-muted)}
+.stand{font:inherit;font-size:13px;font-weight:600;background:#e3efed;color:var(--sp-text);border:0;border-radius:999px;padding:6px 12px;min-height:32px}
+.stand.warn{background:#fdf0e6;color:#7a3f12}
+.stand.lauf{background:var(--mark)}
+.mehr{position:relative}
+.mehr summary{list-style:none;display:flex;align-items:center;min-height:44px;padding:0 14px;border:1px solid var(--sp-line2);border-radius:10px;font-weight:600;cursor:pointer}
+.mehr summary::-webkit-details-marker{display:none}
+.mehr[open] summary{border-color:var(--sp-app)}
+.mehr-pop{position:absolute;right:0;top:50px;z-index:5;background:var(--sp-panel);border:1px solid var(--sp-line);border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,.14);padding:6px;min-width:270px;display:flex;flex-direction:column}
+.mehr-pop button{background:none;border:0;text-align:left;padding:11px 12px;border-radius:8px;font-size:15px;color:var(--sp-text)}
+.mehr-pop button:hover{background:var(--sp-bg)}
+/* Rahmen */
+.seite{max-width:1240px;margin:0 auto;padding:24px;display:flex;flex-direction:column;gap:16px}
+.meldung{border-radius:12px;padding:12px 16px;font-size:15px;line-height:1.45;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.meldung > span{flex:1 1 300px}
+.meldung.warn{background:#fdf0e6;border:1px solid #e3b58f}
+.meldung.err{background:#fbe9e7;border:1px solid #e0a39b;color:#6d1f17}
+.meldung.ok{background:#e8f3ec;border:1px solid #a8cdb5}
+.karte{background:var(--sp-panel);border:1px solid var(--sp-line);border-radius:14px;padding:18px 20px}
+/* Suche */
+.spalten{display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start}
+.links{flex:1 1 250px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.rechts{flex:999 1 560px;min-width:0;display:flex;flex-direction:column;gap:16px}
+.ueber{font-size:13px;font-weight:700;color:var(--sp-muted);text-transform:uppercase;letter-spacing:.04em}
+.themen{display:flex;flex-direction:column;gap:8px}
+.thema{width:100%;min-height:48px;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 16px;background:var(--sp-panel);border:1px solid var(--sp-line2);border-radius:12px;font-size:16px;font-weight:500;color:var(--sp-text);text-align:left}
+.thema:hover{border-color:var(--sp-app)}
+.thema small{font-size:13px;color:var(--sp-muted);white-space:nowrap}
+.thema[aria-pressed="true"]{border:3px solid var(--sp-app-dunkel);padding:6px 14px;font-weight:700}
+.thema[aria-pressed="true"] small{color:var(--sp-app-dunkel);font-weight:600}
+.neu-thema{min-height:44px;padding:8px 14px;background:transparent;border:1px dashed var(--sp-line2);border-radius:12px;font-size:15px;color:var(--sp-muted);text-align:left}
+.neu-thema:hover{border-color:var(--sp-app);color:var(--sp-text)}
+.hinweis{font-size:13px;line-height:1.45;color:var(--sp-muted)}
+.formular{display:flex;flex-direction:column;gap:10px;background:var(--sp-panel);border:2px solid var(--sp-app-dunkel);border-radius:14px;padding:14px 16px}
+.formular label{font-size:14px;font-weight:600;display:flex;flex-direction:column;gap:4px}
+.formular input,.formular textarea{font-size:16px;padding:8px 10px;border:1px solid var(--sp-line2);border-radius:8px;color:var(--sp-text);background:#fff}
+.formular textarea{min-height:110px;resize:vertical}
+.formular .knoepfe{display:flex;flex-wrap:wrap;gap:8px}
+.formular .zahl{font-size:14px;color:var(--sp-app-dunkel);font-weight:600}
+.fehlertext{font-size:14px;color:#a3281c}
+.suchkarte{background:var(--sp-panel);border:1px solid var(--sp-line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:14px}
+.suchfeld{display:flex;align-items:center;gap:10px;border:1px solid var(--sp-line2);border-radius:12px;padding:0 14px;min-height:50px}
+.suchfeld:focus-within{border-color:var(--sp-app-dunkel)}
+.suchfeld input{flex-grow:1;min-width:0;border:0;outline-offset:6px;font-size:18px;color:var(--sp-text);background:transparent;height:46px}
+.jahre{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.jahr{min-height:44px;min-width:64px;padding:0 14px;background:var(--sp-panel);border:1px solid var(--sp-line2);border-radius:999px;font-size:15px;color:var(--sp-text)}
+.jahr:hover{border-color:var(--sp-app)}
+.jahr[aria-pressed="true"]{background:var(--sp-app-dunkel);border-color:var(--sp-app-dunkel);color:#fff;font-weight:600}
+.zeile{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px}
+.zeile .gross{font-size:18px;font-weight:700}
+.zeile .klein{font-size:14px;color:var(--sp-muted)}
+.linkknopf{background:none;border:0;padding:0;color:var(--sp-app-dunkel);text-decoration:underline;font-size:14px}
+.leer{background:var(--sp-panel);border:1px dashed var(--sp-line2);border-radius:14px;padding:28px;font-size:16px;line-height:1.5;color:var(--sp-muted)}
+.treffer{background:var(--sp-panel);border:1px solid var(--sp-line);border-radius:14px;padding:18px 20px;display:flex;flex-direction:column;gap:10px}
+.t-kopf{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px}
+.t-kopf b{font-size:16px}
+.t-kopf span{font-size:14px;color:var(--sp-muted)}
+.t-abschnitt{font-size:15px;font-weight:600;color:var(--sp-app-dunkel);text-decoration:underline}
+.t-text{font-size:16px;line-height:1.6;overflow-wrap:anywhere}
+.t-text p{margin:0 0 8px}
+.t-text p.fund{background:#fbf6e2;border-radius:6px;padding:2px 6px;margin-left:-6px;margin-right:-6px}
+.t-knoepfe{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.t-knoepfe .sp-knopf{display:inline-flex;align-items:center;gap:8px;text-decoration:none}
+.fuss{font-size:13px;line-height:1.5;color:var(--sp-muted);border-top:1px solid var(--sp-line);padding-top:12px}
+/* Einlesen */
+.einlesen{max-width:820px;margin:0 auto;padding:40px 24px;display:flex;flex-direction:column;gap:20px}
+.einlesen h1{margin:0;font-size:28px}
+.einlesen .einl{font-size:17px;line-height:1.55;color:var(--sp-muted);margin:0}
+.fortschritt{background:var(--sp-panel);border:2px solid var(--sp-app-dunkel);border-radius:14px;padding:22px 24px;display:flex;flex-direction:column;gap:14px}
+.fortschritt .zeile .gross{font-size:20px}
+.balken{height:14px;background:var(--sp-line);border-radius:999px;overflow:hidden}
+.balken div{height:14px;background:var(--sp-app-dunkel);width:0}
+.zwei{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.zwei .karte{display:flex;flex-direction:column;gap:8px}
+.zwei b{font-size:16px}
+.zwei p{margin:0;font-size:15px;line-height:1.55}
+details.fehlerliste summary{cursor:pointer;font-size:14px;color:var(--sp-muted)}
+details.fehlerliste ul{font-size:13px;color:var(--sp-muted);max-height:220px;overflow:auto}
+/* Einstellungen, Über */
+.einstellungen{max-width:820px;margin:0 auto;padding:32px 24px;display:flex;flex-direction:column;gap:16px}
+.einstellungen h1{margin:0;font-size:26px}
+.einstellungen label{display:flex;flex-direction:column;gap:6px;font-weight:600}
+.einstellungen input{font-size:16px;padding:10px 12px;border:1px solid var(--sp-line2);border-radius:8px}
+.einstellungen ul{margin:0;padding-left:20px;line-height:1.55}
+.zugang{max-width:720px;margin:0 auto;padding:48px 24px;display:flex;flex-direction:column;gap:16px}
+.zugang h1{margin:0;font-size:26px}
+.zugang p{margin:0;font-size:16px;line-height:1.55}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);max-width:min(680px,92vw);background:#17222c;color:#fff;border-radius:12px;padding:12px 18px;font-size:15px;line-height:1.45;box-shadow:0 6px 24px rgba(0,0,0,.25);z-index:20;user-select:text}
+.toast code{background:rgba(255,255,255,.12);padding:1px 4px;border-radius:4px;word-break:break-all}
+code{font-size:.95em}
+</style>
+</head>
+<body>
+<header class="kopf">
+  <div class="kopf-in">
+    <a class="home" href="../Projektzentrale/" target="projektzentrale" title="Alle Projekte – Projektzentrale (Spektron)">
+      <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"></path><path d="M5 10v10h14V10"></path></svg>
+      <span>Alle Projekte</span>
+    </a>
+    <div class="marke"><b>LexiKit</b><span>Wie haben wir das früher gemacht?</span></div>
+    <button id="stand" class="stand" type="button" hidden></button>
+    <details class="mehr" id="mehr">
+      <summary aria-label="Mehr">⋯ Mehr</summary>
+      <div class="mehr-pop" role="menu">
+        <button type="button" role="menuitem" data-mehr="pruefen">Neue Berichte suchen</button>
+        <button type="button" role="menuitem" data-mehr="einlesen">Einlesen ansehen</button>
+        <button type="button" role="menuitem" data-mehr="alle">Alle Berichte neu einlesen</button>
+        <button type="button" role="menuitem" data-mehr="einstellungen">Einstellungen …</button>
+        <button type="button" role="menuitem" data-mehr="ueber">Über LexiKit</button>
+      </div>
+    </details>
+  </div>
+</header>
+
+<main>
+  <!-- Zugang zum Archivordner -->
+  <section id="zugang" class="zugang" hidden>
+    <h1 id="zugangTitel">Archivordner</h1>
+    <p id="zugangText"></p>
+    <div class="knoepfe" style="display:flex;gap:10px;flex-wrap:wrap">
+      <button id="btnErlauben" class="sp-haupt" type="button" hidden>Zugriff erlauben</button>
+      <button id="btnWaehlen" class="sp-knopf" type="button">Archivordner wählen …</button>
+      <button id="btnNochmal" class="sp-knopf" type="button" hidden>Noch einmal prüfen</button>
+    </div>
+    <p class="hinweis">LexiKit liest die Projektordner nur. Schreiben darf es ausschließlich in den Ordner <code>_LexiKit</code> im Archivordner (Index und Themenliste).</p>
+  </section>
+
+  <!-- Erster Start / Einlesen -->
+  <section id="einlesen" class="einlesen" hidden>
+    <h1 id="einTitel">Die Berichte werden einmal eingelesen</h1>
+    <p class="einl" id="einText">Das dauert beim ersten Mal eine Weile. Danach liest LexiKit nur noch neue oder geänderte Berichte nach. Du kannst schon suchen, während es läuft.</p>
+    <div class="fortschritt">
+      <div class="zeile"><div class="gross" id="einZahl">Projektordner werden gesucht …</div><div class="klein" id="einJahr"></div></div>
+      <div class="balken" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="einBalken" aria-label="Fortschritt"><div id="einBalkenIn"></div></div>
+      <div class="klein leise" id="einOrdner" style="font-size:14px"></div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px">
+        <button id="btnSchonSuchen" class="sp-haupt" type="button">Schon suchen</button>
+        <button id="btnAnhalten" class="sp-knopf" type="button" style="height:50px;font-size:17px">Anhalten</button>
+        <button id="btnWeiter" class="sp-knopf" type="button" style="height:50px;font-size:17px" hidden>Weiter einlesen</button>
+      </div>
+    </div>
+    <div class="zwei">
+      <div class="karte"><b>Das wird gelesen</b><p>Fertige Mitteilungen als Word-Datei aus allen Projektordnern im Archivordner, 2022 bis heute. Gibt es eine korrigierte Fassung, zählt nur die neueste.</p></div>
+      <div class="karte"><b>Das bleibt draußen</b><p>Anschreiben, Entwürfe, Vorbereitungs-Dateien und die Rohdateien „Gutachten_…“. Vorerst auch PDF, alte .doc-Dateien und die Ordner ALT_2022/ALT_2023.</p></div>
+    </div>
+    <details class="fehlerliste" id="einFehler" hidden><summary id="einFehlerZahl"></summary><ul id="einFehlerListe"></ul></details>
+    <div class="hinweis" style="font-size:14px">LexiKit liest nur den Text. Fotos in den Berichten werden übersprungen. In den Projektordnern wird nichts geändert.</div>
+  </section>
+
+  <!-- Suche -->
+  <section id="suche" class="seite" hidden>
+    <div id="meldungen" style="display:flex;flex-direction:column;gap:8px"></div>
+    <div class="spalten">
+      <div class="links">
+        <div class="ueber" id="themenTitel">Themen</div>
+        <div class="themen" id="themen"></div>
+        <button class="neu-thema" id="btnNeuesThema" type="button">+ Neues Thema …</button>
+        <form class="formular" id="themaForm" hidden autocomplete="off">
+          <b id="themaFormTitel">Neues Thema</b>
+          <label>Name<input id="themaName" maxlength="60" required></label>
+          <label>Findet auch <span class="hinweis" style="font-weight:400">ein Wort pro Zeile – Teile von Wörtern reichen, Groß/Klein egal</span><textarea id="themaWoerter"></textarea></label>
+          <div class="zahl" id="themaZahl" aria-live="polite"></div>
+          <div class="fehlertext" id="themaFehler" role="alert"></div>
+          <div class="knoepfe">
+            <button class="sp-knopf sp-knopf-app" type="submit" id="btnThemaSpeichern">Speichern</button>
+            <button class="sp-knopf" type="button" id="btnThemaAbbrechen">Abbrechen</button>
+            <button class="sp-knopf" type="button" id="btnThemaLoeschen" hidden>Thema löschen …</button>
+          </div>
+          <div class="sp-rueckfrage" id="themaRueckfrage" hidden><span id="themaRueckText"></span>
+            <button class="sp-knopf" type="button" id="btnLoeschenJa">Löschen</button><button class="sp-knopf" type="button" id="btnLoeschenNein">Abbrechen</button></div>
+          <div class="hinweis" id="themaStand"></div>
+        </form>
+        <div class="hinweis">Ein Thema ist eine gespeicherte Suche mit ihren Nebenwörtern. Das Büro pflegt die Liste selbst – Änderungen gelten für alle.</div>
+      </div>
+      <div class="rechts">
+        <div class="suchkarte">
+          <div class="suchfeld">
+            <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#5b6b78" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>
+            <label for="q" style="position:absolute;left:-9999px">In allen Berichten suchen</label>
+            <input id="q" type="search" placeholder="Oder ein eigenes Wort suchen, z. B. Estrich" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="jahre" id="jahre"></div>
+        </div>
+        <div class="zeile"><div class="gross" id="ergebnisZeile" aria-live="polite"></div><div class="klein" id="woerterZeile"></div></div>
+        <div id="treffer" style="display:flex;flex-direction:column;gap:16px"></div>
+        <button id="btnMehrTreffer" class="sp-knopf" type="button" hidden></button>
+        <div class="fuss">LexiKit liest nur. Es schreibt nichts in die Projektordner und fügt nichts in einen Bericht ein. Gesucht wird in den fertigen Word-Mitteilungen (ohne Anschreiben, Entwürfe und PDF).</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Einstellungen -->
+  <section id="einstellungen" class="einstellungen" hidden>
+    <h1>Einstellungen</h1>
+    <div class="karte" style="display:flex;flex-direction:column;gap:12px">
+      <label>Pfad des Archivordners auf diesem PC
+        <input id="pfadBasis" spellcheck="false">
+      </label>
+      <div class="hinweis">Damit baut LexiKit den Weg für „Bericht in Word öffnen“ und „Projektordner“ – der Browser selbst kennt den Pfad nicht. Im Büro: <code>C:\Daten\Mosaik Archivordner</code>. Gilt nur für diesen PC.</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="sp-knopf sp-knopf-app" id="btnPfadSpeichern" type="button">Speichern</button><button class="sp-knopf" id="btnPfadStandard" type="button">Büro-Standard</button></div>
+    </div>
+    <div class="karte" style="display:flex;flex-direction:column;gap:10px">
+      <b>Archivordner</b>
+      <div id="einstArchiv" class="hinweis" style="font-size:15px"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="sp-knopf" id="btnSchreibenErlauben" type="button" hidden>Schreiben in _LexiKit erlauben</button><button class="sp-knopf" id="btnAnderesArchiv" type="button">Anderen Archivordner wählen …</button></div>
+    </div>
+    <div><button class="sp-knopf" type="button" data-zurueck>← Zur Suche</button></div>
+  </section>
+
+  <section id="ueberLexi" class="einstellungen" hidden>
+    <h1>Über LexiKit <span class="leise" id="version" style="font-size:16px;font-weight:400"></span></h1>
+    <div class="karte" style="display:flex;flex-direction:column;gap:10px;font-size:15px;line-height:1.55">
+      <div>Themensuche über die fertigen Word-Berichte des Büros – ohne KI, ohne Netz, nur Wortsuche im Index.</div>
+      <ul>
+        <li>Liest nur in den Projektordnern. Schreibt nur in <code>_LexiKit</code> im Archivordner: <code>lexikit-themen.json</code> und <code>lexikit-index-&lt;Jahr&gt;.json</code>.</li>
+        <li>Mehrere PCs nutzen dieselben Dateien: Vor jedem Schreiben liest LexiKit die Datei neu und führt die Änderungen zusammen.</li>
+        <li>Der Index enthält Berichtstext und ist so vertraulich wie die Berichte. Er bleibt in <code>_LexiKit</code>.</li>
+        <li>Der Berichtskopf (Projektnummer, Schaden vom, VN, Risiko, Versicherer, Schaden-Nr.) kommt nicht in den Index.</li>
+      </ul>
+      <b>Änderungen</b>
+      <ul id="aenderungen"></ul>
+    </div>
+    <div><button class="sp-knopf" type="button" data-zurueck>← Zur Suche</button></div>
+  </section>
+</main>
+<div id="toast" class="toast" role="status" hidden></div>
+
+<script id="lexikit-kern">
+/* ===== LEXIKIT-KERN – Lesen, Auswahl, Suche, Zusammenführen (ohne Browserteile; Tests: node tests/kern.cjs) ===== */
+(function (g) {
+  'use strict';
+  const FORMAT_INDEX = 'lexikit-index', FORMAT_THEMEN = 'lexikit-themen', VERSION = 1;
+
+  /* ---------- Word-Datei (.docx = ZIP): nur word/document.xml lesen, Fotos nie ----------
+     lies(start, ende) → Promise<Uint8Array> liest nur diesen Bereich der Datei (im Browser File.slice).
+     inflate(bytes) → Promise<Uint8Array> entpackt „deflate“ (Browser: DecompressionStream, Node: zlib). */
+  async function zipEintrag(lies, groesse, name, inflate) {
+    // Ende der Datei: Verzeichnis-Ende (22 Bytes) + Kommentar; erst 8 KB, nur bei langem Kommentar bis 64 KB
+    let n = 0, ende = null, e = -1;
+    for (const versuch of [8192, 65557]) {
+      n = Math.min(groesse, versuch); ende = await lies(groesse - n, groesse);
+      for (let i = ende.length - 22; i >= 0; i--) if (ende[i] === 0x50 && ende[i + 1] === 0x4b && ende[i + 2] === 5 && ende[i + 3] === 6) { e = i; break; }
+      if (e >= 0 || n === groesse) break;
+    }
+    if (e < 0) throw new Error('keine Word-Datei (ZIP-Verzeichnis fehlt)');
+    const dv = new DataView(ende.buffer, ende.byteOffset, ende.byteLength);
+    const anzahl = dv.getUint16(e + 10, true), cdGroesse = dv.getUint32(e + 12, true), cdStart = dv.getUint32(e + 16, true);
+    if (cdStart === 0xffffffff || anzahl === 0xffff) throw new Error('ZIP64 wird nicht gelesen');
+    const basis = groesse - n;
+    const cd = cdStart >= basis && cdStart + cdGroesse <= groesse ? ende.subarray(cdStart - basis, cdStart - basis + cdGroesse) : await lies(cdStart, cdStart + cdGroesse);
+    const cv = new DataView(cd.buffer, cd.byteOffset, cd.byteLength), td = new TextDecoder('utf-8');
+    for (let p = 0, i = 0; i < anzahl && p + 46 <= cd.length; i++) {
+      if (cv.getUint32(p, true) !== 0x02014b50) throw new Error('ZIP-Verzeichnis beschädigt');
+      const methode = cv.getUint16(p + 10, true), gepackt = cv.getUint32(p + 20, true);
+      const lName = cv.getUint16(p + 28, true), lExtra = cv.getUint16(p + 30, true), lKomm = cv.getUint16(p + 32, true), ofs = cv.getUint32(p + 42, true);
+      const eName = td.decode(cd.subarray(p + 46, p + 46 + lName));
+      if (eName === name) {
+        const kopf = await lies(ofs, ofs + 30), kv = new DataView(kopf.buffer, kopf.byteOffset, kopf.byteLength);
+        if (kv.getUint32(0, true) !== 0x04034b50) throw new Error('ZIP-Eintrag beschädigt');
+        const start = ofs + 30 + kv.getUint16(26, true) + kv.getUint16(28, true);
+        const daten = await lies(start, start + gepackt);
+        if (methode === 0) return daten;
+        if (methode === 8) return await inflate(daten);
+        throw new Error('ZIP-Methode ' + methode + ' wird nicht gelesen');
+      }
+      p += 46 + lName + lExtra + lKomm;
+    }
+    return null;
+  }
+
+  /* ---------- document.xml → Absätze ----------
+     Ergebnis: [{ t, roh, fett, unter, stil, tabelle }] in Textreihenfolge. Tabellen: eine Zeile = ein Absatz (Zellen mit „ · “).
+     Übersprungen: gelöschter Text (w:del), Feldbefehle (w:instrText), Ersatzdarstellung (mc:Fallback, sonst doppelte Textfelder). */
+  const ENT = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'" };
+  const ent = s => s.indexOf('&') < 0 ? s : s.replace(/&(#x[0-9a-f]+|#\d+|\w+);/gi, (m, c) => c[0] === '#' ? String.fromCodePoint(c[1] === 'x' || c[1] === 'X' ? parseInt(c.slice(2), 16) : +c.slice(1)) : (ENT[c] ?? m));
+  const wert = (attr, name) => { const m = new RegExp('\\b' + name + '="([^"]*)"').exec(attr); return m ? m[1] : null; };
+  const an = attr => { const v = wert(attr, 'w:val'); return v == null || !/^(0|false|off|none)$/i.test(v); };
+  /** Text säubern: weiches Trennzeichen weg, geschützte Leerzeichen und Leerraum zu einem Leerzeichen */
+  const sauber = s => String(s).replace(/­/g, '').replace(/[\s   ]+/g, ' ').trim();
+
+  function absaetze(xml) {
+    const aus = [];
+    const re = /<(\/?)([A-Za-z][\w.-]*:?[\w.-]*)([^>]*?)(\/?)>|([^<]+)/g;
+    let skip = 0;                          // Tiefe in übersprungenen Teilen
+    const absStapel = [];                  // offene Absätze (Textfelder liegen in Absätzen)
+    const tabStapel = [];                  // offene Tabellen: { zeile: [Zellen], zelle: [Texte] }
+    let run = null, inRPr = false, inPPr = false, inT = false;
+    const abs = () => absStapel[absStapel.length - 1];
+    let m;
+    while ((m = re.exec(xml))) {
+      if (m[5] !== undefined) { if (!skip && inT && run && abs()) abs().teile.push({ t: ent(m[5]), b: run.b, u: run.u }); continue; }
+      const zu = m[1] === '/', tag = m[2], attr = m[3], leer = m[4] === '/';
+      if (tag === 'mc:Fallback' || tag === 'w:del' || tag === 'w:instrText' || tag === 'w:delText' || tag === 'w:moveFrom') {
+        if (leer) continue;
+        skip += zu ? -1 : 1; if (skip < 0) skip = 0; continue;
+      }
+      if (skip) continue;
+      switch (tag) {
+        case 'w:p':
+          if (!zu) { absStapel.push({ teile: [], stil: '' }); if (leer) absStapel.pop(); break; }
+          { const a = absStapel.pop(); if (!a) break; abschliessen(a); }
+          break;
+        case 'w:pPr': inPPr = !zu && !leer; break;
+        case 'w:pStyle': if (inPPr && abs()) abs().stil = wert(attr, 'w:val') || ''; break;
+        case 'w:r': if (!zu && !leer) run = { b: false, u: false }; else if (zu) run = null; break;
+        case 'w:rPr': if (run && !inPPr) inRPr = !zu && !leer; break;
+        case 'w:b': if (run && inRPr) run.b = an(attr); break;
+        case 'w:u': if (run && inRPr) run.u = an(attr); break;
+        case 'w:t': inT = !zu && !leer; break;
+        case 'w:tab': if (run && abs() && !inPPr && !zu) abs().teile.push({ t: '\t', b: run.b, u: run.u, ws: true }); break;
+        case 'w:br': case 'w:cr': if (run && abs() && !zu) abs().teile.push({ t: '\n', b: run.b, u: run.u, ws: true }); break;
+        case 'w:noBreakHyphen': if (run && abs() && !zu) abs().teile.push({ t: '-', b: run.b, u: run.u }); break;
+        case 'w:tbl': if (!zu) tabStapel.push({ zeile: null, zelle: null }); else { tabStapel.pop(); } break;
+        case 'w:tr': { const tb = tabStapel[tabStapel.length - 1]; if (!tb) break;
+          if (!zu) tb.zeile = []; else if (tb.zeile) { const t = tb.zeile.filter(Boolean).join(' · '); tb.zeile = null; if (t) zeileAus(t); } break; }
+        case 'w:tc': { const tb = tabStapel[tabStapel.length - 1]; if (!tb || !tb.zeile) break;
+          if (!zu) tb.zelle = []; else if (tb.zelle) { tb.zeile.push(sauber(tb.zelle.join(' '))); tb.zelle = null; } break; }
+      }
+    }
+    function zeileAus(t) {
+      if (tabStapel.length > 1) { const aussen = tabStapel[tabStapel.length - 2]; if (aussen.zelle) { aussen.zelle.push(t); return; } }
+      aus.push({ t, roh: t, fett: false, unter: false, stil: '', tabelle: true });
+    }
+    function abschliessen(a) {
+      const roh = a.teile.map(x => x.t).join('');
+      const t = sauber(roh);
+      const tb = tabStapel[tabStapel.length - 1];
+      if (tb && tb.zelle) { if (t) tb.zelle.push(t); return; }
+      if (!t) return;
+      const sicht = a.teile.filter(x => !x.ws && x.t.trim());
+      aus.push({ t, roh, fett: sicht.length > 0 && sicht.every(x => x.b), unter: sicht.length > 0 && sicht.every(x => x.u), stil: a.stil, tabelle: false });
+    }
+    return aus;
+  }
+
+  /* ---------- Absätze → Bericht ----------
+     Regel aus dem Lesetest: nach der Zeile „(n. Mitteilung)“; Überschrift = kurzer Absatz (unter 90 Zeichen) außerhalb einer Tabelle,
+     ganz unterstrichen oder ganz fett. Berichtskopf (Projektnummer … Schaden-Nr.) fällt immer weg, auch mit Fortsetzungszeilen. */
+  const MARKE = /^\(\s*\d{1,2}\s*\.?\s*mit+e?i+l+u?n+g\s*\)$/i;
+  const KOPF = /^(projekt\s*-?\s*n(umme)?r\.?|projekt|schaden\s*vom|schadentag|schadendatum|vn|versicherungsnehmer(in)?|risiko(ort)?|versicherer|versicherung|schaden\s*-?\s*n(umme)?r\.?|schadennummer|vs\s*-?\s*nr\.?|ihr\s+zeichen|unser\s+zeichen|aktenzeichen)\s*(:|\t|$)/i;
+  const KEINE_UEBERSCHRIFT = /^(tabelle|tab\.|abb\.?|abbildung|bild|foto|anlage)\s*\d/i;
+  const STIL_TITEL = /titel|title|berschrift|heading/i;
+  const FORMEN = /(sanierungsvorschlag|untersuchungsbericht|stellungnahme|kurzbericht|messbericht|ergänzungsbericht|gutachten)/i;
+
+  function istKopf(a) {
+    if (a.tabelle) { const erste = a.t.split(' · ')[0]; return KOPF.test(erste + (/[:\t]$/.test(erste) ? '' : ':')) && erste.length < 30; }
+    return KOPF.test(a.roh.replace(/^\s+/, ''));
+  }
+  function bericht(liste) {
+    const iMarke = liste.findIndex(a => !a.tabelle && MARKE.test(a.t));
+    const vorn = iMarke >= 0 ? liste.slice(0, iMarke) : liste.slice(0, 25);
+    let form = '';
+    const stilForm = vorn.find(a => STIL_TITEL.test(a.stil) && FORMEN.test(a.t)) || vorn.find(a => !a.tabelle && FORMEN.test(a.t) && a.t.length < 80);
+    if (stilForm) form = stilForm.t.match(FORMEN)[1].replace(/^./, c => c.toUpperCase());
+    let rumpf;
+    if (iMarke >= 0) rumpf = liste.slice(iMarke + 1);
+    else {
+      // Ohne Marke: Text beginnt nach dem Titel. Die Grenze hängt nicht an einer bekannten Berichtsform – letzter Absatz mit
+      // Titel-/Überschrift-Formatvorlage am Anfang (vor dem ersten langen Absatz), sonst die erkannte Form
+      const iLang = liste.findIndex(a => !a.tabelle && a.t.length >= 120), bis = Math.min(iLang < 0 ? liste.length : iLang, 25);
+      let iTitel = -1; for (let i = 0; i < bis; i++) if (!liste[i].tabelle && STIL_TITEL.test(liste[i].stil)) iTitel = i;
+      rumpf = liste.slice(Math.max(iTitel, stilForm ? liste.indexOf(stilForm) : -1) + 1);
+    }
+    const abschnitte = []; let akt = null, nachKopf = false;
+    for (const a of rumpf) {
+      if (istKopf(a)) { nachKopf = true; continue; }
+      if (nachKopf && !a.tabelle && /^\t/.test(a.roh)) continue;   // Fortsetzung einer Kopfzeile (z. B. Anschrift unter „Risiko:“)
+      nachKopf = false;
+      const ueber = !a.tabelle && a.t.length < 90 && (a.unter || a.fett) && /[A-Za-zÄÖÜäöüß]/.test(a.t) && !KEINE_UEBERSCHRIFT.test(a.t);
+      if (ueber) { akt = { h: a.t, p: [] }; abschnitte.push(akt); continue; }
+      if (!akt) { akt = { h: '', p: [] }; abschnitte.push(akt); }
+      akt.p.push(a.t);
+    }
+    return { form, marke: iMarke >= 0, abschnitte: abschnitte.filter(x => x.p.length || x.h) };
+  }
+
+  /** Ganze Datei lesen: lies/groesse/inflate wie zipEintrag. → { form, marke, abschnitte, zeichen } */
+  async function docxLesen(lies, groesse, inflate) {
+    const xml = await zipEintrag(lies, groesse, 'word/document.xml', inflate);
+    if (!xml) throw new Error('kein Text (word/document.xml fehlt)');
+    const b = bericht(absaetze(new TextDecoder('utf-8').decode(xml)));
+    b.zeichen = b.abschnitte.reduce((s, x) => s + x.h.length + x.p.reduce((t, p) => t + p.length, 0), 0);
+    return b;
+  }
+
+  /* ---------- Welche Dateien sind Berichte? ---------- */
+  const MITT = 'mit+e?i+l+u?n+g';
+  /** Plan, Entscheidung 6: Name enthält „Mitteilung“ (auch Tippfehler); ohne Anschreiben (jede Schreibweise), _Entwurf,
+      Vorbereitung/Vorlage, Word-Sperrdateien (~$). Nur .docx. */
+  function istBerichtName(name) {
+    const n = String(name).normalize('NFC');
+    if (!/\.docx$/i.test(n) || n.startsWith('~$')) return false;
+    if (!new RegExp(MITT, 'i').test(n)) return false;
+    if (/an[\s_.-]*schr/i.test(n)) return false;
+    if (/entwurf/i.test(n) || /vorbereitung|vorlage/i.test(n)) return false;
+    return true;
+  }
+  /** Nummer der Mitteilung aus dem Namen („2. Mitteilung_25.0501.docx“ → 2), sonst null */
+  function mitteilungNr(name) { const m = new RegExp('(\\d{1,2})\\s*\\.?\\s*[_-]?\\s*' + MITT, 'i').exec(String(name)); return m ? +m[1] : null; }
+  /** Projektordner direkt im Archiv: „26.0137 …“ / „22.00114 …“ → { jahr, nr } (ALT_2022 usw. bleiben draußen – Entscheidung 13.11.2026) */
+  function projektOrdner(name) {
+    const m = /^(\d{2})\.(\d{3,5})(?=\s|$)/.exec(String(name));
+    return m ? { jahr: 2000 + +m[1], nr: +m[2], kennung: m[1] + '.' + m[2] } : null;
+  }
+  const KORREKTUR = /korrigiert\w*|korrektur\w*|\bkorr\b\.?|\bkopie\b|\(\s*\d+\s*\)/gi;
+  /** Schlüssel „derselbe Bericht“: gleiche Nummer und gleicher Zusatz im selben Unterordner. Korrektur-Wörter, „- Kopie“, „(2)“,
+      Leerzeichen und Unterstriche am Ende zählen nicht; Ordner „Mitteilungen“, „n. Mitt“ und eine Kopie des Projektordners auch nicht.
+      Andere Zusätze (Gebäude A, Englisch, Ergänzung) und Gebäude-Ordner bleiben eigene Berichte. */
+  function berichtSchluessel(teile, projektName) {
+    const pk = (projektOrdner(projektName) || {}).kennung || '';
+    const ordner = teile.slice(0, -1).filter(s => {
+      const x = s.trim();
+      if (new RegExp('^' + MITT + '(en)?$', 'i').test(x)) return false;
+      if (new RegExp('^\\d{1,2}\\s*\\.?\\s*mitt', 'i').test(x)) return false;
+      if (pk && x.startsWith(pk)) return false;
+      return true;
+    }).map(s => s.trim().toLowerCase());
+    let name = teile[teile.length - 1].replace(/\.docx$/i, '').normalize('NFC').toLowerCase();
+    const nr = mitteilungNr(name);
+    name = name.replace(new RegExp('(\\d{1,2})\\s*\\.?\\s*[_-]?\\s*' + MITT, 'i'), ' ').replace(new RegExp(MITT, 'gi'), ' ')
+      .replace(/(?<!\d)\d{2}\.\d{3,5}(?!\d)/g, ' ').replace(KORREKTUR, ' ').replace(/[^a-z0-9äöüß]+/g, ' ').trim();
+    return ordner.join('/') + '|' + (nr == null ? '-' : nr) + '|' + name;
+  }
+  /** dateien: [{ teile: [Ordner…, Datei], groesse, geaendert, … }] eines Projekts → nur Berichte, je Schlüssel die neueste */
+  function auswaehlen(dateien, projektName) {
+    const beste = new Map();
+    for (const d of dateien) {
+      if (!istBerichtName(d.teile[d.teile.length - 1])) continue;
+      const k = berichtSchluessel(d.teile, projektName), alt = beste.get(k);
+      if (!alt || d.geaendert > alt.geaendert || (d.geaendert === alt.geaendert && d.teile.join('/') > alt.teile.join('/'))) beste.set(k, d);
+    }
+    return [...beste.values()];
+  }
+
+  /* ---------- Suche ---------- */
+  const klein = s => String(s).toLowerCase();
+  /** Eingabe → Suchwörter: Leerzeichen trennt, „…“ hält zusammen; Teilwörter, Groß/Klein egal */
+  function woerterAus(q) {
+    const w = []; String(q).replace(/"([^"]+)"|„([^“”]+)[“”]|(\S+)/g, (m, a, b, c) => { const x = sauber(a || b || c); if (x.length >= 2) w.push(x); return ''; });
+    return w;
+  }
+  /** Sortierung „neueste zuerst“: Jahr, Projektnummer, Mitteilung, dann Lage im Bericht */
+  const neuer = (a, b) => (b.jahr - a.jahr) || (b.pnr - a.pnr) || ((b.nr || 0) - (a.nr || 0)) || (a.pfad < b.pfad ? -1 : a.pfad > b.pfad ? 1 : 0);
+  /** berichte: Liste der Index-Einträge. modus 'oder' (Thema: eines der Wörter) / 'und' (eigene Suche: alle Wörter in der Textstelle).
+      → { treffer: [{ b, ai, pi }], berichte: Anzahl } – Treffer = Absatz (Textstelle); Abschnittsüberschriften zählen mit */
+  function suche(berichte, woerter, opt) {
+    opt = opt || {};
+    const w = woerter.map(klein).filter(Boolean); if (!w.length) return { treffer: [], berichte: 0 };
+    const und = opt.modus === 'und', inS = s => w.some(x => s.includes(x));
+    const passtP = (h, p) => inS(p) && (!und || w.every(x => p.includes(x) || h.includes(x)));
+    const passtH = h => und ? w.every(x => h.includes(x)) : inS(h);
+    const treffer = []; let n = 0;
+    const liste = berichte.filter(b => !opt.jahr || b.jahr === +opt.jahr).sort(neuer);
+    for (const b of liste) {
+      let eins = false;
+      const kl = b._klein || (b._klein = b.abschnitte.map(a => ({ h: klein(a.h), p: a.p.map(klein) })));
+      kl.forEach((a, ai) => {
+        let im = false;
+        a.p.forEach((p, pi) => { if (passtP(a.h, p)) { treffer.push({ b, ai, pi }); im = true; } });
+        // nur die Überschrift passt: eine Textstelle (erster Absatz) für den Abschnitt
+        if (!im && a.h && passtH(a.h)) { treffer.push({ b, ai, pi: a.p.length ? 0 : -1 }); im = true; }
+        if (im) eins = true;
+      });
+      if (eins) n++;
+    }
+    return { treffer, berichte: n };
+  }
+  /** Zahl der Textstellen je Thema (alle Jahre) */
+  function zaehle(berichte, woerter) {
+    const w = woerter.map(klein).filter(Boolean); if (!w.length) return 0;
+    const inS = x => { for (const y of w) if (x.includes(y)) return true; return false; };
+    let n = 0;
+    for (const b of berichte) {
+      const kl = b._klein || (b._klein = b.abschnitte.map(a => ({ h: klein(a.h), p: a.p.map(klein) })));
+      for (const a of kl) { let im = 0; for (const p of a.p) if (inS(p)) im++; n += im || (a.h && inS(a.h) ? 1 : 0); }
+    }
+    return n;
+  }
+  /** Text → Teile mit markierten Fundstellen [{ t, hit }] */
+  function markiere(text, woerter) {
+    const s = klein(text), spannen = [];
+    if (s.length === text.length) for (const w of woerter.map(klein).filter(Boolean)) for (let i = s.indexOf(w); i >= 0; i = s.indexOf(w, i + w.length)) spannen.push([i, i + w.length]);
+    spannen.sort((a, b) => a[0] - b[0]);
+    const zus = []; for (const sp of spannen) { const l = zus[zus.length - 1]; if (l && sp[0] <= l[1]) l[1] = Math.max(l[1], sp[1]); else zus.push(sp.slice()); }
+    const teile = []; let pos = 0;
+    for (const [a, e] of zus) { if (a > pos) teile.push({ t: text.slice(pos, a), hit: false }); teile.push({ t: text.slice(a, e), hit: true }); pos = e; }
+    if (pos < text.length) teile.push({ t: text.slice(pos), hit: false });
+    return teile;
+  }
+  /** Lange Textstelle um den ersten Fund kürzen (… davor/danach) */
+  function ausschnitt(text, woerter, max) {
+    max = max || 700; if (text.length <= max) return text;
+    const s = klein(text); let i = -1; for (const w of woerter.map(klein)) { const j = s.indexOf(w); if (j >= 0 && (i < 0 || j < i)) i = j; }
+    let a = Math.max(0, (i < 0 ? 0 : i) - Math.floor(max / 3)); let e = Math.min(text.length, a + max); a = Math.max(0, e - max);
+    if (a > 0) { const sp = text.indexOf(' ', a); if (sp > 0 && sp - a < 30) a = sp + 1; }
+    if (e < text.length) { const sp = text.lastIndexOf(' ', e); if (sp > a && e - sp < 30) e = sp; }
+    return (a > 0 ? '… ' : '') + text.slice(a, e) + (e < text.length ? ' …' : '');
+  }
+
+  /* ---------- Gemeinsame Dateien in _LexiKit: vor jedem Schreiben neu lesen und zusammenführen ----------
+     Index je Jahr: lexikit-index-<Jahr>.json  { format, version, jahr, geaendert, berichte: { <Pfad>: Eintrag } }
+     Jede Schreibstelle bringt nur ihre Änderungen mit: neu/geändert (Eintrag mit stempel + gelesenAm) und weg (Pfad + am). */
+  const indexName = jahr => 'lexikit-index-' + jahr + '.json';
+  const leererIndex = jahr => ({ format: FORMAT_INDEX, version: VERSION, jahr, geaendert: '', berichte: {} });
+  /** Text der Datei (oder null) → Index; unlesbar/fremd → { kaputt: Grund } */
+  function indexLesen(text, jahr) {
+    if (text == null || text === '') return leererIndex(jahr);
+    let j; try { j = JSON.parse(text); } catch (e) { return { kaputt: 'keine lesbare JSON-Datei' }; }
+    if (!j || j.format !== FORMAT_INDEX || typeof j.berichte !== 'object') return { kaputt: 'fremdes Format' };
+    if (j.version > VERSION) return { kaputt: 'neuere LexiKit-Fassung', neuer: true };
+    return j;
+  }
+  /** disk + Änderungen → neuer Index (disk wird nicht verändert) */
+  function indexMergen(disk, aend, jetzt) {
+    const out = { format: FORMAT_INDEX, version: VERSION, jahr: disk.jahr, geaendert: jetzt, berichte: Object.assign({}, disk.berichte) };
+    for (const [pfad, e] of Object.entries(aend.neu || {})) {
+      const d = out.berichte[pfad];
+      // Ein anderer PC hat inzwischen eine neuere Fassung derselben Datei gelesen → seine bleibt
+      if (d && d.stempel && e.stempel && d.stempel.geaendert > e.stempel.geaendert) continue;
+      out.berichte[pfad] = e;
+    }
+    for (const w of aend.weg || []) {
+      const d = out.berichte[w.pfad];
+      if (d && d.gelesenAm && d.gelesenAm > w.am) continue;   // nach meiner Prüfung neu gelesen → bleibt
+      delete out.berichte[w.pfad];
+    }
+    return out;
+  }
+
+  /* Themenliste: lexikit-themen.json { format, version, themen: [{ id, name, woerter, geaendert, geloescht? }] }
+     Gelöschte Themen bleiben als Vermerk stehen, damit ein anderer PC sie nicht zurückbringt. */
+  const THEMEN_DATEI = 'lexikit-themen.json';
+  const ERSTE_THEMEN = [
+    ['Löschpulver', ['ABC-Pulver', 'Pulverlöscher']],
+    ['Löschmittel', ['Löschschaum', 'Schaummittel']],
+    ['Löschwasser', []],
+    ['Brandschutt', ['Brandschuttmischprobe']],
+    ['Entsorgungswege', ['Entsorgung', 'Entsorgungsweg', 'Deponieverordnung', 'DepV', 'Deponieklasse']],
+    ['Abfallschlüssel', ['Abfallschlüsselnummer', 'AVV']],
+    ['Asbest', []],
+    ['Schimmel', ['Schimmelpilz', 'KBE']],
+    ['Fäkalkeime', ['E. coli', 'Escherichia coli', 'coliforme', 'Enterokokken']],
+  ];
+  const themaId = name => 't-' + klein(name).normalize('NFC').replace(/[^a-z0-9äöüß]+/g, '-').replace(/^-|-$/g, '');
+  function ersteThemen(jetzt) {
+    return { format: FORMAT_THEMEN, version: VERSION, themen: ERSTE_THEMEN.map(([name, w]) => ({ id: themaId(name), name, woerter: w, geaendert: jetzt })) };
+  }
+  function themenLesen(text) {
+    if (text == null || text === '') return null;
+    let j; try { j = JSON.parse(text); } catch (e) { return { kaputt: 'keine lesbare JSON-Datei' }; }
+    if (!j || j.format !== FORMAT_THEMEN || !Array.isArray(j.themen)) return { kaputt: 'fremdes Format' };
+    if (j.version > VERSION) return { kaputt: 'neuere LexiKit-Fassung', neuer: true };
+    return j;
+  }
+  /** Suchwörter eines Themas: der Name und die Nebenwörter */
+  const themaWoerter = t => [t.name, ...(t.woerter || [])].map(sauber).filter((x, i, a) => x.length >= 2 && a.findIndex(y => klein(y) === klein(x)) === i);
+  /** Eine Änderung einspielen. aend = { id, name, woerter, geloescht?, geaendert, basis } – basis = „geaendert“ des Themas, als
+      das Formular aufging (neu: ''). Hat ein anderer PC das Thema seitdem geändert → { konflikt: Thema auf der Platte }. */
+  function themaEinspielen(disk, aend) {
+    const out = { format: FORMAT_THEMEN, version: VERSION, themen: disk.themen.map(t => Object.assign({}, t)) };
+    const i = out.themen.findIndex(t => t.id === aend.id), d = i >= 0 ? out.themen[i] : null;
+    if (d && (d.geaendert || '') !== (aend.basis || '')) return { konflikt: d };
+    const neu = aend.geloescht ? { id: aend.id, name: aend.name, woerter: [], geaendert: aend.geaendert, geloescht: true }
+      : { id: aend.id, name: sauber(aend.name), woerter: (aend.woerter || []).map(sauber).filter(Boolean), geaendert: aend.geaendert };
+    if (i >= 0) out.themen[i] = neu; else out.themen.push(neu);
+    return { themen: out };
+  }
+  /** Neues Thema: Name schon vergeben (auch gelöscht)? → id mit Zähler */
+  function neueThemaId(disk, name) {
+    const basis = themaId(name) || 't-thema'; let id = basis, n = 2;
+    while (disk.themen.some(t => t.id === id)) id = basis + '-' + n++;
+    return id;
+  }
+
+  g.LexiKern = { VERSION, zipEintrag, absaetze, bericht, docxLesen, sauber, istBerichtName, mitteilungNr, projektOrdner, berichtSchluessel, auswaehlen,
+    woerterAus, suche, zaehle, markiere, ausschnitt, neuer, indexName, leererIndex, indexLesen, indexMergen,
+    THEMEN_DATEI, ERSTE_THEMEN, ersteThemen, themenLesen, themaWoerter, themaEinspielen, neueThemaId, themaId };
+})(typeof globalThis !== 'undefined' ? globalThis : this);
+/* ===== Ende LEXIKIT-KERN ===== */
+</script>
+<script id="lexikit-app">
+/* LexiKit – Oberfläche. Liest das Archiv, hält den Index im Speicher, schreibt nur nach _LexiKit (Funktion schreibe). */
+'use strict';
+const APP_VERSION = '0.1.0';
+const AENDERUNGEN = [
+  ['0.1.0', '13.11.2026', 'Erste Fassung: Word-Mitteilungen aller Projektordner einlesen (nur Text, ohne Fotos, ohne Berichtskopf), Abschnitte nach den Überschriften, gemeinsamer Index und Themenliste in „_LexiKit“, Suche nach Themen und eigenen Wörtern, Jahr-Filter, Treffer mit markierten Wörtern, neueste zuerst.'],
+];
+const K = globalThis.LexiKern;
+const LX_ORDNER = '_LexiKit', PFAD_STANDARD = 'C:\\Daten\\Mosaik Archivordner';
+const $ = id => document.getElementById(id);
+const esc = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const zahl = n => Number(n).toLocaleString('de-DE');
+const jetztIso = () => new Date().toISOString();
+const datum = iso => { try { return new Date(iso).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }); } catch (e) { return ''; } };
+const lokal = {
+  get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* ohne Speicher */ } },
+};
+
+/* ---------- gemeinsamer Browser-Speicher der Suite (wie Projektzentrale/BerichtKit): DB „mosaik-suite“, Speicher „kv“ ----------
+   „archiv“ legt die Projektzentrale ab – LexiKit liest es nur. Eine eigene Wahl steht unter „lexikit-archiv“. */
+const SUITE = {
+  db: null,
+  open() { return this.db || (this.db = new Promise((res, rej) => { const r = indexedDB.open('mosaik-suite', 1); r.onupgradeneeded = () => r.result.createObjectStore('kv'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); })); },
+  async get(k) { const db = await this.open(); return new Promise((res, rej) => { const r = db.transaction('kv').objectStore('kv').get(k); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); },
+  async set(k, v) { const db = await this.open(); return new Promise((res, rej) => { const t = db.transaction('kv', 'readwrite'); t.objectStore('kv').put(v, k); t.oncomplete = () => res(true); t.onerror = () => rej(t.error); }); },
+};
+
+const S = {
+  archiv: null, lx: null, schreiben: false, schreibGrund: '',
+  berichte: new Map(), liste: null,           // Pfad → Index-Eintrag; liste = Werte (ohne unlesbare), neu gebaut bei Änderung
+  aend: {},                                   // Jahr → { neu: { Pfad: Eintrag }, weg: [{ pfad, am }] } – noch nicht geschrieben
+  kaputt: {},                                 // Jahr → Grund (Datei war nicht lesbar)
+  themen: null, themenFehler: '', zaehler: {},
+  wahl: { thema: null, q: '', jahr: '' }, zeigeN: 40, offen: new Set(),
+  form: null,                                 // offenes Themenformular { id|null, basis }
+  ansicht: 'zugang', meldungen: [],
+};
+let archivGen = 0;   // je Verbindung zu einem Archivordner eine neue Nummer – ein Einlesen der alten Verbindung ändert nichts mehr
+const L = { laeuft: null, aktiv: false, stop: false, art: '', projekte: 0, fertig: 0, gelesen: 0, neu: 0, weg: 0, fehler: [], jahr: null, ende: '' };
+
+/* ---------- Ansichten ---------- */
+function zeige(ansicht) {
+  S.ansicht = ansicht;
+  for (const id of ['zugang', 'einlesen', 'suche', 'einstellungen', 'ueberLexi']) $(id).hidden = id !== ansicht;
+  $('mehr').open = false;
+  if (ansicht === 'suche') { renderAlles(); }
+  if (ansicht === 'einlesen') zeigeLauf();
+  if (ansicht === 'einstellungen') zeigeEinstellungen();
+  window.scrollTo(0, 0);
+}
+let toastZeit = 0;
+function toast(html, ms) { const t = $('toast'); t.innerHTML = html; t.hidden = false; clearTimeout(toastZeit); toastZeit = setTimeout(() => { t.hidden = true; }, ms || 6000); }
+function meldung(art, text, id) {
+  if (id) S.meldungen = S.meldungen.filter(m => m.id !== id);
+  if (text) S.meldungen.push({ art, text, id });
+  const box = $('meldungen'); if (!box) return;
+  box.innerHTML = S.meldungen.map(m => `<div class="meldung ${m.art}"><span>${m.text}</span>${m.id === 'schreiben' && S.archiv && S.lx ? `<button class="sp-knopf" type="button" data-aktion="schreiben-erlauben">${S.schreibGrund === 'fehler' ? 'Noch einmal prüfen' : 'Schreiben erlauben'}</button>` : ''}</div>`).join('');
+}
+
+/* ---------- Zugang ---------- */
+function zugang(titel, text, opt) {
+  opt = opt || {};
+  $('zugangTitel').textContent = titel; $('zugangText').innerHTML = text;
+  $('btnErlauben').hidden = !opt.erlauben; $('btnNochmal').hidden = !opt.nochmal; $('btnWaehlen').hidden = !!opt.keinWaehlen;
+  $('stand').hidden = true;
+  zeige('zugang');
+}
+async function start() {
+  $('version').textContent = 'v' + APP_VERSION;
+  $('aenderungen').innerHTML = AENDERUNGEN.map(a => `<li><b>${esc(a[0])}</b> (${esc(a[1])}): ${esc(a[2])}</li>`).join('');
+  if (/^https?:$/.test(location.protocol) && location.hostname !== '127.0.0.1' && 'serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(() => {});
+  if (!('showDirectoryPicker' in window) && !window.LEXIKIT_TEST) { zugang('Bitte Edge oder Chrome benutzen', 'LexiKit braucht den Zugriff auf Ordner, den nur Edge und Chrome haben.', { keinWaehlen: true }); return; }
+  let h = null;
+  try { h = await SUITE.get('lexikit-archiv') || await SUITE.get('archiv'); } catch (e) { h = null; }
+  if (!h) { zugang('Archivordner wählen', 'Wähle einmal den Ordner, in dem alle Projektordner liegen – im Büro <code>C:\\Daten\\Mosaik Archivordner</code>. Hast du ihn schon in der Projektzentrale gewählt, öffne LexiKit am besten einmal von dort.'); return; }
+  S.archiv = h;
+  await verbinden(false);
+}
+async function erlaubt(h, mode, fragen) {
+  try { if ((await h.queryPermission({ mode })) === 'granted') return true; return fragen ? (await h.requestPermission({ mode })) === 'granted' : false; } catch (e) { return false; }
+}
+/** Archiv lesen dürfen, _LexiKit finden, Schreiben prüfen, Dateien laden. fragen = aus einem Klick heraus (Browser darf fragen) */
+async function verbinden(fragen) {
+  if (!(await erlaubt(S.archiv, 'read', fragen))) {
+    zugang('Zugriff auf den Archivordner', `LexiKit darf den Archivordner „${esc(S.archiv.name)}“ gerade nicht lesen. Der Browser fragt einmal nach.`, { erlauben: true }); return;
+  }
+  try { S.lx = await S.archiv.getDirectoryHandle(LX_ORDNER); }
+  catch (e) {
+    S.lx = null;
+    zugang('Ordner „_LexiKit“ fehlt', `Im Archivordner „${esc(S.archiv.name)}“ gibt es keinen Ordner <code>_LexiKit</code>. LexiKit legt ihn nicht selbst an. Lege ihn im Archivordner an (oder wähle den richtigen Archivordner) und prüfe dann noch einmal.`, { nochmal: true }); return;
+  }
+  await schreibenPruefen(fragen);
+  await laden();
+}
+/** Schreibprobe in _LexiKit: Datei anlegen, zurücklesen, wieder entfernen */
+async function schreibenPruefen(fragen) {
+  S.schreiben = false;
+  if (!(await erlaubt(S.lx, 'readwrite', fragen))) { S.schreibGrund = 'erlaubnis'; meldung('warn', 'LexiKit darf noch nicht in <code>_LexiKit</code> schreiben. Suchen geht, aber Index und Themen werden nicht gespeichert.', 'schreiben'); return false; }
+  const name = '.lexikit-schreibprobe-' + Math.random().toString(36).slice(2, 10) + '.tmp', inhalt = 'LexiKit ' + jetztIso();
+  try {
+    const fh = await S.lx.getFileHandle(name, { create: true }), w = await fh.createWritable(); await w.write(inhalt); await w.close();
+    const zurueck = await (await fh.getFile()).text();
+    await S.lx.removeEntry(name);
+    if (zurueck !== inhalt) throw new Error('Inhalt weicht ab');
+    S.schreiben = true; S.schreibGrund = ''; meldung('', '', 'schreiben'); return true;
+  } catch (e) {
+    try { await S.lx.removeEntry(name); } catch (e2) { /* war nicht da */ }
+    S.schreibGrund = 'fehler';
+    meldung('err', `In <code>_LexiKit</code> lässt sich nicht schreiben (${esc(e.message || e.name)}). Suchen geht in dieser Sitzung, gespeichert wird nichts.`, 'schreiben');
+    return false;
+  }
+}
+async function leseText(name) {
+  try { return await (await (await S.lx.getFileHandle(name)).getFile()).text(); }
+  catch (e) { if (e && (e.name === 'NotFoundError' || e.name === 'TypeMismatchError')) return null; throw e; }
+}
+/** Die einzige Stelle, an der LexiKit schreibt – nur in _LexiKit, nur eigene Dateien */
+async function schreibe(name, text) {
+  if (!S.schreiben || !S.lx) throw new Error('Schreiben in _LexiKit ist nicht erlaubt');
+  if (!/^lexikit-(themen|index-\d{4})\.json$/.test(name)) throw new Error('LexiKit schreibt nur seine eigenen Dateien');
+  const fh = await S.lx.getFileHandle(name, { create: true }), w = await fh.createWritable();
+  try { await w.write(text); await w.close(); } catch (e) { try { await w.abort(); } catch (e2) { /* schon zu */ } throw e; }
+}
+const ohneCache = (k, v) => k[0] === '_' ? undefined : v;
+
+/* ---------- Laden ---------- */
+async function laden() {
+  await laufStoppen();   // ein Einlesen der vorigen Verbindung darf nichts mehr in den neuen Stand schreiben
+  // Themen
+  await themenLaden(true);
+  // Index je Jahr
+  S.berichte.clear(); S.kaputt = {};
+  try {
+    for await (const [name, h] of S.lx.entries()) {
+      const m = /^lexikit-index-(\d{4})\.json$/.exec(name); if (!m || h.kind !== 'file') continue;
+      const jahr = +m[1], idx = K.indexLesen(await (await h.getFile()).text(), jahr);
+      if (idx.kaputt) { S.kaputt[jahr] = idx; meldung(idx.neuer ? 'err' : 'warn', idx.neuer ? `<code>${esc(name)}</code> stammt aus einer neueren LexiKit-Fassung – bitte LexiKit neu laden. Dieses Jahr wird nicht geschrieben.` : `<code>${esc(name)}</code> war nicht lesbar (${esc(idx.kaputt)}) – das Jahr ${jahr} wird neu eingelesen.`, 'kaputt-' + jahr); continue; }
+      for (const [pfad, e] of Object.entries(idx.berichte)) S.berichte.set(pfad, e);
+    }
+  } catch (e) { meldung('err', 'Der Index in <code>_LexiKit</code> ließ sich nicht lesen: ' + esc(e.message || e.name), 'laden'); }
+  geaendert();
+  $('stand').hidden = false;
+  if (!S.berichte.size) { zeige('einlesen'); einlesen({ alle: false, erst: true }); }
+  else { zeige('suche'); einlesen({ alle: false }); }
+}
+async function themenLaden(beimStart) {
+  let text = null;
+  try { text = await leseText(K.THEMEN_DATEI); } catch (e) { S.themenFehler = 'Die Themenliste ließ sich nicht lesen: ' + (e.message || e.name); }
+  const t = K.themenLesen(text);
+  if (t && t.kaputt) {
+    S.themenFehler = t.neuer ? 'Die Themenliste stammt aus einer neueren LexiKit-Fassung – bitte LexiKit neu laden.' : `Die Themenliste (<code>${K.THEMEN_DATEI}</code>) ist nicht lesbar (${esc(t.kaputt)}). LexiKit überschreibt sie nicht – bitte melden.`;
+    if (!S.themen) S.themen = K.ersteThemen('');
+    meldung('err', S.themenFehler, 'themen');
+  } else if (!t) {
+    // noch keine Liste: die neun ersten Themen anlegen (nur wenn inzwischen kein anderer PC eine angelegt hat)
+    const erst = K.ersteThemen(jetztIso());
+    if (S.schreiben && beimStart) {
+      try { const nochmal = K.themenLesen(await leseText(K.THEMEN_DATEI)); if (nochmal && !nochmal.kaputt) S.themen = nochmal; else { await schreibe(K.THEMEN_DATEI, JSON.stringify(erst, null, 1)); S.themen = erst; } }
+      catch (e) { S.themen = erst; meldung('warn', 'Die Themenliste ließ sich nicht anlegen: ' + esc(e.message || e.name), 'themen'); }
+    } else S.themen = S.themen || erst;
+    S.themenFehler = '';
+  } else { S.themen = t; S.themenFehler = ''; meldung('', '', 'themen'); }
+  zaehlerNeu();
+}
+
+/* ---------- Index im Speicher ---------- */
+let zaehlTimer = 0, zaehlLauf = 0;
+function geaendert() { S.liste = null; zaehlerNeu(); }   // neue Einträge sind neue Objekte – ihr Kleinschreib-Cache entsteht beim ersten Suchen
+function liste() { return S.liste || (S.liste = [...S.berichte.values()].filter(b => !b.fehler && b.abschnitte)); }
+const aktiveThemen = () => (S.themen ? S.themen.themen.filter(t => !t.geloescht) : []);
+function zaehlerNeu() {
+  if (L.aktiv && zaehlTimer) return;   // beim Einlesen höchstens alle 3 s neu zählen, nicht immer weiter verschieben
+  clearTimeout(zaehlTimer);
+  const lauf = ++zaehlLauf;
+  zaehlTimer = setTimeout(() => {
+    zaehlTimer = 0;
+    // je Thema ein eigener Schritt, damit die Seite bedienbar bleibt
+    const l = liste(), themen = aktiveThemen(), neu = {}; let i = 0;
+    if (S.ansicht === 'suche') { renderJahre(); renderTreffer(); }
+    const schritt = () => {
+      if (lauf !== zaehlLauf) return;   // inzwischen neu angestoßen
+      if (i < themen.length) { const t = themen[i++]; neu[t.id] = K.zaehle(l, K.themaWoerter(t)); setTimeout(schritt, 0); return; }
+      S.zaehler = neu; if (S.ansicht === 'suche') renderThemen();
+    };
+    schritt();
+  }, L.aktiv ? 3000 : 50);
+}
+function aendFuer(jahr) { return S.aend[jahr] || (S.aend[jahr] = { neu: {}, weg: [] }); }
+function merke(e) { S.berichte.set(e.pfad, e); const a = aendFuer(e.jahr); a.neu[e.pfad] = e; a.weg = a.weg.filter(w => w.pfad !== e.pfad); }
+function weg(pfad) { const b = S.berichte.get(pfad); if (!b) return; S.berichte.delete(pfad); const a = aendFuer(b.jahr); delete a.neu[pfad]; a.weg.push({ pfad, am: jetztIso() }); L.weg++; }
+/** Offene Änderungen schreiben: je Jahr Datei neu lesen, zusammenführen, schreiben, dann den Stand der Platte übernehmen */
+async function speichern() {
+  if (!S.schreiben) return;
+  for (const jahr of Object.keys(S.aend).map(Number)) {
+    const a = S.aend[jahr]; if (!Object.keys(a.neu).length && !a.weg.length) continue;
+    if (S.kaputt[jahr] && S.kaputt[jahr].neuer) continue;
+    const name = K.indexName(jahr);
+    try {
+      let disk = K.indexLesen(await leseText(name), jahr);
+      if (disk.kaputt) { if (disk.neuer) { S.kaputt[jahr] = disk; continue; } disk = K.leererIndex(jahr); }
+      const aus = K.indexMergen(disk, a, jetztIso());
+      await schreibe(name, JSON.stringify(aus, ohneCache));
+      S.aend[jahr] = { neu: {}, weg: [] }; delete S.kaputt[jahr]; meldung('', '', 'kaputt-' + jahr);
+      // was andere PCs inzwischen gelesen oder entfernt haben, übernehmen
+      for (const [pfad, b] of S.berichte) if (b.jahr === jahr && !aus.berichte[pfad]) S.berichte.delete(pfad);
+      for (const [pfad, e] of Object.entries(aus.berichte)) { const alt = S.berichte.get(pfad); if (!alt || alt.gelesenAm !== e.gelesenAm) S.berichte.set(pfad, e); }
+    } catch (e) {
+      meldung('err', `Der Index für ${jahr} ließ sich nicht speichern (${esc(e.message || e.name)}). Er wird beim nächsten Mal noch einmal geschrieben.`, 'speichern');
+    }
+  }
+  geaendert();
+}
+
+/* ---------- Einlesen ---------- */
+const inflate = async bytes => new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer());
+const UEBERSPRINGEN = /^(_spektron|_aussortiert)$/i;
+/** Alle Dateien eines Projektordners (Name + Größe + Zeit nur für mögliche Berichte, Fotos werden nicht geöffnet) */
+async function dateienIn(dir, teile, tiefe, aus) {
+  aus = aus || [];
+  for await (const [name, h] of dir.entries()) {
+    if (h.kind === 'directory') { if (tiefe < 4 && !UEBERSPRINGEN.test(name)) await dateienIn(h, [...teile, name], tiefe + 1, aus); continue; }
+    if (!K.istBerichtName(name)) continue;
+    try { const f = await h.getFile(); aus.push({ teile: [...teile, name], groesse: f.size, geaendert: f.lastModified, datei: f }); }
+    catch (e) { aus.push({ teile: [...teile, name], groesse: -1, geaendert: 0, fehler: e.message || e.name }); }
+  }
+  return aus;
+}
+async function leseBericht(p, d, pfad) {
+  const datei = d.teile[d.teile.length - 1];
+  const e = { pfad, projekt: p.name, datei, jahr: p.jahr, pnr: p.nr, nr: K.mitteilungNr(datei), form: '', stempel: { groesse: d.groesse, geaendert: d.geaendert }, gelesenAm: jetztIso() };
+  try {
+    if (d.fehler) throw new Error(d.fehler);
+    const f = d.datei;
+    const b = await K.docxLesen(async (a, z) => new Uint8Array(await f.slice(a, z).arrayBuffer()), f.size, inflate);
+    e.form = b.form; e.abschnitte = b.abschnitte; e.zeichen = b.zeichen;
+  } catch (err) { e.fehler = String(err && err.message || err); L.fehler.push(pfad + ' – ' + e.fehler); }
+  return e;
+}
+/** Laufendes Einlesen anhalten und abwarten, bis es wirklich aufgehört hat (vor Archivwechsel und Neuladen) */
+async function laufStoppen() {
+  archivGen++;
+  if (!L.aktiv) return;
+  L.stop = true;
+  try { await L.laeuft; } catch (e) { /* schon gemeldet */ }
+}
+async function einlesen(opt) {
+  if (L.aktiv) { if (opt.zeigen) zeige('einlesen'); return; }
+  const gen = archivGen, veraltet = () => gen !== archivGen, archiv = S.archiv;
+  let fertig; L.laeuft = new Promise(r => { fertig = r; });
+  Object.assign(L, { aktiv: true, stop: false, art: opt.alle ? 'alle' : opt.erst ? 'erst' : 'pruefen', projekte: 0, fertig: 0, gelesen: 0, neu: 0, weg: 0, fehler: [], jahr: null, ende: '', erst: !!opt.erst });
+  if (opt.zeigen) zeige('einlesen');
+  zeigeLauf();
+  try {
+    const projekte = [];
+    for await (const [name, h] of archiv.entries()) if (h.kind === 'directory') { const p = K.projektOrdner(name); if (p) projekte.push({ name, h, jahr: p.jahr, nr: p.nr }); }
+    projekte.sort((a, b) => (b.jahr - a.jahr) || (b.nr - a.nr));   // neueste zuerst
+    L.projekte = projekte.length; zeigeLauf();
+    const gesehen = new Set(projekte.map(p => p.name));
+    let jahrBisher = null, zuletzt = Date.now();
+    for (const p of projekte) {
+      if (L.stop || veraltet()) break;
+      if (jahrBisher !== null && p.jahr !== jahrBisher) await speichern();   // ein Jahr fertig → speichern
+      jahrBisher = p.jahr; L.jahr = p.jahr;
+      let dateien;
+      try { dateien = await dateienIn(p.h, [], 0); } catch (e) { L.fehler.push(p.name + ' – Ordner nicht lesbar: ' + (e.message || e.name)); L.fertig++; continue; }
+      const wahl = K.auswaehlen(dateien, p.name), pfade = new Set();
+      let ganz = true;
+      for (const d of wahl) {
+        if (L.stop || veraltet()) { ganz = false; break; }
+        const pfad = [p.name, ...d.teile].join('/'); pfade.add(pfad);
+        const alt = S.berichte.get(pfad);
+        if (!opt.alle && alt && !alt.fehler && alt.stempel && alt.stempel.groesse === d.groesse && alt.stempel.geaendert === d.geaendert) continue;
+        const e = await leseBericht(p, d, pfad);
+        if (veraltet()) { ganz = false; break; }   // Archiv inzwischen gewechselt
+        merke(e); L.gelesen++; if (!alt) L.neu++;
+        zeigeLauf();
+      }
+      // nur nach vollständig gesehenem Projekt: was nicht mehr ausgewählt ist (gelöscht, ersetzt), fällt heraus
+      if (veraltet()) break;
+      if (ganz) for (const [pfad, b] of S.berichte) if (b.projekt === p.name && !pfade.has(pfad)) weg(pfad);
+      L.fertig++;
+      if (Date.now() - zuletzt > 90000 && !veraltet()) { await speichern(); zuletzt = Date.now(); }
+      geaendert(); zeigeLauf();
+    }
+    // Projektordner, die es nicht mehr gibt (umbenannt, verschoben) – nur nach ganzem Durchlauf
+    if (!L.stop && !veraltet()) for (const [pfad, b] of S.berichte) if (!gesehen.has(b.projekt)) weg(pfad);
+  } catch (e) {
+    if (!veraltet()) {
+    L.fehler.push('Archivordner – ' + (e.message || e.name));
+    meldung('err', 'Das Einlesen wurde unterbrochen: ' + esc(e.message || e.name) + '. Was bis dahin gelesen war, bleibt.', 'lauf');
+    }
+  }
+  if (!veraltet()) await speichern();
+  L.aktiv = false; L.ende = jetztIso();
+  fertig();
+  if (!veraltet()) { geaendert(); zeigeLauf(); }
+}
+
+/* ---------- Anzeige des Einlesens ---------- */
+function zeigeLauf() {
+  const anteil = L.projekte ? Math.round(100 * L.fertig / L.projekte) : 0;
+  $('einBalkenIn').style.width = (L.aktiv ? anteil : L.ende ? 100 : 0) + '%'; $('einBalken').setAttribute('aria-valuenow', String(L.aktiv ? anteil : 100));
+  const gesamt = liste().length;
+  if (L.aktiv) {
+    $('einTitel').textContent = L.erst ? 'Die Berichte werden einmal eingelesen' : L.art === 'alle' ? 'Alle Berichte werden neu eingelesen' : 'Neue und geänderte Berichte werden gelesen';
+    $('einZahl').textContent = !L.projekte ? 'Projektordner werden gesucht …' : (L.erst || L.art === 'alle') ? `${zahl(L.gelesen)} Berichte gelesen` : `${zahl(L.gelesen)} neu oder geändert gelesen`;
+    $('einJahr').textContent = L.jahr ? 'gerade: Jahr ' + L.jahr : '';
+    $('einOrdner').textContent = L.projekte ? `${zahl(L.fertig)} von ${zahl(L.projekte)} Projektordnern durchgesehen` : '';
+  } else if (L.ende) {
+    $('einTitel').textContent = L.stop ? 'Einlesen angehalten' : 'Einlesen fertig';
+    $('einZahl').textContent = `${zahl(gesamt)} Berichte im Index`;
+    $('einJahr').textContent = L.stop ? '' : 'Stand ' + datum(L.ende);
+    $('einOrdner').textContent = (L.stop ? `${zahl(L.fertig)} von ${zahl(L.projekte)} Projektordnern durchgesehen. ` : '') + `Diesmal gelesen: ${zahl(L.gelesen)}` + (L.weg ? `, entfernt: ${zahl(L.weg)}` : '') + (S.schreiben ? '' : ' – nicht gespeichert (kein Schreibzugriff auf _LexiKit)');
+  }
+  $('btnAnhalten').hidden = !L.aktiv; $('btnWeiter').hidden = L.aktiv || !L.stop;
+  $('btnSchonSuchen').textContent = L.aktiv ? 'Schon suchen' : 'Zur Suche';
+  $('einText').hidden = !(L.erst && L.aktiv);
+  $('einFehler').hidden = !L.fehler.length;
+  $('einFehlerZahl').textContent = L.fehler.length === 1 ? '1 Datei war nicht lesbar' : `${zahl(L.fehler.length)} Dateien waren nicht lesbar`;
+  $('einFehlerListe').innerHTML = L.fehler.slice(0, 300).map(f => `<li>${esc(f)}</li>`).join('');
+  standZeigen();
+}
+function standZeigen() {
+  const b = $('stand'), n = liste().length;
+  b.classList.remove('warn', 'lauf');
+  if (L.aktiv) { b.classList.add('lauf'); b.textContent = !L.projekte ? 'Sucht Projektordner …' : (L.erst || L.art === 'alle') ? `Liest ein: ${zahl(L.gelesen)} Berichte` + (L.jahr ? ' · ' + L.jahr : '') : `Prüft auf neue Berichte … ${zahl(L.fertig)} von ${zahl(L.projekte)}`; }
+  else if (!S.schreiben) { b.classList.add('warn'); b.textContent = `${zahl(n)} Berichte · nur in dieser Sitzung`; }
+  else b.textContent = `${zahl(n)} Berichte · aktuell`;
+  b.title = 'Einlesen ansehen';
+}
+
+/* ---------- Suche ---------- */
+function aktuelleWoerter() {
+  if (S.wahl.q.trim().length >= 2) return { woerter: K.woerterAus(S.wahl.q), modus: 'und' };
+  const t = aktiveThemen().find(x => x.id === S.wahl.thema);
+  return t ? { woerter: K.themaWoerter(t), modus: 'oder', thema: t } : { woerter: [], modus: 'oder' };
+}
+const stellen = n => n === undefined || (n === 0 && L.aktiv) ? '…' : n === 0 ? 'nichts' : n === 1 ? '1 Stelle' : zahl(n) + ' Stellen';
+function renderThemen() {
+  const eigen = S.wahl.q.trim().length >= 2;
+  $('themen').innerHTML = aktiveThemen().map(t => `<button class="thema" type="button" data-thema="${esc(t.id)}" aria-pressed="${!eigen && t.id === S.wahl.thema}"><span>${esc(t.name)}</span><small>${stellen(S.zaehler[t.id])}</small></button>`).join('')
+    || '<div class="hinweis">Noch keine Themen.</div>';
+  $('btnNeuesThema').hidden = !!S.form;
+}
+function renderJahre() {
+  const jahre = [...new Set(liste().map(b => b.jahr))].sort((a, b) => b - a);
+  if (S.wahl.jahr && !jahre.includes(+S.wahl.jahr)) jahre.unshift(+S.wahl.jahr);
+  $('jahre').innerHTML = '<span class="leise" style="font-size:14px;margin-right:4px">Jahr</span>' + ['', ...jahre].map(j => `<button class="jahr" type="button" data-jahr="${j}" aria-pressed="${String(j) === String(S.wahl.jahr)}">${j || 'Alle'}</button>`).join('');
+}
+function markiertHtml(text, woerter) { return K.markiere(text, woerter).map(t => t.hit ? `<mark>${esc(t.t)}</mark>` : esc(t.t)).join(''); }
+/** Pfad auf dem PC aus der Einstellung (der Browser kennt ihn nicht) */
+function pfadBasis() { return (lokal.get('lexikit-pfad') || PFAD_STANDARD).trim().replace(/[\\/]+$/, ''); }
+function winPfad(rel) { return pfadBasis() + '\\' + rel.split('/').join('\\'); }
+function fileUrl(win) {
+  const t = win.replace(/\\/g, '/');
+  if (t.startsWith('//')) return 'file:' + '//' + t.slice(2).split('/').map(encodeURIComponent).join('/');
+  return 'file:///' + t.split('/').map((s, i) => i === 0 && /^[A-Za-z]:$/.test(s) ? s : encodeURIComponent(s)).join('/');
+}
+const wordLink = rel => 'ms-word:ofv|u|' + fileUrl(winPfad(rel));
+function renderTreffer() {
+  const { woerter, modus, thema } = aktuelleWoerter();
+  const box = $('treffer');
+  $('woerterZeile').innerHTML = woerter.length ? 'Sucht nach: ' + woerter.map(esc).join(', ') + (thema && !S.form ? ` · <button class="linkknopf" type="button" data-aktion="thema-bearbeiten">Thema bearbeiten</button>` : '') : '';
+  if (!woerter.length) {
+    $('ergebnisZeile').textContent = liste().length ? 'Wähle ein Thema oder tippe ein Wort.' : 'Noch keine Berichte eingelesen.';
+    box.innerHTML = ''; $('btnMehrTreffer').hidden = true; return;
+  }
+  const r = K.suche(liste(), woerter, { modus, jahr: S.wahl.jahr });
+  const nT = r.treffer.length, nB = r.berichte;
+  if (thema && !S.wahl.jahr && S.zaehler[thema.id] !== nT) {   // Zahl am gewählten Thema immer wie die Treffer
+    S.zaehler[thema.id] = nT; const k = document.querySelector(`[data-thema="${CSS.escape(thema.id)}"] small`); if (k) k.textContent = stellen(nT);
+  }
+  $('ergebnisZeile').textContent = nT === 0 ? 'Keine Textstelle gefunden' : `${zahl(nT)} ${nT === 1 ? 'Textstelle' : 'Textstellen'} in ${zahl(nB)} ${nB === 1 ? 'Bericht' : 'Berichten'} · neueste zuerst`;
+  if (!nT) {
+    box.innerHTML = `<div class="leer">Dazu steht in den eingelesenen Berichten nichts${S.wahl.jahr ? ' aus ' + esc(S.wahl.jahr) : ''}.${L.aktiv ? ' Das Einlesen läuft noch – später noch einmal schauen.' : ''}${modus === 'und' && woerter.length > 1 ? ' Gesucht wird nach Textstellen, in denen alle Wörter vorkommen.' : ''}</div>`;
+    $('btnMehrTreffer').hidden = true; return;
+  }
+  box.innerHTML = r.treffer.slice(0, S.zeigeN).map(t => karte(t, woerter)).join('');
+  const rest = nT - S.zeigeN;
+  $('btnMehrTreffer').hidden = rest <= 0; $('btnMehrTreffer').textContent = `Weitere ${zahl(Math.min(40, rest))} zeigen (noch ${zahl(rest)})`;
+}
+function karte(t, woerter) {
+  const b = t.b, a = b.abschnitte[t.ai], schl = b.pfad + '#' + t.ai + '#' + t.pi, offen = S.offen.has(schl);
+  const name = b.datei.replace(/\.docx$/i, '').trim();
+  const meta = [b.jahr, name, b.form].filter(Boolean).map(esc).join(' · ');
+  let text;
+  if (offen) text = a.p.map((p, i) => `<p${i === t.pi ? ' class="fund"' : ''}>${markiertHtml(p, woerter)}</p>`).join('') || '<p class="leise">(Abschnitt ohne Text)</p>';
+  else text = t.pi >= 0 ? markiertHtml(K.ausschnitt(a.p[t.pi], woerter), woerter) : '<span class="leise">(Abschnitt ohne Text)</span>';
+  const ganz = a.p.length > 1 || (t.pi >= 0 && K.ausschnitt(a.p[t.pi], woerter) !== a.p[t.pi]);
+  return `<article class="treffer" data-schl="${esc(schl)}">
+    <div class="t-kopf"><b>${esc(b.projekt)}</b><span>${meta}</span></div>
+    ${a.h ? `<div class="t-abschnitt">${markiertHtml(a.h, woerter)}</div>` : ''}
+    <div class="t-text">${text}</div>
+    <div class="t-knoepfe">
+      <a class="sp-knopf sp-knopf-app" href="${esc(wordLink(b.pfad))}" data-word="${esc(b.pfad)}"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h8l4 4v14H6z"></path><path d="M14 3v4h4"></path></svg><span>Bericht in Word öffnen</span></a>
+      ${ganz || offen ? `<button class="sp-knopf" type="button" data-abschnitt="${esc(schl)}">${offen ? 'Weniger zeigen' : 'Ganzen Abschnitt zeigen'}</button>` : ''}
+      <button class="sp-knopf" type="button" data-ordner="${esc(b.projekt)}">Projektordner</button>
+    </div>
+  </article>`;
+}
+function renderAlles() { renderThemen(); renderJahre(); renderTreffer(); meldung(); standZeigen(); }
+async function kopiere(text) {
+  try { await navigator.clipboard.writeText(text); return true; }
+  catch (e) {
+    try { const ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); const ok = document.execCommand('copy'); ta.remove(); return ok; } catch (e2) { return false; }
+  }
+}
+
+/* ---------- Themen bearbeiten ---------- */
+function formOeffnen(thema) {
+  S.form = { id: thema ? thema.id : null, basis: thema ? thema.geaendert || '' : '' };
+  $('themaFormTitel').textContent = thema ? 'Thema bearbeiten' : 'Neues Thema';
+  $('themaName').value = thema ? thema.name : ''; $('themaWoerter').value = thema ? (thema.woerter || []).join('\n') : '';
+  $('btnThemaLoeschen').hidden = !thema; $('themaRueckfrage').hidden = true; $('themaFehler').textContent = '';
+  $('themaStand').textContent = thema && thema.geaendert ? 'Zuletzt geändert am ' + datum(thema.geaendert) : '';
+  $('themaForm').hidden = false; renderThemen(); renderTreffer(); formZahl();
+  $('themaName').focus();
+}
+function formZu() { S.form = null; $('themaForm').hidden = true; renderThemen(); renderTreffer(); }
+let formTimer = 0;
+function formZahl() {
+  clearTimeout(formTimer);
+  formTimer = setTimeout(() => {
+    const w = K.themaWoerter({ name: $('themaName').value, woerter: $('themaWoerter').value.split('\n') });
+    if (!w.length) { $('themaZahl').textContent = ''; return; }
+    const r = K.suche(liste(), w, { modus: 'oder' });
+    $('themaZahl').textContent = `Findet jetzt: ${stellen(r.treffer.length)} in ${zahl(r.berichte)} ${r.berichte === 1 ? 'Bericht' : 'Berichten'}`;
+  }, 200);
+}
+async function themaSpeichern(loeschen) {
+  const name = K.sauber($('themaName').value), woerter = $('themaWoerter').value.split('\n').map(K.sauber).filter(Boolean);
+  $('themaFehler').textContent = '';
+  if (!loeschen && name.length < 2) { $('themaFehler').textContent = 'Der Name braucht mindestens zwei Zeichen.'; return; }
+  if (!S.schreiben) { $('themaFehler').textContent = 'Themen können gerade nicht gespeichert werden – LexiKit darf nicht in _LexiKit schreiben.'; return; }
+  if (S.themenFehler) { $('themaFehler').innerHTML = S.themenFehler; return; }
+  try {
+    let disk = K.themenLesen(await leseText(K.THEMEN_DATEI));
+    if (disk && disk.kaputt) { $('themaFehler').textContent = 'Die Themenliste ist nicht lesbar – LexiKit überschreibt sie nicht.'; return; }
+    if (!disk) disk = S.themen || K.ersteThemen('');
+    const doppelt = disk.themen.find(t => !t.geloescht && t.id !== S.form.id && t.name.toLowerCase() === name.toLowerCase());
+    if (!loeschen && doppelt) { $('themaFehler').textContent = `Ein Thema „${doppelt.name}“ gibt es schon.`; return; }
+    const id = S.form.id || K.neueThemaId(disk, name);
+    const r = K.themaEinspielen(disk, { id, name, woerter, geloescht: !!loeschen, geaendert: jetztIso(), basis: S.form.basis });
+    if (r.konflikt) {
+      S.themen = disk; zaehlerNeu();
+      const k = r.konflikt;
+      if (k.geloescht) { formZu(); toast('Dieses Thema wurde inzwischen an einem anderen PC gelöscht.'); return; }
+      S.form.basis = k.geaendert || ''; $('themaName').value = k.name; $('themaWoerter').value = (k.woerter || []).join('\n'); formZahl();
+      $('themaFehler').textContent = 'Das Thema wurde inzwischen an einem anderen PC geändert. Oben steht jetzt der neue Stand – trag deine Änderung bitte noch einmal ein.';
+      return;
+    }
+    await schreibe(K.THEMEN_DATEI, JSON.stringify(r.themen, null, 1));
+    S.themen = r.themen;
+    S.wahl.thema = loeschen ? null : id; S.wahl.q = ''; $('q').value = '';
+    formZu(); zaehlerNeu();
+    toast(loeschen ? `Thema „${esc(name)}“ gelöscht.` : `Thema „${esc(name)}“ gespeichert – gilt für alle.`, 3500);
+  } catch (e) { $('themaFehler').textContent = 'Speichern ging nicht: ' + (e.message || e.name); }
+}
+
+/* ---------- Einstellungen ---------- */
+function zeigeEinstellungen() {
+  $('pfadBasis').value = pfadBasis();
+  $('einstArchiv').innerHTML = S.archiv ? `Archivordner: <b>${esc(S.archiv.name)}</b> · <code>_LexiKit</code>: ${S.lx ? (S.schreiben ? 'Schreiben geht' : 'nur lesen') : 'fehlt'}` : 'Noch kein Archivordner gewählt.';
+  $('btnSchreibenErlauben').hidden = !S.lx || S.schreiben; $('btnSchreibenErlauben').textContent = S.schreibGrund === 'fehler' ? 'Schreiben noch einmal prüfen' : 'Schreiben in _LexiKit erlauben';
+}
+async function archivWaehlen() {
+  let h; try { h = await window.showDirectoryPicker({ id: 'lexikit-archiv', mode: 'read' }); } catch (e) { return; }
+  if (/^_LexiKit$/i.test(h.name) || K.projektOrdner(h.name)) { toast(`„${esc(h.name)}“ ist ein Unterordner. Bitte den Archivordner wählen, in dem alle Projektordner liegen.`); return; }
+  try { await SUITE.set('lexikit-archiv', h); } catch (e) { /* nur für diese Sitzung */ }
+  await archivWechseln(h);
+}
+async function archivWechseln(h) {
+  await laufStoppen();   // erst das Einlesen des alten Archivs beenden, dann den Stand leeren
+  S.archiv = h; S.lx = null; S.berichte.clear(); S.aend = {}; S.themen = null; S.meldungen = []; geaendert();
+  await verbinden(true);
+}
+
+/* ---------- Ereignisse ---------- */
+function verdrahten() {
+  $('btnWaehlen').onclick = archivWaehlen; $('btnAnderesArchiv').onclick = archivWaehlen;
+  $('btnErlauben').onclick = () => verbinden(true);
+  $('btnNochmal').onclick = () => verbinden(true);
+  $('btnSchreibenErlauben').onclick = async () => { if (await schreibenPruefen(true)) { await themenLaden(true); await speichern(); } zeigeEinstellungen(); standZeigen(); };
+  $('btnSchonSuchen').onclick = () => zeige('suche');
+  $('btnAnhalten').onclick = () => { L.stop = true; $('btnAnhalten').textContent = 'Hält an …'; setTimeout(() => { $('btnAnhalten').textContent = 'Anhalten'; }, 1500); };
+  $('btnWeiter').onclick = () => einlesen({ alle: false, erst: L.erst, zeigen: true });
+  $('stand').onclick = () => zeige('einlesen');
+  document.querySelectorAll('[data-zurueck]').forEach(b => { b.onclick = () => zeige(S.archiv && S.lx ? 'suche' : 'zugang'); });
+  document.querySelector('.mehr-pop').onclick = e => {
+    const b = e.target.closest('[data-mehr]'); if (!b) return; const was = b.dataset.mehr; $('mehr').open = false;
+    if (!S.lx && (was === 'pruefen' || was === 'alle' || was === 'einlesen')) { toast('Erst den Archivordner verbinden.'); return; }
+    if (was === 'pruefen') { einlesen({ alle: false, zeigen: true }); }
+    else if (was === 'alle') { einlesen({ alle: true, zeigen: true }); }
+    else if (was === 'einlesen') zeige('einlesen');
+    else if (was === 'einstellungen') zeige('einstellungen');
+    else if (was === 'ueber') zeige('ueberLexi');
+  };
+  document.addEventListener('click', e => { if ($('mehr').open && !e.target.closest('#mehr')) $('mehr').open = false; });
+  $('btnPfadSpeichern').onclick = () => { const v = $('pfadBasis').value.trim(); if (!v) return; lokal.set('lexikit-pfad', v); toast('Pfad gespeichert (nur für diesen PC).', 3000); };
+  $('btnPfadStandard').onclick = () => { $('pfadBasis').value = PFAD_STANDARD; };
+  // Suche
+  let qTimer = 0;
+  $('q').addEventListener('input', () => { clearTimeout(qTimer); qTimer = setTimeout(() => { S.wahl.q = $('q').value; S.zeigeN = 40; S.offen.clear(); renderThemen(); renderTreffer(); }, 250); });
+  $('q').addEventListener('keydown', e => { if (e.key === 'Escape') { $('q').value = ''; S.wahl.q = ''; renderThemen(); renderTreffer(); } });
+  $('themen').onclick = e => { const b = e.target.closest('[data-thema]'); if (!b) return; S.wahl.thema = b.dataset.thema; S.wahl.q = ''; $('q').value = ''; S.zeigeN = 40; S.offen.clear(); renderThemen(); renderTreffer(); };
+  $('jahre').onclick = e => { const b = e.target.closest('[data-jahr]'); if (!b) return; S.wahl.jahr = b.dataset.jahr; S.zeigeN = 40; renderJahre(); renderTreffer(); };
+  $('btnMehrTreffer').onclick = () => { S.zeigeN += 40; renderTreffer(); };
+  $('treffer').addEventListener('click', async e => {
+    const ab = e.target.closest('[data-abschnitt]');
+    if (ab) { const k = ab.dataset.abschnitt; S.offen.has(k) ? S.offen.delete(k) : S.offen.add(k); renderTreffer(); const neu = document.querySelector(`[data-abschnitt="${CSS.escape(k)}"]`); if (neu) neu.focus(); return; }
+    const or = e.target.closest('[data-ordner]');
+    if (or) { const p = winPfad(or.dataset.ordner); const ok = await kopiere(p); toast(ok ? `Pfad kopiert – im Explorer oben in die Adresszeile einfügen (Strg+V):<br><code>${esc(p)}</code>` : `Pfad zum Kopieren:<br><code>${esc(p)}</code>`, 9000); return; }
+    const wo = e.target.closest('[data-word]');
+    if (wo) { const p = winPfad(wo.dataset.word); await kopiere(p); toast(`Word wird geöffnet. Falls nicht: Der Pfad ist kopiert –<br><code>${esc(p)}</code>`, 9000); }
+  });
+  document.addEventListener('click', e => {
+    const a = e.target.closest('[data-aktion]'); if (!a) return;
+    if (a.dataset.aktion === 'thema-bearbeiten') { const t = aktiveThemen().find(x => x.id === S.wahl.thema); if (t) formOeffnen(t); }
+    if (a.dataset.aktion === 'schreiben-erlauben') $('btnSchreibenErlauben').onclick();
+  });
+  // Themenformular
+  $('btnNeuesThema').onclick = () => formOeffnen(null);
+  $('themaForm').onsubmit = e => { e.preventDefault(); themaSpeichern(false); };
+  $('btnThemaAbbrechen').onclick = formZu;
+  $('themaName').oninput = formZahl; $('themaWoerter').oninput = formZahl;
+  $('btnThemaLoeschen').onclick = () => { $('themaRueckText').textContent = `Thema „${$('themaName').value}“ für alle löschen? Die Berichte bleiben unverändert.`; $('themaRueckfrage').hidden = false; $('btnLoeschenNein').focus(); };
+  $('btnLoeschenNein').onclick = () => { $('themaRueckfrage').hidden = true; };
+  $('btnLoeschenJa').onclick = () => themaSpeichern(true);
+  // zurück ins Fenster: Themen anderer PCs übernehmen
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && S.lx && !S.form) themenLaden(false); });
+  window.addEventListener('beforeunload', e => { if (L.aktiv && S.schreiben) { e.preventDefault(); e.returnValue = ''; } });
+}
+verdrahten();
+window.LexiKit = { S, L, einlesen, speichern, archivWechseln, version: APP_VERSION };   // für Tests
+start().catch(e => zugang('Fehler beim Start', esc(e.message || e)));
+</script>
+</body>
+</html>

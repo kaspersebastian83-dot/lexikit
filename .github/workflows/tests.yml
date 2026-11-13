@@ -1,0 +1,50 @@
+name: Automated tests
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  node-tests:
+    name: Node tests (no browser)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - name: BerichtKit daneben holen (Spektron-Look byte-gleich prüfen)
+        run: git clone --quiet --depth 1 https://github.com/kaspersebastian83-dot/berichtkit.git ../berichtkit
+      - name: Kern – Word lesen, Abschnitte, Berichtskopf, Auswahl, Suche, Zusammenführen
+        run: node tests/kern.cjs
+      - name: Spektron-Look, Offline-Dateien, kein Netz
+        run: node tests/dateien.cjs
+        env:
+          LEXIKIT_LOOK_PFLICHT: '1'
+
+  browser-tests:
+    name: Browser test (chromium)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - name: Install Playwright (pinned, not part of the repository)
+        run: |
+          npm install --no-save --no-package-lock --prefix "$RUNNER_TEMP/pw" playwright@1.56.1
+          echo "NODE_PATH=$RUNNER_TEMP/pw/node_modules" >> "$GITHUB_ENV"
+          "$RUNNER_TEMP/pw/node_modules/.bin/playwright" install --with-deps chromium
+      - name: Einlesen, Suche, Themen mit zweitem PC, nur Neues nachlesen, Schreibprobe
+        run: node tests/browser.cjs
