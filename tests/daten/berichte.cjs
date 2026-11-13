@@ -200,4 +200,92 @@ function archiv() {
   };
 }
 
-module.exports = { docx, zip, documentXml, BERICHTE, archiv };
+/* ---------- ab 0.3.0: „Für ChatGPT kopieren“ – erfundene Fälle mit Fallen ----------
+   MARKE-Wörter stehen in Abschnitten, die nie kopiert werden dürfen. Kopfwerte tauchen im Text in vielen Formen wieder auf. */
+const KOPF_A = [
+  { t: 'Projektnummer:\t25.0815' }, { t: 'Schaden vom:\t03.03.2025' },
+  { t: 'VN:\tHerr Konrad Probemann-Lindtal' },
+  { t: 'Risiko:\tBackstube, Hauptstraße 12 a' }, { t: '\t52999 Probehausen' },
+  { t: 'Versicherer:\tBeispiel Versicherung AG' },
+  { t: 'Schaden-Nr.:\t77-123 456/24' },
+  { t: 'VS-Nr.:\tKV 9988776' },
+];
+const KOPIE = {
+  // 1. Mitteilung: alle Klassen, Einleitung ohne Überschrift, Fallen in Befund/Schlussfolgerungen/Maßnahmen
+  a1: [...BRIEFKOPF, { t: 'Sanierungsvorschlag', stil: 'Titel', b: true }, { t: '(1. Mitteilung)' }, ...KOPF_A,
+    'Brandschaden',
+    'EINLEITUNGSMARKE: Nach dem Brand in der Backstube von Herrn Probemann wurden wir beauftragt.',
+    { t: '1. Veranlassung', u: true },
+    'VERANLASSUNGSMARKE: Am 03.03.2025 brannte in der Backstube Hauptstraße 12a in 52999 Probehausen ein Ofen.',
+    { t: '2. Aufgabenstellung', u: true },
+    'AUFGABENMARKE: Herr Probemann bat um Prüfung der Rußbelastung.',
+    { t: '3. Ortstermin und Probenahme', u: true },
+    'ORTSTERMINMARKE: Anwesend waren Herr Probemann und Frau Lindtal. Es wurden 6 Wischproben entnommen und auf Chlorid untersucht.',
+    { t: '4. Befund', u: true },
+    'Musterfall: In der Backstube von Herrn Probemann (Hauptstr. 12a) wurden erhöhte Chloridwerte gemessen.',
+    'Die Probemanns hatten die Halle bereits gelüftet; Lindtal-Probemann bestätigte das.',
+    'Die Proben wurden von Herrn Probenehmer entnommen und bei der Eurofins Umwelt West GmbH unter der Labornummer 925-2025-00052999 analysiert.',
+    'Die Probe 24-123456 aus dem KG zeigte 14 µg/cm² Chlorid (Tst).',
+    'Schaden 77 123 456/24 ist bei der Beispiel Versicherung gemeldet, Vertrag KV-9988776.',
+    'Telefonische Rückfrage unter 02405 123456.',
+    { tabelle: [['Probe', 'Ort', 'Chlorid'], ['W1', 'Musterbäckerei Probehausen', '14']] },
+    { t: '5. Schlussfolgerungen', u: true },
+    'Nach Rücksprache mit Frau Dr. Lindtal ist die Backstube zu reinigen.',
+    'Die Firma Kältebau Nord GmbH & Co. KG hat die Kühlung geprüft.',
+    { t: '6. Sanierungsmaßnahmen', u: true },
+    'Die Backstube in Probehausen ist trocken abzusaugen und feucht nachzureinigen.',
+    'Rückfragen an info@musterbaeckerei.example, Lieferung an Beispielallee 4.',
+    { t: '7. Arbeitsschutz', u: true },
+    'Bei den Arbeiten ist Schutzkleidung zu tragen.'],
+  // englische Fassung: nie kopiert
+  a1en: [...BRIEFKOPF, { t: 'Remediation proposal', stil: 'Titel' }, { t: '(1. Mitteilung)' }, { t: '4. Findings', u: true }, 'ENGLISCHMARKE: elevated chloride in the bakery.'],
+  // Ergänzung ohne Überschriften (im Fall mit Reitern: „Weiteres“) – nie kopiert
+  a1erg: [...BRIEFKOPF, { t: 'Stellungnahme', stil: 'Titel' }, { t: '(1. Mitteilung)' }, ...KOPF_A.slice(2, 3), 'WEITERESMARKE: Herr Probemann hat nachgefragt, ob der Ofen ersetzt werden muss. Musterfall.'],
+  // 2. Mitteilung: zweite Kopf-Form mit Auftraggeber (Nachname, der zugleich ein Thema ist), Einleitung ohne Überschrift
+  a2: [...BRIEFKOPF, { t: 'Untersuchungsbericht vom 04.04.2025', stil: 'berschrift1' }, { t: '(2. Mitteilung)' },
+    'Auftraggeber: Schimmel Sanierungstechnik GmbH', 'Musterweg 3', '52999 Probehausen', 'Schadenort: Hauptstraße 12a', 'Auftrags-Nr.: 12-3456',
+    'EINLEITUNG2MARKE: Am 02.04.2025 wurden bei Herrn Probemann sechs Kontrollwischproben entnommen.',
+    { t: 'Befunde', b: true },
+    'Musterfall: Die Kontrollwischproben der Schimmel Sanierungstechnik waren unauffällig; Auftrag 12-3456.',
+    'Schimmel wurde in keiner Probe nachgewiesen.',
+    { t: 'Schlussfolgerungen', b: true },
+    'Die Reinigung war erfolgreich.'],
+  // Fall mit Gebäude-Ordnern, einer davon ist eine Adresse
+  b1: [...BRIEFKOPF, { t: 'Sanierungsvorschlag', stil: 'Titel' }, { t: '(1. Mitteilung)' },
+    { t: 'VN:\tGerda Feldmohn' }, { t: 'Risiko:\tBeispielstraße 5, 41999 Musterort' },
+    { t: '1. Veranlassung', u: true }, 'VERANLASSUNGSMARKE B.',
+    { t: '2. Befund', u: true }, 'Musterfall: Im Gebäude Beispielstraße 5 wurde Ruß festgestellt; Frau Feldmohn war nicht anwesend.',
+    { t: '3. Sanierungsmaßnahmen', u: true }, 'Die Decken in Musterort sind zu reinigen.'],
+  b2: [...BRIEFKOPF, { t: 'Sanierungsvorschlag', stil: 'Titel' }, { t: '(1. Mitteilung)' },
+    { t: 'VN:\tGerda Feldmohn' }, { t: 'Risiko:\tBeispielstraße 5, 41999 Musterort' },
+    { t: '1. Veranlassung', u: true }, 'VERANLASSUNGSMARKE B.',
+    { t: '2. Befund', u: true }, 'Musterfall: Im Neubau war die Rußbelastung gering.'],
+  // Kurzbericht ohne Überschriften – es wird nur die Zeile „Untersucht“ kopiert
+  c1: [...BRIEFKOPF, { t: 'Untersuchungsbericht', stil: 'Titel' }, { t: '(1. Mitteilung)' }, { t: 'VN:\tHanna Kurzweg' },
+    'OHNEMARKE: Musterfall bei Frau Kurzweg. Es wurden zwei Materialproben entnommen und auf Asbest untersucht. Asbest wurde nicht nachgewiesen.'],
+  // Bericht ohne erkannten Kopf – startet abgewählt
+  d1: [...BRIEFKOPF, { t: 'Sanierungsvorschlag', stil: 'Titel' }, { t: '(1. Mitteilung)' },
+    { t: '1. Befund', u: true }, 'Musterfall: Herr Ohnekopf zeigte uns den Keller. Die Wischproben ergaben 3 µg/cm² Chlorid.',
+    { t: '2. Sanierungsmaßnahmen', u: true }, 'Der Keller ist zu reinigen.'],
+};
+const KOPIE_ORDNER = { a: '25.0815 Musterbäckerei Probehausen Tst', b: '24.0777 Beispielstraße 5 Musterort Dr. Ka', c: '23.0450 Kurzweg Prüfstadt Ben Luc', d: '22.00999 Ohnekopf Teststadt Tst' };
+// Für den Browser-Test: das private Dateisystem von Chrome (OPFS) legt Ordner mit Umlauten/ß nicht an – dort ASCII-Namen
+const KOPIE_ORDNER_OPFS = { a: '25.0815 Musterbaeckerei Probehausen Tst', b: '24.0777 Beispielstrasse 5 Musterort Dr. Ka', c: '23.0450 Kurzweg Pruefstadt Ben Luc', d: '22.00999 Ohnekopf Teststadt Tst' };
+/** Archiv nur für die Kopie-Tests (Browser) */
+function archivKopie() {
+  const d = k => docx(KOPIE[k], 0, k), O = KOPIE_ORDNER_OPFS;
+  return {
+    [O.a + '/Mitteilungen/1. Mitteilung.docx']: d('a1'),
+    [O.a + '/Mitteilungen/1. Mitteilung_Englisch.docx']: d('a1en'),
+    // „Ergaenzung“: das private Dateisystem von Chrome (OPFS, nur im Test) nimmt diesen Dateinamen mit „ä“ nicht an; LexiKit kennt beide Schreibweisen
+    [O.a + '/Mitteilungen/1. Mitteilung Ergaenzung.docx']: d('a1erg'),
+    [O.a + '/Mitteilungen/2. Mitteilung.docx']: d('a2'),
+    [O.b + '/Beispielstrasse 5/1. Mitteilung.docx']: d('b1'),
+    [O.b + '/Neubau/1. Mitteilung.docx']: d('b2'),
+    [O.c + '/Mitteilungen/1. Mitteilung.docx']: d('c1'),
+    [O.d + '/Mitteilungen/1. Mitteilung.docx']: d('d1'),
+    '_LexiKit/': null,
+  };
+}
+
+module.exports = { docx, zip, documentXml, BERICHTE, archiv, KOPIE, KOPIE_ORDNER, KOPIE_ORDNER_OPFS, archivKopie };
