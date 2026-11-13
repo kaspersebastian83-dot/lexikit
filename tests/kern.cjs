@@ -110,7 +110,7 @@ let n = 0; const test = async (name, f) => { await f(); n++; console.log('ok', n
       { ids: ['chlorid', 'sap'], namen: ['Chlorid', 'Sulfat, Phosphat'], proben: [{ n: 12, art: 'Wischproben' }] });
     assert.deepEqual(ids('Asbest wurde in keiner Probe nachgewiesen.'), ['asbest'], '„nicht nachgewiesen“ ist ein Ergebnis');
     assert.deepEqual(ids('Die Proben wurden auf die 16 Einzelkomponenten der polycyclischen aromatischen Kohlenwasserstoffe analysiert.'), ['pak']);
-    assert.deepEqual(ids('Es wurden dreizehn Abklatschproben entnommen und auf Enterobakterien untersucht.'), ['faekal']);
+    assert.deepEqual(ids('Es wurden dreizehn Abklatschproben entnommen und auf Enterobakterien untersucht.'), ['faekal'], 'Enterobakterien sind Fäkalkeime, nicht „Bakterien“ allgemein');
     assert.deepEqual(u('Zwei Luftproben ergaben 300 KBE/m³ Schimmelpilze.').proben, [{ n: 2, art: 'Luftproben' }]);
     assert.deepEqual(u('Zusätzlich wurde eine Brandschuttmischprobe entnommen und nach DepV untersucht.').proben, [{ n: 1, art: 'Brandschuttmischprobe' }]);
     assert.deepEqual(ids('Die Probe sollte auf holzzerstörende Pilze untersucht werden.'), ['holzpilze'], 'Aufgabe, keine Empfehlung');
@@ -123,7 +123,9 @@ let n = 0; const test = async (name, f) => { await f(); n++; console.log('ok', n
     assert.equal(u('Wir empfehlen Kontrollwischproben auf Chlorid.'), null);
     assert.equal(u('Vor dem Rückbau ist die Dacheindeckung mittels Materialprobe auf Asbest zu prüfen.'), null);
     assert.equal(u('Die Pakete aus Polyvinylchlorid wurden beprobt.'), null, 'PAK ≠ Paket, Chlorid ≠ Polyvinylchlorid');
-    assert.equal(u('Die 300 KBE/m³ betreffen sonstige Bakterien.'), null, '„KBE“ allein ist kein Schimmel');
+    assert.deepEqual(ids('Die 300 KBE/m³ betreffen sonstige Bakterien.'), ['bakterien'], '„KBE“ allein ist kein Schimmel');
+    assert.deepEqual(ids('Die Proben wurden auf Schimmelpilze und Bakterien untersucht.'), ['schimmel', 'bakterien']);
+    assert.deepEqual(ids('Die bakterielle Belastung der Materialprobe war gering.'), ['bakterien']);
     assert.deepEqual(ids('Drei Materialproben der Mineralfaserdämmung wurden einer sensorischen Prüfung auf Brandgeruch unterzogen.'), ['geruch'], 'Mineralwolle als Material ist kein KMF-Befund');
     assert.deepEqual(ids('Die Probe wurde auf künstliche Mineralfasern (KMF) untersucht.'), ['kmf']);
     // Probenzahlen: keine Teilmengen
@@ -161,12 +163,14 @@ let n = 0; const test = async (name, f) => { await f(); n++; console.log('ok', n
     const f = fall('24.0412');
     assert.deepEqual(f.berichte.map(b => b.datei), ['1. Mitteilung.docx', '1. Mitteilung_Englisch.docx', '2. Mitteilung.docx']);
     assert.deepEqual(f.deutsch.map(b => b.datei), ['1. Mitteilung.docx', '2. Mitteilung.docx']);
-    assert.deepEqual(f.klassen, ['veranlassung', 'probenahme', 'befund', 'schluss', 'massnahmen', 'arbeitsschutz', 'weiteres']);
+    assert.deepEqual(f.klassen, ['veranlassung', 'probenahme', 'befund', 'schluss', 'massnahmen', 'arbeitsschutz'], 'kein „Weiteres“');
     assert.equal(K.sucheFaelle(FAELLE, { woerter: ['warehouse'] }).treffer.length, 0, 'englischer Text wird nicht durchsucht');
     for (const k of ['alles', ...f.klassen]) assert.ok(!K.bloecke(f, k).some(x => x.b.datei.includes('Englisch')), 'englischer Text in keinem Reiter');
     // Unterüberschrift „5.1 Wischproben“ bleibt im Befund; Betreffzeile „Brandschaden“ vor der 1. Überschrift ist kein Abschnitt
     assert.deepEqual(K.bloecke(f, 'befund').map(x => x.h), ['5. Befund', '5.1 Wischproben', 'Befunde']);
-    assert.deepEqual(K.bloecke(f, 'weiteres').map(x => [x.b.datei, x.h, x.p.length]), [['2. Mitteilung.docx', '', 2]], 'nur die Einleitung der 2. Mitteilung');
+    // Einleitung ohne Überschrift der 2. Mitteilung steht unter „Veranlassung“
+    assert.deepEqual(K.bloecke(f, 'veranlassung').map(x => [x.b.datei, x.h, x.p.length]), [['1. Mitteilung.docx', '1. Veranlassung', 1], ['1. Mitteilung.docx', '2. Aufgabenstellung', 1], ['2. Mitteilung.docx', '', 2]]);
+    assert.deepEqual(K.bloecke(f, 'weiteres'), []);
     assert.deepEqual(K.bloecke(f, 'massnahmen').map(x => x.h), ['6. Sanierungsmaßnahmen']);
   });
   await test('„Was war“: Veranlassung, sonst Aufgabenstellung, sonst erster Textblock', async () => {
@@ -174,6 +178,17 @@ let n = 0; const test = async (name, f) => { await f(); n++; console.log('ok', n
     assert.equal(fall('23.0700').wasWar.art, 'Aufgabenstellung'); assert.match(fall('23.0700').wasWar.text, /^Nach einem Rohrbruch/);
     assert.equal(fall('25.0075').wasWar.art, 'erster Textblock'); assert.match(fall('25.0075').wasWar.text, /^An der Rohrisolierung/);
     assert.equal(fall('26.0137').wasWar.art, 'erster Textblock');
+    // Bericht, der mit einer Einleitung ohne Überschrift beginnt: sie ist der erste Textblock, steht unter „Veranlassung“ und zählt in der Rangfolge so
+    const kurz = (pfad, p0, rest) => ({ pfad, projekt: pfad.split('/')[0], datei: '1. Mitteilung.docx', jahr: 2021, pnr: +pfad.slice(3, 7), nr: 1, abschnitte: [{ h: '', p: p0 }, ...rest] });
+    const k1 = K.faelleBauen([kurz('21.0010 K Tst/1. Mitteilung.docx', ['Wasserschaden', 'Am 03.03.2021 fand im Kellerraum ein weiterer Ortstermin statt; dabei wurde die Kellerassel-Falle geprüft.'], [{ h: 'Befunde', p: ['Der Estrich war trocken.'] }])])[0];
+    assert.deepEqual([k1.wasWar.art, k1.klassen], ['erster Textblock', ['veranlassung', 'befund']]); assert.match(k1.wasWar.text, /^Wasserschaden Am 03\.03\.2021|^Am 03\.03\.2021/);
+    assert.equal(K.sucheFaelle([k1], { woerter: ['Kellerassel'] }).treffer[0].rang, 1);
+    // … aber eine Veranlassung mit Überschrift geht vor (z. B. nach einem Satz aus dem Anschreiben)
+    const k2 = K.faelleBauen([kurz('21.0011 K Tst/1. Mitteilung.docx', ['als Anlage übersende ich Ihnen meinen Sanierungsvorschlag zu dem oben genannten Schaden'], [{ h: '1. Veranlassung', p: ['In der Werkstatt kam es zu einem Schwelbrand an einer Ladestation.'] }])])[0];
+    assert.match(k2.wasWar.text, /^In der Werkstatt/); assert.equal(k2.wasWar.art, 'Veranlassung');
+    // Bericht mit Überschriften, aber keiner bekannten: bleibt ganz unter „Weiteres“
+    const k3 = K.faelleBauen([kurz('21.0012 K Tst/1. Mitteilung.docx', ['Eine Einleitung, die lang genug ist, um als Text zu zählen, steht hier.'], [{ h: 'Anhang', p: ['Text im Anhang.'] }])])[0];
+    assert.deepEqual(k3.klassen, ['weiteres']);
     const lang = { pfad: '21.0001 X Tst/1. Mitteilung.docx', projekt: '21.0001 X Tst', datei: '1. Mitteilung.docx', jahr: 2021, pnr: 1, nr: 1,
       abschnitte: [{ h: '1. Veranlassung', p: ['Sehr geehrte Damen und Herren,', 'Probe · Ort', 'Erster Satz der Veranlassung mit etwas Länge. '.repeat(8).trim(), 'Zweiter Absatz. '.repeat(30).trim()] }] };
     const w = K.faelleBauen([lang])[0].wasWar.text;
@@ -200,9 +215,15 @@ let n = 0; const test = async (name, f) => { await f(); n++; console.log('ok', n
     // Fundstelle: Abschnitt und Absatz des Berichts
     const t = f.tags[2], teil = K.ableiten(t.b).teile.find(x => x.ai === t.ai);
     assert.equal(teil.h, '4. Probenahme'); assert.match(teil.p[t.pi], /Brandschuttmischprobe/);
-    const t6 = f.tags[4]; assert.equal(t6.b.datei, '2. Mitteilung.docx'); assert.match(K.ableiten(t6.b).teile.find(x => x.ai === t6.ai).p[t6.pi], /sechs Kontrollwischproben/, 'Einleitung ohne Überschrift zählt');
+    const t6 = f.tags[4], teil6 = K.ableiten(t6.b).teile.find(x => x.ai === t6.ai);
+    assert.equal(t6.b.datei, '2. Mitteilung.docx'); assert.match(teil6.p[t6.pi], /sechs Kontrollwischproben/, 'Einleitung ohne Überschrift zählt');
+    assert.deepEqual([teil6.k, teil6.h, teil6.vor], ['veranlassung', '', true]);
+    // … eine Veranlassung mit Überschrift dagegen nicht: „Untersucht“ sucht dort nicht
+    const nurV = K.faelleBauen([{ pfad: '21.0020 V Tst/1. Mitteilung.docx', projekt: '21.0020 V Tst', datei: '1. Mitteilung.docx', jahr: 2021, pnr: 20, nr: 1,
+      abschnitte: [{ h: '1. Veranlassung', p: ['Wir wurden beauftragt, zwölf Wischproben auf PAK zu untersuchen.'] }, { h: '2. Befund', p: ['Die Flächen waren sichtbar verrußt.'] }] }])[0];
+    assert.deepEqual(schilder(nurV), []);
     // andere Fälle
-    assert.deepEqual(schilder(fall('26.0137')), ['2 Wasserproben · Fäkalkeime']);
+    assert.deepEqual(schilder(fall('26.0137')), ['2 Wasserproben · Fäkalkeime', 'Bakterien']);
     assert.deepEqual(schilder(fall('25.0300')), ['Phosphat']);
     assert.deepEqual(schilder(fall('23.0700')), ['Schimmel'], '„In zwei Materialproben“ ist keine Gesamtzahl; Asbest im Arbeitsschutz zählt nicht');
     assert.deepEqual(schilder(fall('23.0502')), ['1 Brandschuttmischprobe · DepV'], 'ohne Probenahme-Abschnitt: Zahl aus dem Befund (Unterabschnitt „3. Entsorgung“)');

@@ -592,7 +592,7 @@ code{font-size:.95em}
     { id: 'schluss', name: 'Schlussfolgerungen', re: /schlu(?:ss|ß)folgerung|bewertung|stellungnahme/i },
     { id: 'massnahmen', name: 'Sanierungsmaßnahmen', re: /ma(?:ß|ss)nahme|sanierung/i },
     { id: 'arbeitsschutz', name: 'Arbeitsschutz', re: /arbeitsschutz/i },
-    { id: 'weiteres', name: 'Weiteres', re: null },   // Text unter keiner bekannten Überschrift – nur gezeigt, wenn es ihn gibt
+    { id: 'weiteres', name: 'Weiteres', re: null },   // Bericht ganz ohne bekannte Überschrift in einem Fall mit Reitern – nur gezeigt, wenn es ihn gibt
   ];
   const klassenName = id => (KLASSEN.find(k => k.id === id) || { name: '' }).name;
   /** Überschrift → Klasse ('' = unbekannt). Mehrere Stichwörter: das erste in der Überschrift zählt; „Arbeitsschutzmaßnahmen“
@@ -634,6 +634,7 @@ code{font-size:.95em}
     { id: 'voc', name: 'VOC', re: new RegExp(KUERZEL('T?VOC').source + '|flüchtige[nr]? organische') },
     { id: 'schimmel', name: 'Schimmel', re: /[Ss]chimmel/ },   // „KBE“ allein zählt nicht – so werden auch Bakterien angegeben
     { id: 'faekal', name: 'Fäkalkeime', re: /E\.\s?coli|Escherichia|[Cc]oliforme|Enterokokken|Enterobakteri|Fäkalkeim|Fäkalbakteri/ },
+    { id: 'bakterien', name: 'Bakterien', re: new RegExp(VOR + '[Bb]akteri') },   // allgemein; „Enterobakterien“ stehen bei den Fäkalkeimen
     { id: 'holzpilze', name: 'Holzzerstörende Pilze', re: /[Hh]olzzerstörend|Hausschwamm/ },
     { id: 'feuchte', name: 'Feuchtemessung', re: /[Ff]euchtemess|Feuchtigkeitsmess|Materialfeuchte|Feuchtegehalt|CM-Messung/ },
     { id: 'geruch', name: 'Brandgeruch', re: /Brandgeruch|[Ss]ensorische[nr]? Prüfung|Geruchsprüfung|Geruchsprobe/ },
@@ -708,17 +709,21 @@ code{font-size:.95em}
       // mit in den Index gelesen hat, fallen hier wieder heraus – mit bis zu drei kurzen Folgezeilen (Anschrift)
       teile.push({ k: k || 'weiteres', h, p: !h && ai === 0 ? ohneKopf(a.p) : a.p, ai });
     });
-    // Vorspann vor der ersten bekannten Überschrift ohne richtigen Text (Betreffzeile „Wasserschaden“, E-Mail-Adressen, eine
-    // abgewandelte Marke „(1. Mitteilung Gebäude A)“) zählt nicht als Text
-    if (teile.some(t => t.k !== 'weiteres')) teile = teile.filter(t => t.k !== 'weiteres' || t.p.some(x => x.length >= 40));
+    // Hat der Bericht bekannte Überschriften, ist der Text davor ohne Überschrift seine Einleitung – sie steht unter „Veranlassung“
+    // (kurze Folgeberichte beginnen so). Vorspann ohne richtigen Text (Betreffzeile „Wasserschaden“, E-Mail-Adressen, eine
+    // abgewandelte Marke „(1. Mitteilung Gebäude A)“) zählt nicht als Text.
+    if (teile.some(t => t.k !== 'weiteres')) {
+      if (!teile[0].h) { teile[0].k = 'veranlassung'; teile[0].vor = true; }
+      teile = teile.filter(t => (!t.vor && t.k !== 'weiteres') || t.p.some(x => x.length >= 40));
+    }
     const englisch = ENGLISCH.test(b.datei || ''), roh = {};
     if (!englisch) for (const t of teile) (roh[t.k] || (roh[t.k] = [])).push(t.p.join('\n'));
     const kl = {}; for (const k in roh) kl[k] = klein(roh[k].join('\n'));
-    // Untersucht: nur in Ortstermin/Probenahme und Befund – und im Vorspann ohne Überschrift (kurze Folgeberichte nennen dort,
-    // was beprobt wurde). Berichte ohne Überschriften: ganzer Text, gleiche Satzregel
+    // Untersucht: nur in Ortstermin/Probenahme und Befund – und in der Einleitung ohne Überschrift (kurze Folgeberichte nennen
+    // dort, was beprobt wurde), nicht in einer Veranlassung mit Überschrift. Berichte ohne Überschriften: ganzer Text, gleiche Satzregel
     const params = {}, zahlen = [];
     if (!englisch) for (const t of teile) {
-      if (hat && t.k !== 'probenahme' && t.k !== 'befund' && !(t.k === 'weiteres' && !t.h)) continue;
+      if (hat && t.k !== 'probenahme' && t.k !== 'befund' && !t.vor) continue;
       t.p.forEach((p, pi) => {
         const tab = p.includes(' · ');
         for (const s of tab ? [p] : saetze(p)) {
@@ -773,7 +778,8 @@ code{font-size:.95em}
       const erster = f.deutsch[0]; f.wasWar = { text: '', art: '', bericht: '', strang: '' };
       if (erster) {
         const d = erster._d, mitText = t => t.p.some(x => x.length >= 25 && !x.includes(' · '));
-        const v = d.teile.find(t => t.k === 'veranlassung' && mitText(t)), t = v || d.teile.find(mitText) || d.teile.find(x => x.p.length);
+        // eine Veranlassung/Aufgabenstellung mit Überschrift geht der Einleitung ohne Überschrift vor
+        const v = d.teile.find(t => t.k === 'veranlassung' && !t.vor && mitText(t)), t = v || d.teile.find(mitText) || d.teile.find(x => x.p.length);
         if (t) f.wasWar = { text: anfang(t.p), art: v ? (/veranlassung/i.test(t.h) || !/aufgabenstellung/i.test(t.h) ? 'Veranlassung' : 'Aufgabenstellung') : 'erster Textblock', bericht: d.name, strang: d.strang.name };
       }
       // Rangfolge: ohne Veranlassung/Aufgabenstellung im ganzen Fall zählt ersatzweise der „Was war“-Text

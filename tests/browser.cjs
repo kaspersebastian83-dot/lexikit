@@ -136,11 +136,11 @@ const b64 = x => (Buffer.isBuffer(x) ? x : Buffer.from(String(x))).toString('bas
     assert.equal(await page.locator('#themen [aria-pressed="true"] span').textContent(), 'Löschpulver', 'Thema bleibt gewählt');
     // Fall öffnen: Reiter nur für vorhandene Klassen, erster Reiter mit Fund, Verlauf mit englischer Fassung
     await k1.locator('[data-oeffnen=""]').click();
-    assert.deepEqual(await k1.locator('.tab').allTextContents(), ['Veranlassung', 'Probenahme', 'Befund', 'Schlussfolgerungen', 'Sanierungsmaßnahmen', 'Arbeitsschutz', 'Weiteres']);
+    assert.deepEqual(await k1.locator('.tab').allTextContents(), ['Veranlassung', 'Probenahme', 'Befund', 'Schlussfolgerungen', 'Sanierungsmaßnahmen', 'Arbeitsschutz']);
     assert.equal(await k1.locator('.tab[aria-selected="true"]').textContent(), 'Veranlassung');
     assert.deepEqual(await k1.locator('.gitter .lab').allTextContents(), ['Was war', 'Untersucht', 'Verlauf']);
     assert.match(await k1.locator('.gitter').nth(1).textContent(), /1\. Mitteilung · Sanierungsvorschlag → 1\. Mitteilung_Englisch · englische Fassung → 2\. Mitteilung · Untersuchungsbericht/);
-    assert.deepEqual(await k1.locator('.block-kopf span').allTextContents(), ['1. Mitteilung · 1. Veranlassung', '1. Mitteilung · 2. Aufgabenstellung']);
+    assert.deepEqual(await k1.locator('.block-kopf span').allTextContents(), ['1. Mitteilung · 1. Veranlassung', '1. Mitteilung · 2. Aufgabenstellung', '2. Mitteilung'], 'Einleitung der 2. Mitteilung steht unter „Veranlassung“');
     await k1.locator('[data-zu]').click();
     assert.equal(await k1.locator('.tab').count(), 0, 'wieder zu');
     // „Maßnahmen zeigen“
@@ -164,12 +164,12 @@ const b64 = x => (Buffer.isBuffer(x) ? x : Buffer.from(String(x))).toString('bas
     assert.equal(await k1.locator('.tab[aria-selected="true"]').textContent(), 'Probenahme');
     assert.match(await k1.locator('p.fund').textContent(), /^Zusätzlich wurde eine Brandschuttmischprobe entnommen/);
     await k1.locator('.tag', { hasText: '6 Kontrollwischproben' }).click();
-    assert.equal(await k1.locator('.tab[aria-selected="true"]').textContent(), 'Weiteres');
+    assert.equal(await k1.locator('.tab[aria-selected="true"]').textContent(), 'Veranlassung');
     assert.match(await k1.locator('p.fund').textContent(), /sechs Kontrollwischproben entnommen/);
-    assert.equal(await k1.locator('.block-kopf span').textContent(), '2. Mitteilung');
+    assert.equal(await k1.locator('.block', { has: page.locator('p.fund') }).locator('.block-kopf span').textContent(), '2. Mitteilung');
     // weder Berichtskopf (beide Formen) noch englischer Text in irgendeinem Reiter
     let allerText = '';
-    for (const k of ['veranlassung', 'probenahme', 'befund', 'schluss', 'massnahmen', 'arbeitsschutz', 'weiteres']) { await k1.locator(`[data-tab="${k}"]`).click(); allerText += await k1.textContent(); }
+    for (const k of ['veranlassung', 'probenahme', 'befund', 'schluss', 'massnahmen', 'arbeitsschutz']) { await k1.locator(`[data-tab="${k}"]`).click(); allerText += await k1.textContent(); }
     for (const v of ['Muster Sanierung', 'Beispielgasse', 'Musterweg 3', '12-3456', '@', 'Beispielperson', 'Muster Versicherung', 'forklift', 'warehouse']) assert.ok(!allerText.includes(v), 'nicht gezeigt: ' + v);
     await k1.locator('[data-zu]').click();
     // Thema abwählen (noch einmal antippen); englischer Text und Überschriften werden nicht gefunden
@@ -187,7 +187,7 @@ const b64 = x => (Buffer.isBuffer(x) ? x : Buffer.from(String(x))).toString('bas
     await bild('4-leer');
     await page.fill('#q', ''); await page.waitForTimeout(400);
     // Filter „Untersucht auf“ (aus dem Wörterbuch, nur was erkannt wurde) und Jahr
-    assert.deepEqual(await page.$$eval('#chips [data-param]', x => x.map(e => e.textContent)), ['PAK', 'Chlorid', 'Sulfat · Ammonium · Phosphat', 'Asbest', 'DepV', 'Schimmel', 'Fäkalkeime', 'Brandgeruch']);
+    assert.deepEqual(await page.$$eval('#chips [data-param]', x => x.map(e => e.textContent)), ['PAK', 'Chlorid', 'Sulfat · Ammonium · Phosphat', 'Asbest', 'DepV', 'Schimmel', 'Fäkalkeime', 'Bakterien', 'Brandgeruch']);
     await page.click('#chips [data-param="sap"]');
     assert.equal(await page.textContent('#ergebnisZeile'), '2 Fälle · neueste zuerst');
     assert.deepEqual(await faelleH(), ['25.0300', '24.0412']);

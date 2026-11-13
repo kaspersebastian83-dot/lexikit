@@ -72,10 +72,11 @@ Ein **Fall** ist ein Projektordner mit allen seinen Mitteilungen. Alles Folgende
 - **Abschnittsklassen** nach Stichwort in der Überschrift (Zählung am echten Archiv, 13.11.2026): Veranlassung (auch
   Aufgabenstellung) · Probenahme (Ortstermin, Besichtigung, Probenahme) · Befund (Befund, Ergebnisse, Mikrobiologie, sensorische
   Prüfung) · Schlussfolgerungen (auch Bewertung, Stellungnahme) · Sanierungsmaßnahmen (Maßnahmen, Sanierung) · Arbeitsschutz.
-  Kein „Bewertung“, kein „Entsorgung“. Unbekannte Unterüberschriften („5.1 Wischproben“) bleiben in der Klasse darüber. Text vor
-  der ersten bekannten Überschrift steht unter **Weiteres** (meist die Einleitung kurzer Folgeberichte); eine bloße Betreffzeile
-  („Wasserschaden“) zählt nicht.
-- **Was war**: Anfang von Veranlassung oder Aufgabenstellung der ersten Mitteilung, sonst der erste Textblock.
+  Kein „Bewertung“, kein „Entsorgung“. Unbekannte Unterüberschriften („5.1 Wischproben“) bleiben in der Klasse darüber. Die
+  **Einleitung ohne Überschrift** vor der ersten bekannten Überschrift (so beginnen kurze Folgeberichte) steht unter
+  **Veranlassung**; eine bloße Betreffzeile („Wasserschaden“) zählt nicht. **Weiteres** gibt es nur noch für Berichte ganz ohne
+  bekannte Überschrift in einem Fall, der sonst Reiter hat.
+- **Was war**: Anfang von Veranlassung oder Aufgabenstellung der ersten Mitteilung (mit Überschrift), sonst der erste Textblock.
 - **Untersucht** heißt gemessen, nicht erwähnt: Parameter aus dem Wörterbuch `PARAMETER` zählen nur in Probenahme und Befund (und in
   der Einleitung ohne Überschrift), und nur in einem Satz, der von Probe, Messung oder Ergebnis spricht und nicht sagt, dass es
   unterblieb oder erst empfohlen wird; Tabellenzeilen zählen so. „Nicht nachgewiesen“ ist ein Ergebnis. Berichte ohne
