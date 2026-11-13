@@ -415,6 +415,7 @@ code{font-size:.95em}
   const MARKE = /^\(\s*\d{1,2}\s*\.?\s*mit+e?i+l+u?n+g\s*\)$/i;
   const KOPF = /^(projekt\s*-?\s*n(umme)?r\.?|projekt|schaden\s*vom|schadentag|schadendatum|vn|versicherungsnehmer(in)?|risiko(ort)?|versicherer|versicherung|schaden\s*-?\s*n(umme)?r\.?|schadennummer|vs\s*-?\s*nr\.?|ihr\s+zeichen|unser\s+zeichen|aktenzeichen)\s*(:|\t|$)/i;
   const KEINE_UEBERSCHRIFT = /^(tabelle|tab\.|abb\.?|abbildung|bild|foto|anlage)\s*\d/i;
+  const STIL_TITEL = /titel|title|berschrift|heading/i;
   const FORMEN = /(sanierungsvorschlag|untersuchungsbericht|stellungnahme|kurzbericht|messbericht|ergänzungsbericht|gutachten)/i;
 
   function istKopf(a) {
@@ -425,11 +426,17 @@ code{font-size:.95em}
     const iMarke = liste.findIndex(a => !a.tabelle && MARKE.test(a.t));
     const vorn = iMarke >= 0 ? liste.slice(0, iMarke) : liste.slice(0, 25);
     let form = '';
-    const stilForm = vorn.find(a => /titel|title|berschrift|heading/i.test(a.stil) && FORMEN.test(a.t)) || vorn.find(a => !a.tabelle && FORMEN.test(a.t) && a.t.length < 80);
+    const stilForm = vorn.find(a => STIL_TITEL.test(a.stil) && FORMEN.test(a.t)) || vorn.find(a => !a.tabelle && FORMEN.test(a.t) && a.t.length < 80);
     if (stilForm) form = stilForm.t.match(FORMEN)[1].replace(/^./, c => c.toUpperCase());
     let rumpf;
     if (iMarke >= 0) rumpf = liste.slice(iMarke + 1);
-    else { const iForm = stilForm ? liste.indexOf(stilForm) : -1; rumpf = liste.slice(iForm + 1); }
+    else {
+      // Ohne Marke: Text beginnt nach dem Titel. Die Grenze hängt nicht an einer bekannten Berichtsform – letzter Absatz mit
+      // Titel-/Überschrift-Formatvorlage am Anfang (vor dem ersten langen Absatz), sonst die erkannte Form
+      const iLang = liste.findIndex(a => !a.tabelle && a.t.length >= 120), bis = Math.min(iLang < 0 ? liste.length : iLang, 25);
+      let iTitel = -1; for (let i = 0; i < bis; i++) if (!liste[i].tabelle && STIL_TITEL.test(liste[i].stil)) iTitel = i;
+      rumpf = liste.slice(Math.max(iTitel, stilForm ? liste.indexOf(stilForm) : -1) + 1);
+    }
     const abschnitte = []; let akt = null, nachKopf = false;
     for (const a of rumpf) {
       if (istKopf(a)) { nachKopf = true; continue; }
@@ -685,7 +692,8 @@ const S = {
   form: null,                                 // offenes Themenformular { id|null, basis }
   ansicht: 'zugang', meldungen: [],
 };
-const L = { aktiv: false, stop: false, art: '', projekte: 0, fertig: 0, gelesen: 0, neu: 0, weg: 0, fehler: [], jahr: null, ende: '' };
+let archivGen = 0;   // je Verbindung zu einem Archivordner eine neue Nummer – ein Einlesen der alten Verbindung ändert nichts mehr
+const L = { laeuft: null, aktiv: false, stop: false, art: '', projekte: 0, fertig: 0, gelesen: 0, neu: 0, weg: 0, fehler: [], jahr: null, ende: '' };
 
 /* ---------- Ansichten ---------- */
 function zeige(ansicht) {
@@ -774,6 +782,7 @@ const ohneCache = (k, v) => k[0] === '_' ? undefined : v;
 
 /* ---------- Laden ---------- */
 async function laden() {
+  await laufStoppen();   // ein Einlesen der vorigen Verbindung darf nichts mehr in den neuen Stand schreiben
   // Themen
   await themenLaden(true);
   // Index je Jahr
@@ -884,20 +893,29 @@ async function leseBericht(p, d, pfad) {
   } catch (err) { e.fehler = String(err && err.message || err); L.fehler.push(pfad + ' – ' + e.fehler); }
   return e;
 }
+/** Laufendes Einlesen anhalten und abwarten, bis es wirklich aufgehört hat (vor Archivwechsel und Neuladen) */
+async function laufStoppen() {
+  archivGen++;
+  if (!L.aktiv) return;
+  L.stop = true;
+  try { await L.laeuft; } catch (e) { /* schon gemeldet */ }
+}
 async function einlesen(opt) {
   if (L.aktiv) { if (opt.zeigen) zeige('einlesen'); return; }
+  const gen = archivGen, veraltet = () => gen !== archivGen, archiv = S.archiv;
+  let fertig; L.laeuft = new Promise(r => { fertig = r; });
   Object.assign(L, { aktiv: true, stop: false, art: opt.alle ? 'alle' : opt.erst ? 'erst' : 'pruefen', projekte: 0, fertig: 0, gelesen: 0, neu: 0, weg: 0, fehler: [], jahr: null, ende: '', erst: !!opt.erst });
   if (opt.zeigen) zeige('einlesen');
   zeigeLauf();
   try {
     const projekte = [];
-    for await (const [name, h] of S.archiv.entries()) if (h.kind === 'directory') { const p = K.projektOrdner(name); if (p) projekte.push({ name, h, jahr: p.jahr, nr: p.nr }); }
+    for await (const [name, h] of archiv.entries()) if (h.kind === 'directory') { const p = K.projektOrdner(name); if (p) projekte.push({ name, h, jahr: p.jahr, nr: p.nr }); }
     projekte.sort((a, b) => (b.jahr - a.jahr) || (b.nr - a.nr));   // neueste zuerst
     L.projekte = projekte.length; zeigeLauf();
     const gesehen = new Set(projekte.map(p => p.name));
     let jahrBisher = null, zuletzt = Date.now();
     for (const p of projekte) {
-      if (L.stop) break;
+      if (L.stop || veraltet()) break;
       if (jahrBisher !== null && p.jahr !== jahrBisher) await speichern();   // ein Jahr fertig → speichern
       jahrBisher = p.jahr; L.jahr = p.jahr;
       let dateien;
@@ -905,28 +923,34 @@ async function einlesen(opt) {
       const wahl = K.auswaehlen(dateien, p.name), pfade = new Set();
       let ganz = true;
       for (const d of wahl) {
-        if (L.stop) { ganz = false; break; }
+        if (L.stop || veraltet()) { ganz = false; break; }
         const pfad = [p.name, ...d.teile].join('/'); pfade.add(pfad);
         const alt = S.berichte.get(pfad);
         if (!opt.alle && alt && !alt.fehler && alt.stempel && alt.stempel.groesse === d.groesse && alt.stempel.geaendert === d.geaendert) continue;
-        merke(await leseBericht(p, d, pfad)); L.gelesen++; if (!alt) L.neu++;
+        const e = await leseBericht(p, d, pfad);
+        if (veraltet()) { ganz = false; break; }   // Archiv inzwischen gewechselt
+        merke(e); L.gelesen++; if (!alt) L.neu++;
         zeigeLauf();
       }
       // nur nach vollständig gesehenem Projekt: was nicht mehr ausgewählt ist (gelöscht, ersetzt), fällt heraus
+      if (veraltet()) break;
       if (ganz) for (const [pfad, b] of S.berichte) if (b.projekt === p.name && !pfade.has(pfad)) weg(pfad);
       L.fertig++;
-      if (Date.now() - zuletzt > 90000) { await speichern(); zuletzt = Date.now(); }
+      if (Date.now() - zuletzt > 90000 && !veraltet()) { await speichern(); zuletzt = Date.now(); }
       geaendert(); zeigeLauf();
     }
     // Projektordner, die es nicht mehr gibt (umbenannt, verschoben) – nur nach ganzem Durchlauf
-    if (!L.stop) for (const [pfad, b] of S.berichte) if (!gesehen.has(b.projekt)) weg(pfad);
+    if (!L.stop && !veraltet()) for (const [pfad, b] of S.berichte) if (!gesehen.has(b.projekt)) weg(pfad);
   } catch (e) {
+    if (!veraltet()) {
     L.fehler.push('Archivordner – ' + (e.message || e.name));
     meldung('err', 'Das Einlesen wurde unterbrochen: ' + esc(e.message || e.name) + '. Was bis dahin gelesen war, bleibt.', 'lauf');
+    }
   }
-  await speichern();
+  if (!veraltet()) await speichern();
   L.aktiv = false; L.ende = jetztIso();
-  geaendert(); zeigeLauf();
+  fertig();
+  if (!veraltet()) { geaendert(); zeigeLauf(); }
 }
 
 /* ---------- Anzeige des Einlesens ---------- */
@@ -1100,7 +1124,11 @@ async function archivWaehlen() {
   let h; try { h = await window.showDirectoryPicker({ id: 'lexikit-archiv', mode: 'read' }); } catch (e) { return; }
   if (/^_LexiKit$/i.test(h.name) || K.projektOrdner(h.name)) { toast(`„${esc(h.name)}“ ist ein Unterordner. Bitte den Archivordner wählen, in dem alle Projektordner liegen.`); return; }
   try { await SUITE.set('lexikit-archiv', h); } catch (e) { /* nur für diese Sitzung */ }
-  S.archiv = h; S.berichte.clear(); S.aend = {}; S.themen = null; S.meldungen = []; geaendert();
+  await archivWechseln(h);
+}
+async function archivWechseln(h) {
+  await laufStoppen();   // erst das Einlesen des alten Archivs beenden, dann den Stand leeren
+  S.archiv = h; S.lx = null; S.berichte.clear(); S.aend = {}; S.themen = null; S.meldungen = []; geaendert();
   await verbinden(true);
 }
 
@@ -1160,7 +1188,7 @@ function verdrahten() {
   window.addEventListener('beforeunload', e => { if (L.aktiv && S.schreiben) { e.preventDefault(); e.returnValue = ''; } });
 }
 verdrahten();
-window.LexiKit = { S, L, einlesen, speichern, version: APP_VERSION };   // für Tests
+window.LexiKit = { S, L, einlesen, speichern, archivWechseln, version: APP_VERSION };   // für Tests
 start().catch(e => zugang('Fehler beim Start', esc(e.message || e)));
 </script>
 </body>

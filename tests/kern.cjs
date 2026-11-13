@@ -47,6 +47,12 @@ let n = 0; const test = async (name, f) => { await f(); n++; console.log('ok', n
     const { b } = await lesen(BERICHTE.ohneMarke);
     assert.deepEqual(b.abschnitte.map(a => a.h), ['1. Veranlassung']);
   });
+  await test('ohne Marke und mit unbekanntem Titel: Briefkopf bleibt draußen', async () => {
+    const { b } = await lesen(BERICHTE.ohneMarkeTitel);
+    assert.equal(b.form, '');
+    assert.deepEqual(b.abschnitte.map(a => a.h), ['1. Veranlassung']);
+    const t = alles(b); for (const v of ['Musterbüro', 'Beispielstraße', 'Brandursachenbericht']) assert.ok(!t.includes(v), v);
+  });
   await test('kaputte Datei → Fehler statt Absturz', async () => {
     const l = leser(Buffer.from('keine Word-Datei'));
     await assert.rejects(K.docxLesen(l.lies, 16, inflate), /keine Word-Datei/);

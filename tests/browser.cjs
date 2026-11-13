@@ -33,6 +33,8 @@ const b64 = x => (Buffer.isBuffer(x) ? x : Buffer.from(String(x))).toString('bas
         () => { if (req.onsuccess) req.onsuccess({ target: req }); });
       return req;
     };
+    const ab = Blob.prototype.arrayBuffer;   // mit window.__langsam liest jede Datei 300 ms (Einlesen „läuft“ sichtbar lange)
+    Blob.prototype.arrayBuffer = async function () { if (window.__langsam) await new Promise(r => setTimeout(r, 300)); return ab.call(this); };
     if (sessionStorage.getItem('schreibprobe-kaputt')) {   // Schreibprobe in _LexiKit schlägt fehl
       const cw = FileSystemFileHandle.prototype.createWritable;
       FileSystemFileHandle.prototype.createWritable = function () { if (this.name.startsWith('.lexikit-schreibprobe')) return Promise.reject(new DOMException('Zugriff verweigert', 'NotAllowedError')); return cw.apply(this, arguments); };
@@ -185,7 +187,31 @@ const b64 = x => (Buffer.isBuffer(x) ? x : Buffer.from(String(x))).toString('bas
     const i24b = JSON.parse(await page.evaluate(() => __lies('_LexiKit/lexikit-index-2024.json')));
     assert.equal(i24b.berichte[fremd].abschnitte[0].h, 'Vom anderen PC', 'Eintrag des anderen PCs nicht überschrieben');
 
-    /* ---------- 5. Schreibprobe schlägt fehl ---------- */
+    /* ---------- 5. Archiv wechseln, während eingelesen wird (Codex-Hinweis PR #1) ---------- */
+    const ZWEIT = '21.0001 Zweitarchiv Musterort Tst';
+    await page.evaluate(async ([p, b]) => {
+      const a2 = await (await navigator.storage.getDirectory()).getDirectoryHandle('Archiv2', { create: true });
+      await a2.getDirectoryHandle('_LexiKit', { create: true });
+      const d = await (await a2.getDirectoryHandle(p, { create: true })).getDirectoryHandle('Mitteilungen', { create: true });
+      const w = await (await d.getFileHandle('1. Mitteilung.docx', { create: true })).createWritable(); await w.write(Uint8Array.from(atob(b), c => c.charCodeAt(0))); await w.close();
+    }, [ZWEIT, b64(docx(BERICHTE.ohne, 0, 'zweit'))]);
+    await page.evaluate(() => { window.__langsam = true; LexiKit.einlesen({ alle: true }); });
+    await page.waitForFunction(() => LexiKit.L.gelesen >= 1);
+    await page.evaluate(async () => { const a2 = await (await navigator.storage.getDirectory()).getDirectoryHandle('Archiv2'); await LexiKit.archivWechseln(a2); window.__langsam = false; });
+    await lauf();
+    assert.deepEqual(await page.evaluate(() => [...LexiKit.S.berichte.keys()]), [ZWEIT + '/Mitteilungen/1. Mitteilung.docx'], 'nur das neue Archiv im Speicher');
+    const lx2 = await page.evaluate(async () => { const d = await (await (await navigator.storage.getDirectory()).getDirectoryHandle('Archiv2')).getDirectoryHandle('_LexiKit'); const aus = {};
+      for await (const [n, h] of d.entries()) aus[n] = await (await h.getFile()).text(); return aus; });
+    assert.deepEqual(Object.keys(lx2).sort(), ['lexikit-index-2021.json', 'lexikit-themen.json'], 'neues _LexiKit: nur Jahr 2021 und Themen');
+    assert.deepEqual(Object.keys(JSON.parse(lx2['lexikit-index-2021.json']).berichte), [ZWEIT + '/Mitteilungen/1. Mitteilung.docx']);
+    for (const j of [2022, 2023, 2024, 2025, 2026]) assert.ok(!(await page.evaluate(p => __lies(p), `_LexiKit/lexikit-index-${j}.json`)).includes('Zweitarchiv'), 'altes _LexiKit ohne Einträge des neuen Archivs: ' + j);
+    const altIdx = {}; for (const j of [2022, 2023, 2024, 2025, 2026]) Object.assign(altIdx, JSON.parse(await page.evaluate(p => __lies(p), `_LexiKit/lexikit-index-${j}.json`)).berichte);
+    assert.equal(Object.keys(altIdx).length, 6, 'altes Archiv: kein Bericht als „verschwunden“ entfernt');
+    await page.click('#btnSchonSuchen'); await page.click('#themen [data-thema="t-asbest"]');
+    assert.match(await page.textContent('#ergebnisZeile'), /^1 Textstelle in 1 Bericht/);
+    assert.equal(await page.locator('.treffer .t-kopf b').first().textContent(), ZWEIT);
+
+    /* ---------- 6. Schreibprobe schlägt fehl ---------- */
     await page.evaluate(() => sessionStorage.setItem('schreibprobe-kaputt', '1'));
     await page.reload(); await page.evaluate(H);
     await page.waitForSelector('#suche:not([hidden])');

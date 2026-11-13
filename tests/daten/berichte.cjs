@@ -105,6 +105,9 @@ const BERICHTE = {
   // Bericht ohne Marke „(n. Mitteilung)“, Kopf als Tabelle, Schimmel
   ohneMarke: [{ t: 'Untersuchungsbericht', stil: 'Titel' }, { tabelle: [['Projektnummer', '99.0300'], ['VN', 'Max Beispielmensch'], ['Schaden-Nr.', 'AB-1']] },
     { t: '1. Veranlassung', u: true }, 'Im Schlafzimmer zeigte sich Schimmelpilzbewuchs; die KBE-Werte der Luftprobe waren erhöht.'],
+  // ohne Marke, Titel ohne bekannte Berichtsform, Briefkopf mit Überschrift-Formatvorlage (Codex-Hinweis PR #1)
+  ohneMarkeTitel: [{ t: 'Musterbüro für Brandschadenchemie', stil: 'berschrift1' }, 'Beispielstraße 1 · 00000 Musterstadt', { t: 'Brandursachenbericht', stil: 'Titel' },
+    { t: '1. Veranlassung', u: true }, 'Im Lager wurde Löschpulver aus einem ABC-Pulverlöscher großflächig verteilt; die Rückstände sind zu entfernen.'],
   // Rohdatei Gutachten_… (Stub)
   stub: [...BRIEFKOPF, ...KOPF('99.0001', 'Untersuchungsbericht'), { t: '1. Veranlassung', u: true }],
 };
