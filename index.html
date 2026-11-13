@@ -1108,13 +1108,15 @@ mark.sus-ok{background:#eef1f3;color:inherit;border-radius:4px;padding:0 3px}
   }
 
   /** Labore, Verbände, Normgeber – ihre Firmenform ist keine Stelle */
-  const ERLAUBT = /Eurofins|Geotaix|Raumklima|(?<![\p{L}])(?:GDV|DGUV|VdS|VDI|DIN|TÜV|DEKRA|BG\s?BAU|IFA|UBA|LANUV|Fraunhofer)(?![\p{L}])/u;
+  // (ergänzt nach der Prüfung an echten Berichten 13.11.2026: Urbanus, Umweltmykologie, eco-Luft, GDV und DGUV ausgeschrieben)
+  const ERLAUBT = /Eurofins|Geotaix|Raumklima|Urbanus|Umweltmykologie|eco-?Luft|Versicherungswirtschaft|Unfallversicherung|Berufsgenossenschaft|(?<![\p{L}])(?:GDV|DGUV|VdS|VDI|DIN|TÜV|DEKRA|BG\s?BAU|IFA|UBA|LANUV|Fraunhofer)(?![\p{L}])/u;
   const ARTIKEL = /^(?:Der|Die|Das|Dem|Den|Des|Vom|Beim|Zum|Zur|Ein|Eine|Einer|Eines|Dieser|Diese|Durch|Für|Mit|Von)$/;
   const STELLEN = [
     ['anrede', /(?<![\p{L}])(?:Herrn?|Frau|Hr\.|Fr\.)\s+(?:(?:Dr|Prof|Dipl\.?-?\s?Ing)\.?\s+)*(?!(?:Dr|Prof|Dipl)\.)[A-ZÄÖÜ][\p{L}'’-]+/gu],
     ['strasse', /(?<![\p{L}])(?:[A-ZÄÖÜ][\p{L}.-]*(?:straße|strasse|str\.|weg|allee|platz|ring|gasse|damm|ufer|pfad|chaussee)|(?:Straße|Strasse|Str\.|Weg|Allee|Platz|Ring|Gasse|Damm|Ufer|Pfad|Chaussee))\s?\d{1,4}(?:\s?[a-z](?![\p{L}]))?(?![\p{L}\p{N}])/gu],
     ['plz', /(?<![\p{N}.,:\/-])\d{5}(?![\p{N}.,])\s+[A-ZÄÖÜ][\p{L}-]+/gu],
-    ['telefon', /(?:(?:Tel(?:efon)?|Mobil|Handy|Fax)\.?\s*:?\s*)?(?:\+49[\s/-]?(?:\(0\))?\d{2,5}|\(0\d{2,5}\)|(?<![\p{N}.,\/-])0\d{2,5})[\s/-]\d{2,}(?:[\s-]\d{2,})*(?![\p{N}])/gu],
+    // Telefon: Vorwahl, dann mindestens 4 Ziffern; nie direkt nach Buchstabe oder Ziffer – Laborproben-Nummern wie „22W09435-001“ bleiben
+    ['telefon', /(?:(?:Tel(?:efon)?|Mobil|Handy|Fax)\.?\s*:?\s*)?(?:\+49[\s/-]?(?:\(0\))?\d{2,5}|\(0\d{2,5}\)|(?<![\p{L}\p{N}.,\/-])0\d{2,5})[\s/-](?=(?:\d[\s-]?){4,})\d{2,}(?:[\s-]\d{2,})*(?![\p{N}])/gu],
     ['email', /[\w.+-]+@[\w-]+(?:\.[\w-]+)+/gu],
     ['firma', /(?<![\p{L}])(?:GmbH|mbH|AG|UG|OHG|GbR|KGaA|e\.\s?K\.|e\.\s?V\.|&\s?Co\.?)(?![\p{L}])/gu],
   ];

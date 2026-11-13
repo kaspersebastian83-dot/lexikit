@@ -426,6 +426,12 @@ let n = 0; const test = async (name, f) => { await f(); n++; console.log('ok', n
     assert.deepEqual(k3.stellen.filter(s => s.offen).map(s => [s.art, s.t, s.entfernbar]), [['anrede', 'Herrn Meier', false], ['telefon', 'Tel. 0241 998877', false]]);
     assert.ok(k3.text.includes('Meine Frage: Passt das auf den Fall von Herrn Meier?\nMein Fall: Bäckerei, Tel. 0241 998877\n\n--- Auszüge ---'));
   });
+  await test('Keine Stelle: Laborproben-Nummern, Labore und Verbände (Fehlalarme aus der Prüfung an echten Berichten)', async () => {
+    const t = 'In den Proben (22W09435-001 und 002) sowie 05408-003 wurde Asbest nachgewiesen. Anlage: Ergebnisse (Labor Urbanus GmbH), Untersuchungsbericht (Umweltmykologie GmbH), '
+      + 'Prüfbericht (eco-Luftqualität + Raumklima GmbH). Gesamtverband der deutschen Versicherungswirtschaft e. V. (GDV); Deutsche Gesetzliche Unfallversicherung e.V. (DGUV).';
+    assert.deepEqual(K.stellenIn(t, []), []);
+    assert.deepEqual(K.stellenIn('Rückruf unter 0241 1234 oder (02405) 12 34 56, Fax 02405-998877.', []).map(s => s.t), ['0241 1234', '(02405) 12 34 56', 'Fax 02405-998877'], 'echte Telefonnummern bleiben Stellen');
+  });
   await test('Kopfwort-Regel: Parameter-, Themen- und Abschnittswörter werden markiert, alle anderen ersetzt', async () => {
     const kopf = [{ key: 'VN', art: 'name', zeilen: [{ t: 'Max Brand und Erika Keller' }] }];
     const E = K.ersetzerBauen([kopf], [], FW);
