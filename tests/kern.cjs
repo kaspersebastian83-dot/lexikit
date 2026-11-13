@@ -1,5 +1,6 @@
 // LexiKit-Kern ohne Browser: Word lesen (nur Text, Fotos nie), Abschnitte, Berichtskopf weg, Berichte auswählen,
-// Suche und Markierung, Zusammenführen der gemeinsamen Dateien. node tests/kern.cjs
+// Fälle (Abschnittsklassen, Stränge, „Was war“, „Untersucht“), Suche und Rangfolge, Markierung, Zusammenführen der gemeinsamen
+// Dateien (Index Fassung 1 unverändert, Themenliste Fassung 2). node tests/kern.cjs
 const assert = require('node:assert/strict'), zlib = require('node:zlib');
 const K = require('./kern-laden.cjs');
 const { docx, BERICHTE } = require('./daten/berichte.cjs');
@@ -87,26 +88,186 @@ let n = 0; const test = async (name, f) => { await f(); n++; console.log('ok', n
       'Mitteilungen/1. Mitteilung_Englisch.docx', 'Mitteilungen/1. Mitteilung_korrigiert.docx', 'Mitteilungen/2. Mitteilung.docx', 'Mitteilungen/Mitteilung.docx', 'Neubau/1. Mitteilung.docx'].sort());
   });
 
-  const B = (pfad, jahr, pnr, nr, abschnitte) => ({ pfad, projekt: pfad.split('/')[0], jahr, pnr, nr, abschnitte });
-  const IDX = [
-    B('22.00114 A/1. Mitteilung.docx', 2022, 114, 1, [{ h: '', p: ['Das Löschwasser stand im Keller.'] }]),
-    B('26.0137 B/Mitteilungen/1. Mitteilung.docx', 2026, 137, 1, [{ h: 'Befunde', p: ['Im Löschwasser wurde E. coli gefunden.', 'Kein Löschmittel.'] }, { h: 'Löschpulver', p: ['Siehe oben.'] }]),
-    B('26.0137 B/Mitteilungen/2. Mitteilung.docx', 2026, 137, 2, [{ h: '4. Befund', p: ['Estrich und Löschwasser.'] }]),
-    B('23.0502 C/2. Mitteilung.docx', 2023, 502, 2, [{ h: '5. Probenahme', p: ['Brandschuttmischprobe nach DepV.'] }]),
-  ];
-  await test('Suche: Thema (eines der Wörter), neueste zuerst, Jahr, nur Überschrift passt', async () => {
-    const r = K.suche(IDX, ['Löschwasser', 'Löschmittel'], { modus: 'oder' });
-    assert.equal(r.treffer.length, 4); assert.equal(r.berichte, 3);
-    assert.deepEqual(r.treffer.map(t => t.b.pfad + '#' + t.ai + '.' + t.pi), ['26.0137 B/Mitteilungen/2. Mitteilung.docx#0.0', '26.0137 B/Mitteilungen/1. Mitteilung.docx#0.0', '26.0137 B/Mitteilungen/1. Mitteilung.docx#0.1', '22.00114 A/1. Mitteilung.docx#0.0']);
-    assert.equal(K.suche(IDX, ['löschwasser'], { jahr: 2022 }).treffer.length, 1, 'Groß/Klein egal, Jahr');
-    assert.equal(K.suche(IDX, ['Pulver'], {}).treffer.length, 1, 'Überschrift „Löschpulver“ als Teilwort');
-    assert.equal(K.zaehle(IDX, ['DepV']), 1);
+  /* ---------- ab 0.2.0: Fälle ---------- */
+  await test('Abschnittsklassen nach Stichwort in der Überschrift (Liste aus der Zählung am echten Archiv)', async () => {
+    const soll = { '1. Veranlassung': 'veranlassung', '2. Aufgabenstellung': 'veranlassung', '3. Ortstermin mit Probenahmen': 'probenahme', '3. Ortsbesichtigung': 'probenahme',
+      'Besichtigung der Schadenstelle und Probenahme': 'probenahme', 'Probenahme': 'probenahme', '5. Befund': 'befund', 'Befunde': 'befund', '4. Untersuchungsergebnisse': 'befund',
+      'Mikrobiologie': 'befund', 'Sensorische Prüfung auf Brandgeruch': 'befund', 'Ergebnisse der Probenahme': 'befund', '5. Schlussfolgerungen': 'schluss', 'Schlußfolgerung': 'schluss',
+      'Bewertung der Befunde': 'schluss', 'Stellungnahme': 'schluss', '6. Sanierungsmaßnahmen': 'massnahmen', 'Weiterführende Maßnahmen': 'massnahmen', 'Sanierung': 'massnahmen',
+      '7. Arbeitsschutzmaßnahmen': 'arbeitsschutz', 'Arbeitsschutz': 'arbeitsschutz', 'Maßnahmen zum Arbeitsschutz': 'arbeitsschutz',
+      '6. Entsorgung': '', '5.1 Wischproben': '', 'Anhang': '' };   // kein „Entsorgung“ als eigene Klasse
+    for (const [h, k] of Object.entries(soll)) assert.equal(K.klasseVon(h), k, h);
+    assert.deepEqual(K.KLASSEN.map(k => k.name), ['Veranlassung', 'Probenahme', 'Befund', 'Schlussfolgerungen', 'Sanierungsmaßnahmen', 'Arbeitsschutz', 'Weiteres'], 'kein „Bewertung“, kein „Entsorgung“');
   });
-  await test('Eigene Suche: alle Wörter, Anführungszeichen halten zusammen', async () => {
-    assert.deepEqual(K.woerterAus('  Estrich  "E. coli" x „Brand schutt“ '), ['Estrich', 'E. coli', 'Brand schutt']);
-    assert.equal(K.suche(IDX, ['Estrich', 'Löschwasser'], { modus: 'und' }).treffer.length, 1);
-    assert.equal(K.suche(IDX, ['Befund', 'coli'], { modus: 'und' }).treffer.length, 1, 'Wort aus der Überschrift zählt mit');
-    assert.equal(K.suche(IDX, ['Estrich', 'Asbest'], { modus: 'und' }).treffer.length, 0);
+  await test('Sätze: Abkürzungen, „E. coli“ und Datumsangaben trennen nicht', async () => {
+    assert.deepEqual(K.saetze('Es wurden z. B. 12 Wischproben entnommen. In W3 wurde E. coli nachgewiesen (vgl. Tab. 2). Am 3. März war der Keller trocken.'),
+      ['Es wurden z. B. 12 Wischproben entnommen.', 'In W3 wurde E. coli nachgewiesen (vgl. Tab. 2).', 'Am 3. März war der Keller trocken.']);
+  });
+  await test('„Untersucht“ heißt gemessen: Satz mit Probe/Messung/Ergebnis, nicht „unterblieben“', async () => {
+    const u = s => K.untersuchtImSatz(s, false), ids = s => (u(s) || { ids: null }).ids;
+    // zählt
+    assert.deepEqual(u('Zur Messung der Chloridbelastungen wurden zwölf Wischproben entnommen und zusätzlich auf Sulfat und Phosphat untersucht.'),
+      { ids: ['chlorid', 'sap'], namen: ['Chlorid', 'Sulfat, Phosphat'], proben: [{ n: 12, art: 'Wischproben' }] });
+    assert.deepEqual(ids('Asbest wurde in keiner Probe nachgewiesen.'), ['asbest'], '„nicht nachgewiesen“ ist ein Ergebnis');
+    assert.deepEqual(ids('Die Proben wurden auf die 16 Einzelkomponenten der polycyclischen aromatischen Kohlenwasserstoffe analysiert.'), ['pak']);
+    assert.deepEqual(ids('Es wurden dreizehn Abklatschproben entnommen und auf Enterobakterien untersucht.'), ['faekal'], 'Enterobakterien sind Fäkalkeime, nicht „Bakterien“ allgemein');
+    assert.deepEqual(u('Zwei Luftproben ergaben 300 KBE/m³ Schimmelpilze.').proben, [{ n: 2, art: 'Luftproben' }]);
+    assert.deepEqual(u('Zusätzlich wurde eine Brandschuttmischprobe entnommen und nach DepV untersucht.').proben, [{ n: 1, art: 'Brandschuttmischprobe' }]);
+    assert.deepEqual(ids('Die Probe sollte auf holzzerstörende Pilze untersucht werden.'), ['holzpilze'], 'Aufgabe, keine Empfehlung');
+    assert.deepEqual(K.untersuchtImSatz('Probe · Chlorid · PAK', true).ids, ['pak', 'chlorid'], 'Tabellenzeile zählt ohne Stichwort');
+    // zählt nicht
+    assert.equal(u('Die Dacheindeckung besteht augenscheinlich aus Asbestzement.'), null, 'nur erwähnt');
+    assert.equal(u('Auf eine Untersuchung auf Dioxine wurde verzichtet.'), null);
+    assert.equal(u('Asbest wurde nicht untersucht.'), null);
+    assert.equal(u('Es wurden keine Proben auf PAK entnommen.'), null);
+    assert.equal(u('Wir empfehlen Kontrollwischproben auf Chlorid.'), null);
+    assert.equal(u('Vor dem Rückbau ist die Dacheindeckung mittels Materialprobe auf Asbest zu prüfen.'), null);
+    assert.equal(u('Die Pakete aus Polyvinylchlorid wurden beprobt.'), null, 'PAK ≠ Paket, Chlorid ≠ Polyvinylchlorid');
+    assert.deepEqual(ids('Die 300 KBE/m³ betreffen sonstige Bakterien.'), ['bakterien'], '„KBE“ allein ist kein Schimmel');
+    assert.deepEqual(ids('Die Proben wurden auf Schimmelpilze und Bakterien untersucht.'), ['schimmel', 'bakterien']);
+    assert.deepEqual(ids('Die bakterielle Belastung der Materialprobe war gering.'), ['bakterien']);
+    assert.deepEqual(ids('Drei Materialproben der Mineralfaserdämmung wurden einer sensorischen Prüfung auf Brandgeruch unterzogen.'), ['geruch'], 'Mineralwolle als Material ist kein KMF-Befund');
+    assert.deepEqual(ids('Die Probe wurde auf künstliche Mineralfasern (KMF) untersucht.'), ['kmf']);
+    // Probenzahlen: keine Teilmengen
+    assert.deepEqual(u('Jeweils eine Wischprobe wurde auf PAK analysiert.').proben, []);
+    assert.deepEqual(u('In 3 Wischproben wurde PAK nachgewiesen.').proben, []);
+    assert.deepEqual(u('Bei den weiteren sechs Wischproben wird der Richtwert für Chlorid überschritten.').proben, []);
+    assert.deepEqual(u('In einer der drei Materialproben wurde Asbest nachgewiesen.').proben, [], '„der drei …“ verweist auf schon genannte Proben');
+    assert.deepEqual(u('Es wurden insgesamt fünfzehn Materialproben entnommen.').proben, [{ n: 15, art: 'Materialproben' }]);
+    assert.ok(K.PARAMETER.length >= 19 && new Set(K.PARAMETER.map(p => p.id)).size === K.PARAMETER.length);
+  });
+
+  // Die Testberichte lesen und wie die App als Index-Einträge (Fassung 1) ablegen
+  const ARCHIV = [
+    ['24.0412 Musterlager Beispielheim Tst/Mitteilungen/1. Mitteilung.docx', 'lager1'], ['24.0412 Musterlager Beispielheim Tst/Mitteilungen/2. Mitteilung.docx', 'lager2'],
+    ['24.0412 Musterlager Beispielheim Tst/Mitteilungen/1. Mitteilung_Englisch.docx', 'lagerEn'], ['25.0300 Musterwerk Probestadt Tst/Mitteilungen/1. Mitteilung.docx', 'werk'],
+    ['23.0700 Beispielhalle Musterdorf Tst/Mitteilungen/1. Mitteilung.docx', 'halle'], ['24.0300 Musterhof Probedorf Tst/Altbau/1. Mitteilung.docx', 'ohneMarke'],
+    ['24.0300 Musterhof Probedorf Tst/Neubau/1. Mitteilung.docx', 'ohne'], ['26.0137 Beispielweg Musterstadt Tst/Mitteilungen/1. Mitteilung.docx', 'fett'],
+    ['23.0502 Baumarkt Musterstadt Tst/2. Mitteilung.docx', 'unter'], ['25.0075 Musterallee Beispielstadt Tst/Mitteilungen/1. Mitteilung.docx', 'ohne']];
+  const eintraege = [];
+  for (const [pfad, k] of ARCHIV) {
+    const t = pfad.split('/'), po = K.projektOrdner(t[0]), b = (await lesen(BERICHTE[k])).b;
+    eintraege.push({ pfad, projekt: t[0], datei: t.at(-1), jahr: po.jahr, pnr: po.nr, nr: K.mitteilungNr(t.at(-1)), form: b.form, abschnitte: b.abschnitte });
+  }
+  const FAELLE = K.faelleBauen(eintraege), fall = k => FAELLE.find(f => f.kennung === k);
+  const schilder = f => f.tags.map(t => K.tagText(t, f));
+
+  await test('Zweite Kopf-Form und E-Mail-Adresse kommen nicht in den Index (neu gelesene Berichte)', async () => {
+    const { b } = await lesen(BERICHTE.lager2), t = alles(b);
+    for (const v of ['Auftraggeber', 'Muster Sanierung', 'Musterweg 3', 'Beispielgasse', 'Beispielort', '12-3456', '@']) assert.ok(!t.includes(v), v);
+    assert.deepEqual(b.abschnitte.map(a => a.h), ['', 'Befunde', 'Schlussfolgerungen']);
+    assert.ok(t.includes('weiterer Ortstermin'), 'die Einleitung bleibt');
+  });
+  await test('Fall = Projektordner mit allen Mitteilungen; englische Fassung nur im Verlauf', async () => {
+    assert.deepEqual(FAELLE.map(f => f.kennung), ['26.0137', '25.0300', '25.0075', '24.0412', '24.0300', '23.0700', '23.0502'], 'neueste zuerst');
+    const f = fall('24.0412');
+    assert.deepEqual(f.berichte.map(b => b.datei), ['1. Mitteilung.docx', '1. Mitteilung_Englisch.docx', '2. Mitteilung.docx']);
+    assert.deepEqual(f.deutsch.map(b => b.datei), ['1. Mitteilung.docx', '2. Mitteilung.docx']);
+    assert.deepEqual(f.klassen, ['veranlassung', 'probenahme', 'befund', 'schluss', 'massnahmen', 'arbeitsschutz'], 'kein „Weiteres“');
+    assert.equal(K.sucheFaelle(FAELLE, { woerter: ['warehouse'] }).treffer.length, 0, 'englischer Text wird nicht durchsucht');
+    for (const k of ['alles', ...f.klassen]) assert.ok(!K.bloecke(f, k).some(x => x.b.datei.includes('Englisch')), 'englischer Text in keinem Reiter');
+    // Unterüberschrift „5.1 Wischproben“ bleibt im Befund; Betreffzeile „Brandschaden“ vor der 1. Überschrift ist kein Abschnitt
+    assert.deepEqual(K.bloecke(f, 'befund').map(x => x.h), ['5. Befund', '5.1 Wischproben', 'Befunde']);
+    // Einleitung ohne Überschrift der 2. Mitteilung steht unter „Veranlassung“
+    assert.deepEqual(K.bloecke(f, 'veranlassung').map(x => [x.b.datei, x.h, x.p.length]), [['1. Mitteilung.docx', '1. Veranlassung', 1], ['1. Mitteilung.docx', '2. Aufgabenstellung', 1], ['2. Mitteilung.docx', '', 2]]);
+    assert.deepEqual(K.bloecke(f, 'weiteres'), []);
+    assert.deepEqual(K.bloecke(f, 'massnahmen').map(x => x.h), ['6. Sanierungsmaßnahmen']);
+  });
+  await test('„Was war“: Veranlassung, sonst Aufgabenstellung, sonst erster Textblock', async () => {
+    assert.equal(fall('24.0412').wasWar.art, 'Veranlassung'); assert.match(fall('24.0412').wasWar.text, /^Am 02\.02\.2024 kam es in einer Lagerhalle/);
+    assert.equal(fall('23.0700').wasWar.art, 'Aufgabenstellung'); assert.match(fall('23.0700').wasWar.text, /^Nach einem Rohrbruch/);
+    assert.equal(fall('25.0075').wasWar.art, 'erster Textblock'); assert.match(fall('25.0075').wasWar.text, /^An der Rohrisolierung/);
+    assert.equal(fall('26.0137').wasWar.art, 'erster Textblock');
+    // Bericht, der mit einer Einleitung ohne Überschrift beginnt: sie ist der erste Textblock, steht unter „Veranlassung“ und zählt in der Rangfolge so
+    const kurz = (pfad, p0, rest) => ({ pfad, projekt: pfad.split('/')[0], datei: '1. Mitteilung.docx', jahr: 2021, pnr: +pfad.slice(3, 7), nr: 1, abschnitte: [{ h: '', p: p0 }, ...rest] });
+    const k1 = K.faelleBauen([kurz('21.0010 K Tst/1. Mitteilung.docx', ['Wasserschaden', 'Am 03.03.2021 fand im Kellerraum ein weiterer Ortstermin statt; dabei wurde die Kellerassel-Falle geprüft.'], [{ h: 'Befunde', p: ['Der Estrich war trocken.'] }])])[0];
+    assert.deepEqual([k1.wasWar.art, k1.klassen], ['erster Textblock', ['veranlassung', 'befund']]); assert.match(k1.wasWar.text, /^Wasserschaden Am 03\.03\.2021|^Am 03\.03\.2021/);
+    assert.equal(K.sucheFaelle([k1], { woerter: ['Kellerassel'] }).treffer[0].rang, 1);
+    // … aber eine Veranlassung mit Überschrift geht vor (z. B. nach einem Satz aus dem Anschreiben)
+    const k2 = K.faelleBauen([kurz('21.0011 K Tst/1. Mitteilung.docx', ['als Anlage übersende ich Ihnen meinen Sanierungsvorschlag zu dem oben genannten Schaden'], [{ h: '1. Veranlassung', p: ['In der Werkstatt kam es zu einem Schwelbrand an einer Ladestation.'] }])])[0];
+    assert.match(k2.wasWar.text, /^In der Werkstatt/); assert.equal(k2.wasWar.art, 'Veranlassung');
+    // Bericht mit Überschriften, aber keiner bekannten: bleibt ganz unter „Weiteres“
+    const k3 = K.faelleBauen([kurz('21.0012 K Tst/1. Mitteilung.docx', ['Eine Einleitung, die lang genug ist, um als Text zu zählen, steht hier.'], [{ h: 'Anhang', p: ['Text im Anhang.'] }])])[0];
+    assert.deepEqual(k3.klassen, ['weiteres']);
+    const lang = { pfad: '21.0001 X Tst/1. Mitteilung.docx', projekt: '21.0001 X Tst', datei: '1. Mitteilung.docx', jahr: 2021, pnr: 1, nr: 1,
+      abschnitte: [{ h: '1. Veranlassung', p: ['Sehr geehrte Damen und Herren,', 'Probe · Ort', 'Erster Satz der Veranlassung mit etwas Länge. '.repeat(8).trim(), 'Zweiter Absatz. '.repeat(30).trim()] }] };
+    const w = K.faelleBauen([lang])[0].wasWar.text;
+    assert.ok(w.length <= 482 && w.startsWith('Erster Satz') && /\.( …)?$/.test(w), 'ohne Anrede und Tabellenzeile, am Satzende gekürzt');
+  });
+  await test('Gebäude-Ordner sind eigene Stränge; „Was war“ nennt den Strang', async () => {
+    const f = fall('24.0300');
+    assert.deepEqual(f.straenge.map(s => [s.name, s.berichte.length]), [['Altbau', 1], ['Neubau', 1]]);
+    assert.deepEqual([f.wasWar.strang, f.wasWar.bericht, f.wasWar.art], ['Altbau', '1. Mitteilung', 'Veranlassung']);
+    assert.equal(K.berichtBeschriftung(f, f.deutsch[1]), 'Neubau · 1. Mitteilung');
+    assert.deepEqual(schilder(f), ['1 Materialprobe (Neubau · 1. Mitteilung)', 'Asbest']);
+    assert.equal(f.ohne, false); assert.deepEqual(f.klassen, ['veranlassung', 'weiteres'], 'Neubau-Bericht ohne Überschriften steht unter „Weiteres“');
+    // Gebäude im Dateinamen, Hauptstrang zuerst
+    const e = (pfad, nr) => ({ pfad, projekt: '21.0002 Y Tst', datei: pfad.split('/').at(-1), jahr: 2021, pnr: 2, nr, abschnitte: [{ h: '1. Veranlassung', p: ['Text der Veranlassung in ausreichender Länge für die Karte.'] }] });
+    const g = K.faelleBauen([e('21.0002 Y Tst/Mitteilungen/1. Mitteilung Gebäude B.docx', 1), e('21.0002 Y Tst/Mitteilungen/2. Mitteilung Gebäude A.docx', 2), e('21.0002 Y Tst/Mitteilungen/1. Mitteilung Gebäude A.docx', 1), e('21.0002 Y Tst/Mitteilungen/1. Mitteilung.docx', 1)])[0];
+    assert.deepEqual(g.straenge.map(s => [s.name, s.berichte.map(b => b.nr)]), [['', [1]], ['Gebäude A', [1, 2]], ['Gebäude B', [1]]]);
+    assert.equal(K.strangVon('21.0002 Y Tst/21.0002 Y Tst/1. Mitt/1. Mitteilung_korrigiert.docx', '21.0002 Y Tst').name, '', 'Mitteilungsordner, Projektkopie und Korrektur sind kein Strang');
+    assert.equal(K.strangVon('21.0002 Y Tst/Mitteilungen/1. Mitteilung Geb. 2.docx', '21.0002 Y Tst').name, 'Geb. 2');
+  });
+  await test('Fall-Schildchen „Untersucht“: Zahlen aus der Probenahme, Parameter aus Probenahme und Befund, mit Fundstelle', async () => {
+    const f = fall('24.0412');
+    assert.deepEqual(schilder(f), ['12 Wischproben · Chlorid, Sulfat, Phosphat', '12 Wischproben · PAK', '1 Brandschuttmischprobe · DepV', '3 Materialproben · Brandgeruch', '6 Kontrollwischproben · Chlorid (2. Mitteilung)']);
+    assert.deepEqual(Object.keys(f.params).sort(), ['chlorid', 'depv', 'geruch', 'pak', 'sap'], 'kein Asbest (nur gesehen / zu prüfen / Arbeitsschutz), keine Dioxine (verzichtet), kein KMF, kein Schimmel');
+    // Fundstelle: Abschnitt und Absatz des Berichts
+    const t = f.tags[2], teil = K.ableiten(t.b).teile.find(x => x.ai === t.ai);
+    assert.equal(teil.h, '4. Probenahme'); assert.match(teil.p[t.pi], /Brandschuttmischprobe/);
+    const t6 = f.tags[4], teil6 = K.ableiten(t6.b).teile.find(x => x.ai === t6.ai);
+    assert.equal(t6.b.datei, '2. Mitteilung.docx'); assert.match(teil6.p[t6.pi], /sechs Kontrollwischproben/, 'Einleitung ohne Überschrift zählt');
+    assert.deepEqual([teil6.k, teil6.h, teil6.vor], ['veranlassung', '', true]);
+    // … eine Veranlassung mit Überschrift dagegen nicht: „Untersucht“ sucht dort nicht
+    const nurV = K.faelleBauen([{ pfad: '21.0020 V Tst/1. Mitteilung.docx', projekt: '21.0020 V Tst', datei: '1. Mitteilung.docx', jahr: 2021, pnr: 20, nr: 1,
+      abschnitte: [{ h: '1. Veranlassung', p: ['Wir wurden beauftragt, zwölf Wischproben auf PAK zu untersuchen.'] }, { h: '2. Befund', p: ['Die Flächen waren sichtbar verrußt.'] }] }])[0];
+    assert.deepEqual(schilder(nurV), []);
+    // andere Fälle
+    assert.deepEqual(schilder(fall('26.0137')), ['2 Wasserproben · Fäkalkeime', 'Bakterien']);
+    assert.deepEqual(schilder(fall('25.0300')), ['Phosphat']);
+    assert.deepEqual(schilder(fall('23.0700')), ['Schimmel'], '„In zwei Materialproben“ ist keine Gesamtzahl; Asbest im Arbeitsschutz zählt nicht');
+    assert.deepEqual(schilder(fall('23.0502')), ['1 Brandschuttmischprobe · DepV'], 'ohne Probenahme-Abschnitt: Zahl aus dem Befund (Unterabschnitt „3. Entsorgung“)');
+    assert.deepEqual(schilder(fall('25.0075')), ['1 Materialprobe', 'Asbest'], 'Bericht ohne Überschriften: ganzer Text, gleiche Satzregel');
+    assert.equal(fall('25.0075').ohne, true); assert.deepEqual(fall('25.0075').klassen, []);
+  });
+  await test('Index aus LexiKit 0.1.0: Kopfzeilen der zweiten Form und E-Mail-„Überschriften“ fallen beim Ableiten heraus', async () => {
+    const alt = { pfad: '21.0003 Z Tst/Mitteilungen/1. Mitteilung.docx', projekt: '21.0003 Z Tst', datei: '1. Mitteilung.docx', jahr: 2021, pnr: 3, nr: 1, abschnitte: [
+      { h: '', p: ['Wasserschaden', 'Auftraggeber: Muster Sanierung GmbH', 'Musterweg 3', '00000 Beispielort', 'Schadenort: Beispielgasse 9', '00000 Beispielort', 'Bestell-Nr.: 4711', 'Mit freundlichen Grüßen', 'max.muster@beispiel.example'] },
+      { h: 'erika.beispiel@musterfirma.example', p: [] },
+      { h: '1. Veranlassung', p: ['In der Küche trat Leitungswasser aus; der Estrich wurde durchfeuchtet.'] }] };
+    const d = K.ableiten(alt);
+    assert.deepEqual(d.teile.map(t => [t.k, t.h]), [['veranlassung', '1. Veranlassung']]);
+    const f = K.faelleBauen([alt])[0]; assert.deepEqual(f.klassen, ['veranlassung']);
+    assert.equal(K.sucheFaelle([f], { woerter: ['Beispielgasse'] }).treffer.length, 0); assert.equal(K.sucheFaelle([f], { woerter: ['Musterweg'] }).treffer.length, 0);
+    assert.equal(K.sucheFaelle([f], { woerter: ['Estrich'] }).treffer.length, 1);
+  });
+  await test('Suche: Thema und eigene Wörter zusammen, Überschriften zählen nicht, Jahr, „Untersucht auf“', async () => {
+    const LP = ['Löschpulver', 'ABC-Pulver', 'Pulverlöscher'], k = r => r.treffer.map(t => t.f.kennung);
+    assert.deepEqual(k(K.sucheFaelle(FAELLE, { thema: LP, woerter: ['Lagerhalle', 'Elektronik'] })), ['24.0412']);
+    assert.deepEqual(k(K.sucheFaelle(FAELLE, { thema: LP, woerter: ['Lagerhalle'] })), ['24.0412', '23.0700']);
+    assert.deepEqual(k(K.sucheFaelle(FAELLE, { thema: LP, woerter: ['Lagerhalle', 'Kellerassel'] })), [], 'jedes eigene Wort muss vorkommen');
+    assert.deepEqual(k(K.sucheFaelle(FAELLE, { woerter: ['schaltschränke'] })), ['24.0412'], 'Groß/Klein egal, Wort aus der 2. Mitteilung');
+    assert.equal(K.sucheFaelle(FAELLE, { woerter: ['Schlussfolgerungen'] }).treffer.length, 0, 'nur in Überschriften → kein Fall');
+    assert.equal(K.sucheFaelle(FAELLE, { woerter: ['Arbeitsschutzmaßnahmen'] }).treffer.length, 0);
+    assert.deepEqual(k(K.sucheFaelle(FAELLE, { thema: LP, jahr: 2025 })), ['25.0300']);
+    assert.deepEqual(k(K.sucheFaelle(FAELLE, { parameter: ['sap'] })), ['25.0300', '24.0412'], 'ohne Begriffe: neueste zuerst');
+    assert.deepEqual(k(K.sucheFaelle(FAELLE, { parameter: ['sap', 'chlorid'] })), ['24.0412'], 'mehrere Filter: alle');
+    assert.deepEqual(k(K.sucheFaelle(FAELLE, { thema: ['Asbest'], parameter: ['asbest'] })), ['25.0075', '24.0300']);
+    assert.equal(K.zaehleFaelle(FAELLE, LP), 3); assert.equal(K.zaehleFaelle(FAELLE, ['Asbest']), 4); assert.equal(K.zaehleFaelle(FAELLE, []), 0);
+  });
+  await test('Rangfolge: Fund in Veranlassung/Aufgabenstellung zuerst, nur Arbeitsschutz zuletzt, sonst neueste zuerst', async () => {
+    const r = K.sucheFaelle(FAELLE, { thema: ['Löschpulver', 'ABC-Pulver', 'Pulverlöscher'] });
+    assert.deepEqual(r.treffer.map(t => [t.f.kennung, t.rang, t.nurAS]), [['24.0412', 1, false], ['25.0300', 0, false], ['23.0700', 0, true]],
+      'Veranlassung (2024) vor Befund (2025, neuer); Fall nur mit Fund im Arbeitsschutz am Ende');
+    assert.deepEqual([...r.treffer[0].orte].sort(), ['massnahmen', 'veranlassung']);
+    // Aufgabenstellung zählt wie Veranlassung; zwei Begriffe in der Veranlassung vor einem
+    const r2 = K.sucheFaelle(FAELLE, { woerter: ['Lagerhalle'] });
+    assert.deepEqual(r2.treffer.map(t => [t.f.kennung, t.rang]), [['24.0412', 1], ['23.0700', 1]]);
+    const r3 = K.sucheFaelle(FAELLE, { thema: ['Schimmel'], woerter: ['Lagerhalle'] });
+    assert.deepEqual(r3.treffer.map(t => [t.f.kennung, t.rang]), [['24.0412', 1], ['23.0700', 1]], 'gleicher Rang: neueste zuerst');
+    assert.equal(r3.treffer[0].nurAS, false, '„Schimmel“ steht dort nur im Arbeitsschutz, „Lagerhalle“ aber in der Veranlassung');
+    // Fall ohne Veranlassung: der „Was war“-Text zählt ersatzweise
+    const r4 = K.sucheFaelle(FAELLE, { woerter: ['Rohrisolierung'] }); assert.deepEqual(r4.treffer.map(t => [t.f.kennung, t.rang]), [['25.0075', 1], ['24.0300', 0]], '24.0300 hat eine Veranlassung – dort steht das Wort nicht');
   });
   await test('Markieren und Ausschnitt', async () => {
     assert.deepEqual(K.markiere('Löschwasser und asbesthaltig', ['asbest', 'LÖSCH']), [{ t: 'Lösch', hit: true }, { t: 'wasser und ', hit: false }, { t: 'asbest', hit: true }, { t: 'haltig', hit: false }]);
@@ -125,22 +286,59 @@ let n = 0; const test = async (name, f) => { await f(); n++; console.log('ok', n
     assert.ok(K.indexLesen('{', 2026).kaputt); assert.ok(K.indexLesen('{"format":"lexikit-index","version":9,"berichte":{}}', 2026).neuer);
     assert.deepEqual(K.indexLesen(null, 2025).berichte, {});
   });
-  await test('Themenliste: neun Themen, ändern, löschen bleibt gelöscht, Konflikt wird erkannt', async () => {
+  await test('Themenliste (Fassung 2): zwei Gruppen, ändern, löschen bleibt gelöscht, Konflikt wird erkannt', async () => {
     const t0 = K.ersteThemen('2026-11-13T09:00');
-    assert.deepEqual(t0.themen.map(t => t.name), ['Löschpulver', 'Löschmittel', 'Löschwasser', 'Brandschutt', 'Entsorgungswege', 'Abfallschlüssel', 'Asbest', 'Schimmel', 'Fäkalkeime']);
+    assert.equal(t0.version, 2);
+    assert.deepEqual(t0.themen.filter(t => K.gruppeVon(t) === 'thema').map(t => t.name), ['Löschpulver', 'Löschmittel', 'Löschwasser', 'Brandschutt', 'Entsorgungswege', 'Abfallschlüssel', 'Asbest', 'Schimmel', 'Fäkalkeime']);
+    assert.deepEqual(t0.themen.filter(t => K.gruppeVon(t) === 'fall').map(t => t.name), ['Photovoltaik', 'Lithium-Akku', 'Tiefgarage', 'Warenvorräte', 'Kühlhaus', 'Technische Einrichtung']);
+    assert.ok(!K.ERSTE_FAELLE.flat(2).some(w => /^waren$/i.test(w)), '„Waren“ allein träfe das Verb');
     assert.deepEqual(K.themaWoerter(t0.themen[8]), ['Fäkalkeime', 'E. coli', 'Escherichia coli', 'coliforme', 'Enterokokken']);
-    const id = K.neueThemaId(t0, 'Estrich');
-    let r = K.themaEinspielen(t0, { id, name: ' Estrich ', woerter: ['Trittschall', ' '], geaendert: '2026-11-13T10:00', basis: '' });
-    const t1 = r.themen; assert.deepEqual(t1.themen.at(-1), { id, name: 'Estrich', woerter: ['Trittschall'], geaendert: '2026-11-13T10:00' });
-    // anderer PC hat Asbest geändert, ich will mit altem Stand ändern → Konflikt
+    const id = K.neueThemaId(t0, 'Serverraum');
+    let r = K.themaEinspielen(t0, { id, name: ' Serverraum ', woerter: ['Rechenzentrum', ' '], gruppe: 'fall', geaendert: '2026-11-13T10:00', basis: '' });
+    const t1 = r.themen; assert.deepEqual(t1.themen.at(-1), { id, name: 'Serverraum', woerter: ['Rechenzentrum'], geaendert: '2026-11-13T10:00', gruppe: 'fall' });
+    // anderer PC hat Asbest geändert, ich will mit altem Stand ändern → Konflikt; die Gruppe bleibt ohne Angabe erhalten
     const asb = t1.themen.find(t => t.name === 'Asbest');
     const anders = K.themaEinspielen(t1, { id: asb.id, name: 'Asbest', woerter: ['Chrysotil'], geaendert: '2026-11-13T11:00', basis: asb.geaendert }).themen;
+    assert.equal(anders.themen.find(t => t.id === asb.id).gruppe, 'thema');
     r = K.themaEinspielen(anders, { id: asb.id, name: 'Asbest', woerter: ['Amphibol'], geaendert: '2026-11-13T11:05', basis: asb.geaendert });
     assert.ok(r.konflikt && r.konflikt.woerter[0] === 'Chrysotil');
-    r = K.themaEinspielen(anders, { id, name: 'Estrich', geloescht: true, geaendert: '2026-11-13T12:00', basis: '2026-11-13T10:00' });
+    r = K.themaEinspielen(anders, { id, name: 'Serverraum', geloescht: true, geaendert: '2026-11-13T12:00', basis: '2026-11-13T10:00' });
     assert.equal(r.themen.themen.find(t => t.id === id).geloescht, true, 'gelöscht bleibt als Vermerk');
-    assert.notEqual(K.neueThemaId(r.themen, 'Estrich'), id, 'neues Thema mit gleichem Namen bekommt eine neue id');
+    assert.notEqual(K.neueThemaId(r.themen, 'Serverraum'), id, 'neues Thema mit gleichem Namen bekommt eine neue id');
     assert.ok(K.themenLesen('nicht json').kaputt); assert.equal(K.themenLesen(''), null);
+  });
+  await test('Themenliste aus 0.1.0 (Fassung 1) wird gehoben, nichts geht verloren; 0.1.0 fasst Fassung 2 nicht an', async () => {
+    // so hat LexiKit 0.1.0 geschrieben: Fassung 1, ohne Gruppe – mit einem Thema des Büros, einem geänderten und einem gelöschten
+    const v1 = { format: 'lexikit-themen', version: 1, themen: [
+      { id: 't-asbest', name: 'Asbest', woerter: ['Chrysotil'], geaendert: '2026-11-12T08:00' },
+      { id: 't-estrich', name: 'Estrich', woerter: ['Trittschall'], geaendert: '2026-11-12T09:00' },
+      { id: 't-schimmel', name: 'Schimmel', woerter: [], geaendert: '2026-11-12T10:00', geloescht: true },
+      { id: 't-kühlhaus', name: 'Kühlhaus', woerter: ['Kühlzelle Büro'], geaendert: '2026-11-12T11:00' }] };   // das Büro hatte „Kühlhaus“ schon selbst angelegt
+    const gelesen = K.themenLesen(JSON.stringify(v1)); assert.ok(!gelesen.kaputt, '0.2.0 liest Fassung 1');
+    const v2 = K.themenHeben(gelesen);
+    assert.equal(v2.version, 2);
+    assert.deepEqual(v2.themen.slice(0, 4), v1.themen, 'alle Themen des Büros unverändert, auch der Lösch-Vermerk');
+    assert.deepEqual(v2.themen.slice(4).map(t => [t.name, t.gruppe, t.geaendert]), [['Photovoltaik', 'fall', ''], ['Lithium-Akku', 'fall', ''], ['Tiefgarage', 'fall', ''], ['Warenvorräte', 'fall', ''], ['Technische Einrichtung', 'fall', '']], 'fünf neue – „Kühlhaus“ gab es schon');
+    assert.equal(K.gruppeVon(v2.themen[3]), 'thema', 'das eigene „Kühlhaus“ des Büros bleibt, wo es war');
+    assert.deepEqual(K.themenHeben(v2), v2, 'noch einmal heben ändert nichts'); assert.deepEqual(K.themenHeben(JSON.parse(JSON.stringify(v1))), v2, 'zwei PCs schreiben dasselbe');
+    assert.equal(v1.version, 1, 'Eingabe unverändert');
+    // wer mit 0.2.0 ein Thema speichert, schreibt Fassung 2
+    const r = K.themaEinspielen(gelesen, { id: 't-estrich', name: 'Estrich', woerter: ['Trittschall', 'Zementestrich'], geaendert: '2026-11-13T12:00', basis: '2026-11-12T09:00' });
+    assert.equal(r.themen.version, 2); assert.equal(r.themen.themen.length, 9);
+    // LexiKit 0.1.0 prüft „version > 1“ → neuere Fassung → schreibt nicht. Dieselbe Regel gilt in 0.2.0 für Fassung 3.
+    assert.ok(v2.version > 1); assert.ok(K.themenLesen(JSON.stringify(Object.assign({}, v2, { version: 3 }))).neuer);
+  });
+  await test('Der Index bleibt Fassung 1: 0.2.0 liest und schreibt dasselbe Format wie 0.1.0', async () => {
+    assert.equal(K.VERSION, 1);
+    const wie010 = JSON.stringify({ format: 'lexikit-index', version: 1, jahr: 2024, geaendert: '2026-11-13T10:00', berichte: { [eintraege[0].pfad]: Object.assign({ stempel: { groesse: 1, geaendert: 1 }, gelesenAm: '2026-11-13T10:00' }, eintraege[0]) } });
+    const idx = K.indexLesen(wie010, 2024); assert.ok(!idx.kaputt);
+    const f = K.faelleBauen(Object.values(idx.berichte))[0];
+    assert.equal(f.kennung, '24.0412'); assert.ok(f.tags.length >= 4, 'Fall direkt aus dem alten Index');
+    const neu = K.indexMergen(idx, { neu: {}, weg: [] }, '2026-11-13T12:00');
+    assert.equal(neu.version, 1);
+    const text = JSON.stringify(neu, (k, v) => k[0] === '_' ? undefined : v);
+    assert.ok(!text.includes('_d') && !text.includes('"kl"'), 'Abgeleitetes wird nicht gespeichert');
+    assert.deepEqual(Object.keys(JSON.parse(text).berichte[eintraege[0].pfad]).sort(), ['abschnitte', 'datei', 'form', 'gelesenAm', 'jahr', 'nr', 'pfad', 'pnr', 'projekt', 'stempel'], 'dieselben Felder wie in 0.1.0');
   });
   console.log(`\nKern: ${n} Prüfungen bestanden`);
 })().catch(e => { console.error(e); process.exit(1); });

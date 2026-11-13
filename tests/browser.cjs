@@ -1,11 +1,18 @@
 // LexiKit im echten Browser (Chromium): Archivordner im privaten Dateisystem des Browsers (OPFS) mit erfundenen Berichten.
-// Geprüft: erstes Einlesen, Auswahl der Berichte, Dateien in _LexiKit, nichts in den Projektordnern geändert, Suche,
-// Themen anlegen/ändern/löschen mit einem „anderen PC“, nur Neues nachlesen, Schreibprobe schlägt fehl.
+// Geprüft: erstes Einlesen, Auswahl der Berichte, Dateien in _LexiKit, nichts in den Projektordnern geändert, Themenliste aus
+// LexiKit 0.1.0 wird gehoben, Fälle (Karte, Reiter, Verlauf, Stränge, Schildchen „Untersucht“ mit Fundstelle), Suche mit Thema
+// und eigenen Wörtern, Rangfolge, Filter, Themen anlegen/ändern/löschen mit einem „anderen PC“, Start mit vorhandenem Index
+// (nichts gelesen, nichts geschrieben), nur Neues nachlesen, Archivwechsel, Schreibprobe schlägt fehl.
 // node tests/browser.cjs   (Playwright wird in CI installiert; lokal: NODE_PATH auf ein playwright, CHROME=Pfad zu Chrome optional)
 // LEXIKIT_BILDER=<Ordner> legt Bildschirmfotos ab.
 const assert = require('node:assert/strict'), http = require('node:http'), fs = require('node:fs'), path = require('node:path');
 const { chromium } = require('playwright');
 const { archiv, docx, BERICHTE } = require('./daten/berichte.cjs');
+const K = require('./kern-laden.cjs');
+// Themenliste, wie LexiKit 0.1.0 sie hinterlassen hat (Fassung 1, ohne Gruppen): eigenes Thema des Büros, ein gelöschtes
+const THEMEN_010 = { format: 'lexikit-themen', version: 1, themen: [
+  ...K.ERSTE_THEMEN.map(([name, w]) => Object.assign({ id: K.themaId(name), name, woerter: w, geaendert: '2026-11-13T09:00:00.000Z' }, name === 'Löschmittel' ? { woerter: [], geloescht: true } : {})),
+  { id: 't-parkett', name: 'Parkett', woerter: ['Laminat'], geaendert: '2026-11-13T09:30:00.000Z' }] };
 const ROOT = path.join(__dirname, '..');
 const TYP = { '.html': 'text/html', '.js': 'text/javascript', '.svg': 'image/svg+xml', '.webmanifest': 'application/manifest+json' };
 const server = http.createServer((q, r) => {
@@ -65,6 +72,7 @@ const b64 = x => (Buffer.isBuffer(x) ? x : Buffer.from(String(x))).toString('bas
       if (/korrigiert/.test(pfad)) await page.waitForTimeout(20);
     }
     await page.evaluate(([p, b]) => __schreib(p, b), ['25.0075 Musterallee Beispielstadt Tst/Mitteilungen/1. Mitteilung_korrigiert.docx', b64(docx(BERICHTE.ohne, 0, 'korr'))]);   // jünger als die erste Fassung
+    await page.evaluate(b => __schreib('_LexiKit/lexikit-themen.json', b), b64(JSON.stringify(THEMEN_010, null, 1)));
     const vorher = await projektDateien();
 
     /* ---------- 1. Erster Start: Einlesen ---------- */
@@ -72,7 +80,7 @@ const b64 = x => (Buffer.isBuffer(x) ? x : Buffer.from(String(x))).toString('bas
     await page.waitForSelector('#einlesen:not([hidden])');
     await lauf();
     await bild('1-einlesen-fertig');
-    assert.match(await page.textContent('#einZahl'), /6 Berichte im Index/);
+    assert.match(await page.textContent('#einZahl'), /11 Berichte im Index/);
     const lx = Object.keys(await page.evaluate(() => __liste())).filter(k => k.startsWith('_LexiKit/')).sort();
     assert.deepEqual(lx, ['_LexiKit/lexikit-index-2022.json', '_LexiKit/lexikit-index-2023.json', '_LexiKit/lexikit-index-2024.json', '_LexiKit/lexikit-index-2025.json', '_LexiKit/lexikit-index-2026.json', '_LexiKit/lexikit-themen.json'], 'nur Index und Themen in _LexiKit, Schreibprobe wieder weg');
     assert.deepEqual(await projektDateien(), vorher, 'in den Projektordnern hat sich nichts geändert');
@@ -80,64 +88,153 @@ const b64 = x => (Buffer.isBuffer(x) ? x : Buffer.from(String(x))).toString('bas
     assert.deepEqual(Object.keys(idx).sort(), [
       '22.00114 Musterweg Beispielbad Tst/Mitteilungen/1.Mitteilung .docx',
       '23.0502 Baumarkt Musterstadt Tst/2. Mitteilung.docx',
+      '23.0700 Beispielhalle Musterdorf Tst/Mitteilungen/1. Mitteilung.docx',
       '24.0300 Musterhof Probedorf Tst/Altbau/1. Mitteilung.docx',
       '24.0300 Musterhof Probedorf Tst/Neubau/1. Mitteilung.docx',
+      '24.0412 Musterlager Beispielheim Tst/Mitteilungen/1. Mitteilung.docx',
+      '24.0412 Musterlager Beispielheim Tst/Mitteilungen/1. Mitteilung_Englisch.docx',
+      '24.0412 Musterlager Beispielheim Tst/Mitteilungen/2. Mitteilung.docx',
       '25.0075 Musterallee Beispielstadt Tst/Mitteilungen/1. Mitteilung_korrigiert.docx',
+      '25.0300 Musterwerk Probestadt Tst/Mitteilungen/1. Mitteilung.docx',
       '26.0137 Beispielweg Musterstadt Tst/Mitteilungen/1. Mitteilung.docx'], 'Auswahl: ohne Anschreiben, Entwurf, Gutachten_, ~$, PDF, .doc, ALT_2022, Sonstige; nur die korrigierte Fassung');
     const roh = JSON.stringify(idx);
-    for (const v of ['Beispielperson', 'Beispielmensch', 'XY-0000', 'Muster Versicherung', 'Musterhausen', '_klein']) assert.ok(!roh.includes(v), 'nicht im Index: ' + v);
+    for (const v of ['Beispielperson', 'Beispielmensch', 'XY-0000', 'Muster Versicherung', 'Musterhausen', 'Muster Sanierung', 'Beispielgasse', '12-3456', '@', '"_d"', '"kl"', '"tags"']) assert.ok(!roh.includes(v), 'nicht im Index: ' + v);
+    // Index bleibt Fassung 1 (dasselbe Format wie 0.1.0); die Themenliste aus 0.1.0 ist jetzt Fassung 2 – nichts verloren
+    for (const j of [2022, 2023, 2024, 2025, 2026]) assert.equal(JSON.parse(await page.evaluate(p => __lies(p), `_LexiKit/lexikit-index-${j}.json`)).version, 1);
+    const tStart = JSON.parse(await page.evaluate(() => __lies('_LexiKit/lexikit-themen.json')));
+    assert.equal(tStart.version, 2);
+    assert.deepEqual(tStart.themen.slice(0, THEMEN_010.themen.length), THEMEN_010.themen, 'Themen des Büros unverändert, auch der Lösch-Vermerk');
+    assert.deepEqual(tStart.themen.slice(THEMEN_010.themen.length).map(x => [x.name, x.gruppe]), K.ERSTE_FAELLE.map(([n]) => [n, 'fall']));
     assert.equal(idx['26.0137 Beispielweg Musterstadt Tst/Mitteilungen/1. Mitteilung.docx'].form, 'Untersuchungsbericht');
 
-    /* ---------- 2. Suche ---------- */
+    /* ---------- 2. Fälle: Suche, Fallkarte, geöffneter Fall ---------- */
     await page.click('#btnSchonSuchen');
     await page.waitForSelector('#suche:not([hidden])');
-    assert.deepEqual(await page.$$eval('#themen .thema span', x => x.map(e => e.textContent)), ['Löschpulver', 'Löschmittel', 'Löschwasser', 'Brandschutt', 'Entsorgungswege', 'Abfallschlüssel', 'Asbest', 'Schimmel', 'Fäkalkeime']);
-    assert.equal(await page.textContent('#ergebnisZeile'), 'Wähle ein Thema oder tippe ein Wort.');
-    await page.click('#themen [data-thema="t-fäkalkeime"]');
-    assert.match(await page.textContent('#ergebnisZeile'), /^4 Textstellen in 1 Bericht · neueste zuerst$/);
-    const k1 = page.locator('.treffer').first();
-    assert.equal(await k1.locator('.t-kopf b').textContent(), '26.0137 Beispielweg Musterstadt Tst');
-    assert.equal(await k1.locator('.t-kopf span').textContent(), '2026 · 1. Mitteilung · Untersuchungsbericht');
-    assert.equal(await k1.locator('.t-abschnitt').textContent(), 'Probenahme');
-    assert.deepEqual(await page.$$eval('.treffer mark', x => [...new Set(x.map(e => e.textContent))]).then(a => a.sort()), ['E. coli', 'Enterokokken', 'Escherichia coli', 'Fäkalkeime', 'coliforme'].sort());
-    assert.match(await page.textContent('#themen [data-thema="t-fäkalkeime"] small'), /4 Stellen/);
-    const href = await k1.locator('[data-word]').getAttribute('href');
-    assert.equal(href, 'ms-word:ofv|u|file:///C:/Daten/Mosaik%20Archivordner/26.0137%20Beispielweg%20Musterstadt%20Tst/Mitteilungen/1.%20Mitteilung.docx');
+    assert.deepEqual(await page.$$eval('#themen .thema span', x => x.map(e => e.textContent)), ['Löschpulver', 'Löschwasser', 'Brandschutt', 'Entsorgungswege', 'Abfallschlüssel', 'Asbest', 'Schimmel', 'Fäkalkeime', 'Parkett'], 'Themen des Büros aus 0.1.0, ohne das gelöschte');
+    assert.deepEqual(await page.$$eval('#themenFall .thema span', x => x.map(e => e.textContent)), ['Photovoltaik', 'Lithium-Akku', 'Tiefgarage', 'Warenvorräte', 'Kühlhaus', 'Technische Einrichtung'], 'zweite Gruppe „Art des Falls“');
+    assert.equal(await page.textContent('#ergebnisZeile'), 'Wähle ein Thema, beschreibe den Fall oder wähle unter „Untersucht auf“.');
+    await page.waitForFunction(() => /^8 Fälle · 11 Berichte · aktuell$/.test(document.getElementById('stand').textContent));
+    const faelleH = () => page.$$eval('.fall h2', x => x.map(e => e.textContent.slice(0, 7)));
+    const LAGER = '24.0412 Musterlager Beispielheim Tst', karteVon = p => page.locator(`.fall[data-fall="${p}"]`);
+    // Thema: Fälle statt Textstellen, Fund in der Veranlassung zuerst, nur Arbeitsschutz zuletzt
+    await page.click('#themen [data-thema="t-löschpulver"]');
+    assert.equal(await page.textContent('#ergebnisZeile'), '3 Fälle · ähnlichste zuerst');
+    assert.deepEqual(await faelleH(), ['24.0412', '25.0300', '23.0700']);
+    await page.waitForFunction(() => /^3 Fälle$/.test(document.querySelector('[data-thema="t-löschpulver"] small').textContent));
+    const k1 = karteVon(LAGER);
+    assert.equal(await k1.locator('.f-kopf .meta').textContent(), '2024 · 2 Mitteilungen', 'englische Fassung zählt nicht mit');
+    assert.deepEqual(await k1.locator('.gitter .lab').allTextContents(), ['Was war', 'Untersucht']);
+    assert.deepEqual(await k1.locator('.gitter mark').allTextContents(), ['Pulverlöscher', 'Löschpulver']);
+    assert.deepEqual(await k1.locator('.tag').allTextContents(), ['12 Wischproben · Chlorid, Sulfat, Phosphat', '12 Wischproben · PAK', '1 Brandschuttmischprobe · DepV', '3 Materialproben · Brandgeruch', '6 Kontrollwischproben · Chlorid (2. Mitteilung)']);
+    assert.deepEqual(await k1.locator('.f-knoepfe button').allTextContents(), ['Fall öffnen', 'Maßnahmen zeigen']);
+    assert.deepEqual(await karteVon('23.0700 Beispielhalle Musterdorf Tst').locator('.f-knoepfe button').allTextContents(), ['Fall öffnen', 'Schlussfolgerungen zeigen'], 'ohne Sanierungsmaßnahmen: Schlussfolgerungen');
+    await bild('2-thema-loeschpulver');
+    // Thema + eigene Wörter
+    await page.fill('#q', 'Lagerhalle Elektronik'); await page.waitForTimeout(400);
+    assert.equal(await page.textContent('#ergebnisZeile'), '1 Fall · ähnlichste zuerst');
+    assert.match(await page.textContent('#woerterZeile'), /^Thema Löschpulver \+ „Lagerhalle Elektronik“ · Thema bearbeiten$/);
+    assert.equal(await page.locator('#themen [aria-pressed="true"] span').textContent(), 'Löschpulver', 'Thema bleibt gewählt');
+    // Fall öffnen: Reiter nur für vorhandene Klassen, erster Reiter mit Fund, Verlauf mit englischer Fassung
+    await k1.locator('[data-oeffnen=""]').click();
+    assert.deepEqual(await k1.locator('.tab').allTextContents(), ['Veranlassung', 'Probenahme', 'Befund', 'Schlussfolgerungen', 'Sanierungsmaßnahmen', 'Arbeitsschutz']);
+    assert.equal(await k1.locator('.tab[aria-selected="true"]').textContent(), 'Veranlassung');
+    assert.deepEqual(await k1.locator('.gitter .lab').allTextContents(), ['Was war', 'Untersucht', 'Verlauf']);
+    assert.match(await k1.locator('.gitter').nth(1).textContent(), /1\. Mitteilung · Sanierungsvorschlag → 1\. Mitteilung_Englisch · englische Fassung → 2\. Mitteilung · Untersuchungsbericht/);
+    assert.deepEqual(await k1.locator('.block-kopf span').allTextContents(), ['1. Mitteilung · 1. Veranlassung', '1. Mitteilung · 2. Aufgabenstellung', '2. Mitteilung'], 'Einleitung der 2. Mitteilung steht unter „Veranlassung“');
+    await k1.locator('[data-zu]').click();
+    assert.equal(await k1.locator('.tab').count(), 0, 'wieder zu');
+    // „Maßnahmen zeigen“
+    await k1.locator('[data-oeffnen="massnahmen"]').click();
+    assert.equal(await k1.locator('.tab[aria-selected="true"]').textContent(), 'Sanierungsmaßnahmen');
+    assert.equal(await k1.locator('.block-kopf span').textContent(), '1. Mitteilung · 6. Sanierungsmaßnahmen');
+    assert.deepEqual(await k1.locator('.txt mark').allTextContents(), ['Löschpulver']);
+    assert.deepEqual(await k1.locator('.f-knoepfe .sp-knopf').allTextContents().then(a => a.map(s => s.trim())), ['Bericht in Word öffnen', 'Abschnitt kopieren', 'Projektordner', 'Fall schließen'], 'ohne „Für ChatGPT kopieren“');
+    assert.equal(await k1.locator('.f-knoepfe [data-word]').getAttribute('href'), 'ms-word:ofv|u|file:///C:/Daten/Mosaik%20Archivordner/24.0412%20Musterlager%20Beispielheim%20Tst/Mitteilungen/1.%20Mitteilung.docx');
     await k1.locator('[data-ordner]').click();
-    assert.equal(await page.evaluate(() => navigator.clipboard.readText()), 'C:\\Daten\\Mosaik Archivordner\\26.0137 Beispielweg Musterstadt Tst');
-    await bild('2-thema-faekalkeime');
-    // ganzer Abschnitt
-    await page.click('#themen [data-thema="t-abfallschlüssel"]');
-    const k2 = page.locator('.treffer').first();
-    assert.equal(await k2.locator('.t-abschnitt').textContent(), '2. Befund');
-    await k2.locator('[data-abschnitt]').click();
-    assert.equal(await page.locator('.treffer').first().locator('.t-text p').count(), 3, 'Satz + zwei Tabellenzeilen');
-    assert.equal(await page.locator('.treffer').first().locator('[data-abschnitt]').textContent(), 'Weniger zeigen');
-    // eigene Suche + Jahr
-    await page.fill('#q', 'Estrich'); await page.waitForTimeout(400);
-    assert.match(await page.textContent('#ergebnisZeile'), /^2 Textstellen in 2 Berichten/);
-    assert.equal(await page.locator('#themen [aria-pressed="true"]').count(), 0, 'eigene Suche: kein Thema gewählt');
+    assert.equal(await page.evaluate(() => navigator.clipboard.readText()), 'C:\\Daten\\Mosaik Archivordner\\24.0412 Musterlager Beispielheim Tst');
+    await k1.locator('[data-kopieren]').click();
+    assert.equal(await page.evaluate(() => navigator.clipboard.readText()), '1. Mitteilung · 6. Sanierungsmaßnahmen\nDie mit Löschpulver beaufschlagten Oberflächen sind zunächst trocken abzusaugen. Eine feuchte Reinigung erfolgt erst danach.\nVor dem Rückbau ist die Dacheindeckung auf Asbest zu prüfen. Wir empfehlen Kontrollwischproben auf Chlorid.', 'Abschnitt kopieren: nur Zwischenablage');
+    await bild('3-fall-offen');
+    // Reiter Befund: beide Mitteilungen, Unterüberschrift bleibt im Befund
+    await k1.locator('[data-tab="befund"]').click();
+    assert.deepEqual(await k1.locator('.block-kopf span').allTextContents(), ['1. Mitteilung · 5. Befund', '1. Mitteilung · 5.1 Wischproben', '2. Mitteilung · Befunde']);
+    assert.equal(await k1.locator('.block-kopf [data-word]').count(), 3, 'mehrere Berichte im Reiter: Word-Link je Block');
+    // Schildchen „Untersucht“ zeigt die Stelle
+    await k1.locator('.tag', { hasText: '1 Brandschuttmischprobe' }).click();
+    assert.equal(await k1.locator('.tab[aria-selected="true"]').textContent(), 'Probenahme');
+    assert.match(await k1.locator('p.fund').textContent(), /^Zusätzlich wurde eine Brandschuttmischprobe entnommen/);
+    await k1.locator('.tag', { hasText: '6 Kontrollwischproben' }).click();
+    assert.equal(await k1.locator('.tab[aria-selected="true"]').textContent(), 'Veranlassung');
+    assert.match(await k1.locator('p.fund').textContent(), /sechs Kontrollwischproben entnommen/);
+    assert.equal(await k1.locator('.block', { has: page.locator('p.fund') }).locator('.block-kopf span').textContent(), '2. Mitteilung');
+    // weder Berichtskopf (beide Formen) noch englischer Text in irgendeinem Reiter
+    let allerText = '';
+    for (const k of ['veranlassung', 'probenahme', 'befund', 'schluss', 'massnahmen', 'arbeitsschutz']) { await k1.locator(`[data-tab="${k}"]`).click(); allerText += await k1.textContent(); }
+    for (const v of ['Muster Sanierung', 'Beispielgasse', 'Musterweg 3', '12-3456', '@', 'Beispielperson', 'Muster Versicherung', 'forklift', 'warehouse']) assert.ok(!allerText.includes(v), 'nicht gezeigt: ' + v);
+    await k1.locator('[data-zu]').click();
+    // Thema abwählen (noch einmal antippen); englischer Text und Überschriften werden nicht gefunden
+    await page.click('#themen [data-thema="t-löschpulver"]');
+    assert.equal(await page.locator('#themen [aria-pressed="true"]').count(), 0);
+    assert.equal(await page.textContent('#ergebnisZeile'), '1 Fall · ähnlichste zuerst', 'nur noch die eigenen Wörter');
+    await page.fill('#q', 'Lagerhalle'); await page.waitForTimeout(400);
+    assert.deepEqual(await faelleH(), ['24.0412', '23.0700'], 'Veranlassung und Aufgabenstellung zählen gleich, neueste zuerst');
+    for (const wort of ['warehouse', 'Schlussfolgerungen']) {
+      await page.fill('#q', wort); await page.waitForTimeout(400);
+      assert.equal(await page.textContent('#ergebnisZeile'), 'Kein Fall gefunden', wort);
+    }
+    await page.fill('#q', 'Lagerhalle Kellerassel'); await page.waitForTimeout(400);
+    assert.match(await page.textContent('.leer'), /keinen Fall\. Jedes Wort muss im Fall vorkommen/);
+    await bild('4-leer');
+    await page.fill('#q', ''); await page.waitForTimeout(400);
+    // Filter „Untersucht auf“ (aus dem Wörterbuch, nur was erkannt wurde) und Jahr
+    assert.deepEqual(await page.$$eval('#chips [data-param]', x => x.map(e => e.textContent)), ['PAK', 'Chlorid', 'Sulfat · Ammonium · Phosphat', 'Asbest', 'DepV', 'Schimmel', 'Fäkalkeime', 'Bakterien', 'Brandgeruch']);
+    await page.click('#chips [data-param="sap"]');
+    assert.equal(await page.textContent('#ergebnisZeile'), '2 Fälle · neueste zuerst');
+    assert.deepEqual(await faelleH(), ['25.0300', '24.0412']);
+    await page.click('#chips [data-param="chlorid"]');
+    assert.deepEqual(await faelleH(), ['24.0412'], 'zwei Filter: beide');
+    await page.click('#chips [data-param="chlorid"]');
+    await page.click('#jahre [data-jahr="2025"]');
+    assert.deepEqual(await faelleH(), ['25.0300']);
     await page.click('#jahre [data-jahr="2023"]');
-    assert.match(await page.textContent('#ergebnisZeile'), /^1 Textstelle in 1 Bericht/);
-    await page.fill('#q', 'Kellerassel'); await page.waitForTimeout(400);
-    assert.equal(await page.textContent('#ergebnisZeile'), 'Keine Textstelle gefunden');
-    assert.match(await page.textContent('.leer'), /steht in den eingelesenen Berichten nichts aus 2023/);
-    await bild('3-leer');
-    await page.click('#jahre [data-jahr=""]'); await page.fill('#q', ''); await page.waitForTimeout(400);
-    // Bericht ohne Überschriften: Treffer ohne Abschnittsnamen
+    assert.equal(await page.textContent('#ergebnisZeile'), 'Kein Fall gefunden');
+    assert.match(await page.textContent('.leer'), /keinen Fall aus 2023\..*Filter „Untersucht auf“ ist gesetzt/);
+    await page.click('#jahre [data-jahr=""]'); await page.click('#chips [data-param="sap"]');
+    assert.equal(await page.locator('#chips [aria-pressed="true"]').count(), 0);
+    // Bericht ohne Überschriften: Zusammenfassung und ganzer Text, keine Reiter. Gebäude-Ordner: Stränge im Verlauf.
     await page.click('#themen [data-thema="t-asbest"]');
-    assert.ok((await page.$$eval('.treffer', x => x.map(e => !!e.querySelector('.t-abschnitt')))).includes(false));
+    assert.deepEqual(await faelleH(), ['25.0075', '22.0011', '24.0412', '24.0300', '23.0700'], '„Was war“ zählt ersatzweise wie die Veranlassung; nur Arbeitsschutz zuletzt');
+    const k2 = karteVon('25.0075 Musterallee Beispielstadt Tst');
+    assert.deepEqual(await k2.locator('.tag').allTextContents(), ['1 Materialprobe', 'Asbest']);
+    assert.deepEqual(await k2.locator('.f-knoepfe button').allTextContents(), ['Fall öffnen'], 'kein „Maßnahmen zeigen“ ohne solchen Abschnitt');
+    await k2.locator('[data-oeffnen]').click();
+    assert.equal(await k2.locator('.tab').count(), 0, 'keine Reiter');
+    assert.equal(await k2.locator('.block-kopf').first().textContent(), 'Bericht ohne Überschriften – ganzer Text');
+    assert.equal(await k2.locator('.txt p').count(), 2, 'der ganze Text');
+    await k2.locator('.tag', { hasText: 'Asbest' }).click();
+    assert.match(await k2.locator('p.fund').textContent(), /Asbest wurde nachgewiesen/);
+    const k3 = karteVon('24.0300 Musterhof Probedorf Tst');
+    assert.equal(await k3.locator('.aus').textContent(), 'aus: Altbau · 1. Mitteilung', '„Was war“ nennt den Strang');
+    await k3.locator('[data-oeffnen]').click();
+    assert.equal(await k3.locator('.gitter').nth(1).innerText().then(s => s.replace(/\s+/g, ' ')), 'VERLAUF Altbau: 1. Mitteilung · Untersuchungsbericht Neubau: 1. Mitteilung · Untersuchungsbericht');
+    assert.deepEqual(await k3.locator('.tab').allTextContents(), ['Veranlassung', 'Weiteres']);
+    assert.equal(await k3.locator('.tab[aria-selected="true"]').textContent(), 'Weiteres', 'erster Reiter mit Fund');
+    assert.equal(await k3.locator('.block-kopf span').textContent(), 'Neubau · 1. Mitteilung');
+    await bild('5-straenge');
+    await page.click('#themen [data-thema="t-asbest"]');
 
     /* ---------- 3. Themen: anlegen, anderer PC ändert, Konflikt, löschen ---------- */
     const themen = async () => JSON.parse(await page.evaluate(() => __lies('_LexiKit/lexikit-themen.json')));
     await page.click('#btnNeuesThema');
     await page.fill('#themaName', 'Estrich'); await page.fill('#themaWoerter', 'Trittschall\n');
-    await page.waitForFunction(() => /Findet jetzt: 2 Stellen in 2 Berichten/.test(document.getElementById('themaZahl').textContent));
+    await page.check('input[name="themaGruppe"][value="fall"]');
+    await page.waitForFunction(() => /^Findet jetzt: 3 Fälle$/.test(document.getElementById('themaZahl').textContent));
     await page.click('#btnThemaSpeichern');
     await page.waitForSelector('#themaForm', { state: 'hidden' });
     let t = await themen();
-    assert.deepEqual(t.themen.at(-1).woerter, ['Trittschall']); assert.equal(t.themen.at(-1).name, 'Estrich');
-    assert.equal(await page.locator('#themen [aria-pressed="true"] span').textContent(), 'Estrich');
+    assert.deepEqual(t.themen.at(-1).woerter, ['Trittschall']); assert.equal(t.themen.at(-1).name, 'Estrich'); assert.equal(t.themen.at(-1).gruppe, 'fall'); assert.equal(t.version, 2);
+    assert.equal(await page.locator('#themenFall [aria-pressed="true"] span').textContent(), 'Estrich', 'steht in der Gruppe „Art des Falls“');
+    assert.equal(await page.textContent('#ergebnisZeile'), '3 Fälle · ähnlichste zuerst');
     // anderer PC: ändert Asbest und legt „Gips“ an
     t.themen.find(x => x.name === 'Asbest').woerter = ['Chrysotil']; t.themen.find(x => x.name === 'Asbest').geaendert = '2099-01-01T00:00:00.000Z';
     t.themen.push({ id: 't-gips', name: 'Gips', woerter: ['Sulfat'], geaendert: '2099-01-01T00:00:00.000Z' });
@@ -150,16 +247,30 @@ const b64 = x => (Buffer.isBuffer(x) ? x : Buffer.from(String(x))).toString('bas
     await page.fill('#themaWoerter', 'Chrysotil\nAmphibol'); await page.click('#btnThemaSpeichern');
     await page.waitForSelector('#themaForm', { state: 'hidden' });
     t = await themen();
-    assert.deepEqual(t.themen.find(x => x.name === 'Asbest').woerter, ['Chrysotil', 'Amphibol']);
+    assert.deepEqual(t.themen.find(x => x.name === 'Asbest').woerter, ['Chrysotil', 'Amphibol']); assert.equal(t.themen.find(x => x.name === 'Asbest').gruppe, 'thema');
     assert.ok(t.themen.some(x => x.name === 'Gips') && t.themen.some(x => x.name === 'Estrich'), 'Thema des anderen PCs und eigenes bleiben');
     assert.ok(await page.locator('#themen [data-thema="t-gips"]').count(), 'Thema des anderen PCs erscheint');
     // löschen (mit Rückfrage im Ablauf, kein Browser-Dialog)
-    await page.click('#themen [data-thema="t-estrich"]'); await page.click('[data-aktion="thema-bearbeiten"]');
+    await page.click('#themenFall [data-thema="t-estrich"]'); await page.click('[data-aktion="thema-bearbeiten"]');
+    assert.equal(await page.isChecked('input[name="themaGruppe"][value="fall"]'), true, 'Formular zeigt die Gruppe');
     await page.click('#btnThemaLoeschen'); await page.click('#btnLoeschenJa');
     await page.waitForSelector('#themaForm', { state: 'hidden' });
-    assert.equal(await page.locator('#themen [data-thema="t-estrich"]').count(), 0);
+    assert.equal(await page.locator('[data-thema="t-estrich"]').count(), 0);
     t = await themen(); assert.equal(t.themen.find(x => x.id === 't-estrich').geloescht, true, 'gelöscht bleibt als Vermerk');
-    await bild('4-themen');
+    await bild('6-themen');
+
+    /* ---------- 3b. Start mit vorhandenem Index: nichts wird neu eingelesen, kein Index neu geschrieben ---------- */
+    const indexStand = async () => Object.fromEntries(Object.entries(await page.evaluate(() => __liste())).filter(([k]) => /^_LexiKit\/lexikit-index-/.test(k)));
+    const idxVor = await indexStand(), themenVor = await page.evaluate(() => __lies('_LexiKit/lexikit-themen.json'));
+    await page.reload(); await page.evaluate(H);
+    await page.waitForSelector('#suche:not([hidden])'); await lauf();
+    assert.equal(await page.evaluate(() => LexiKit.L.gelesen), 0, 'vorhandener Index (Fassung 1) reicht – kein Bericht neu gelesen');
+    assert.deepEqual(await indexStand(), idxVor, 'Index-Dateien unberührt (Größe und Zeit)');
+    assert.equal(await page.evaluate(() => __lies('_LexiKit/lexikit-themen.json')), themenVor, 'Themenliste der Fassung 2 wird nicht noch einmal geschrieben');
+    await page.waitForFunction(() => /^8 Fälle · 11 Berichte · aktuell$/.test(document.getElementById('stand').textContent));
+    await page.click('#themen [data-thema="t-löschpulver"]');
+    assert.deepEqual(await faelleH(), ['24.0412', '25.0300', '23.0700'], 'Fälle direkt aus dem gespeicherten Index');
+    await page.click('#themen [data-thema="t-löschpulver"]');
 
     /* ---------- 4. Nur Neues nachlesen ---------- */
     const lxZeit = async n => (await page.evaluate(() => __liste()))['_LexiKit/' + n];
@@ -175,7 +286,7 @@ const b64 = x => (Buffer.isBuffer(x) ? x : Buffer.from(String(x))).toString('bas
     assert.equal(await page.evaluate(() => LexiKit.L.weg), 1);
     assert.equal(await lxZeit('lexikit-index-2026.json'), z2026, '2026 unverändert → nicht neu geschrieben');
     const i25 = JSON.parse(await page.evaluate(() => __lies('_LexiKit/lexikit-index-2025.json')));
-    assert.deepEqual(Object.keys(i25.berichte), ['25.0075 Musterallee Beispielstadt Tst/Mitteilungen/1. Mitteilung.docx']);
+    assert.deepEqual(Object.keys(i25.berichte).sort(), ['25.0075 Musterallee Beispielstadt Tst/Mitteilungen/1. Mitteilung.docx', '25.0300 Musterwerk Probestadt Tst/Mitteilungen/1. Mitteilung.docx']);
     assert.deepEqual(await projektDateien(), vorher2, 'Projektordner wieder unverändert');
     // Index eines anderen PCs bleibt beim Zusammenführen erhalten
     const i24 = JSON.parse(await page.evaluate(() => __lies('_LexiKit/lexikit-index-2024.json')));
@@ -206,10 +317,12 @@ const b64 = x => (Buffer.isBuffer(x) ? x : Buffer.from(String(x))).toString('bas
     assert.deepEqual(Object.keys(JSON.parse(lx2['lexikit-index-2021.json']).berichte), [ZWEIT + '/Mitteilungen/1. Mitteilung.docx']);
     for (const j of [2022, 2023, 2024, 2025, 2026]) assert.ok(!(await page.evaluate(p => __lies(p), `_LexiKit/lexikit-index-${j}.json`)).includes('Zweitarchiv'), 'altes _LexiKit ohne Einträge des neuen Archivs: ' + j);
     const altIdx = {}; for (const j of [2022, 2023, 2024, 2025, 2026]) Object.assign(altIdx, JSON.parse(await page.evaluate(p => __lies(p), `_LexiKit/lexikit-index-${j}.json`)).berichte);
-    assert.equal(Object.keys(altIdx).length, 6, 'altes Archiv: kein Bericht als „verschwunden“ entfernt');
+    assert.equal(Object.keys(altIdx).length, 11, 'altes Archiv: kein Bericht als „verschwunden“ entfernt');
+    const t2 = JSON.parse(lx2['lexikit-themen.json']);
+    assert.equal(t2.version, 2); assert.equal(t2.themen.length, 15, 'neue Themenliste: neun Themen und sechs „Art des Falls“');
     await page.click('#btnSchonSuchen'); await page.click('#themen [data-thema="t-asbest"]');
-    assert.match(await page.textContent('#ergebnisZeile'), /^1 Textstelle in 1 Bericht/);
-    assert.equal(await page.locator('.treffer .t-kopf b').first().textContent(), ZWEIT);
+    assert.equal(await page.textContent('#ergebnisZeile'), '1 Fall · ähnlichste zuerst');
+    assert.equal(await page.locator('.fall h2').first().textContent(), ZWEIT);
 
     /* ---------- 6. Schreibprobe schlägt fehl ---------- */
     await page.evaluate(() => sessionStorage.setItem('schreibprobe-kaputt', '1'));
@@ -220,10 +333,10 @@ const b64 = x => (Buffer.isBuffer(x) ? x : Buffer.from(String(x))).toString('bas
     await lauf();
     assert.match(await page.textContent('#stand'), /nur in dieser Sitzung/);
     await page.click('#themen [data-thema="t-löschwasser"]');
-    assert.match(await page.textContent('#ergebnisZeile'), /^2 Textstellen in 1 Bericht/, 'Suche geht trotzdem');
+    assert.equal(await page.textContent('#ergebnisZeile'), '1 Fall · ähnlichste zuerst', 'Suche geht trotzdem');
     await page.click('#btnNeuesThema'); await page.fill('#themaName', 'Test'); await page.click('#btnThemaSpeichern');
     assert.match(await page.textContent('#themaFehler'), /nicht gespeichert werden/);
-    await bild('5-nur-lesen');
+    await bild('7-nur-lesen');
 
     assert.deepEqual(fehler, [], 'keine Fehler in der Konsole');
     console.log('Browser: alle Schritte bestanden');
