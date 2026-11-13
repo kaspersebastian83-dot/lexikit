@@ -187,6 +187,39 @@ details.fehlerliste ul{font-size:13px;color:var(--sp-muted);max-height:220px;ove
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);max-width:min(680px,92vw);background:#17222c;color:#fff;border-radius:12px;padding:12px 18px;font-size:15px;line-height:1.45;box-shadow:0 6px 24px rgba(0,0,0,.25);z-index:20;user-select:text}
 .toast code{background:rgba(255,255,255,.12);padding:1px 4px;border-radius:4px;word-break:break-all}
 code{font-size:.95em}
+/* Auswählen und „Für ChatGPT kopieren“ (Mock-up „Für ChatGPT kopieren – Vorschau“, Leiste „2 Fälle ausgewählt“) */
+.waehlen{margin-left:auto;display:flex;gap:8px;align-items:center;min-height:44px;font-weight:600;font-size:16px;cursor:pointer}
+.waehlen.aus{color:#8a9aa6;cursor:not-allowed}
+.waehlen input,.chk input{width:22px;height:22px;accent-color:var(--sp-app-dunkel);flex:none;margin:0}
+.auswahl-leiste{position:sticky;bottom:16px;z-index:5;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;background:#e3efed;border:1px solid var(--sp-app-dunkel);border-radius:14px;padding:14px 20px;box-shadow:0 6px 18px rgba(0,0,0,.12);font-size:17px}
+.auswahl-leiste .sp-knopf{height:46px;font-size:16px;font-weight:600}
+.kopie{max-width:1240px;margin:0 auto;padding:32px 24px;display:flex;flex-direction:column;gap:20px;font-size:17px;line-height:1.5}
+.kopie-kopf{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.kopie-kopf h1{margin:0;font-size:26px}
+.kopie-spalten{display:grid;grid-template-columns:420px minmax(0,1fr);gap:24px;align-items:start}
+@media(max-width:900px){.kopie-spalten{grid-template-columns:minmax(0,1fr)}}
+.kkarte{background:var(--sp-panel);border:1px solid var(--sp-line);border-radius:14px;padding:22px 24px;display:flex;flex-direction:column;gap:22px;min-width:0}
+.kkarte .lab{padding:0;margin:0 0 8px}
+.chk{display:flex;gap:10px;align-items:center;min-height:44px;font-size:16px;cursor:pointer}
+.chk.ein{padding-left:32px}
+.chk:has(input:disabled){color:#8a9aa6;cursor:not-allowed}
+.kmeta{color:var(--sp-muted);font-size:15px}
+.kmeta.ein{padding-left:32px}
+.knotiz{font-size:14px;color:#6b4e00;padding-left:64px;margin-top:-6px}
+.kfrage textarea{font:inherit;font-size:16px;width:100%;padding:10px 14px;border:1.5px solid var(--sp-line2);border-radius:10px;resize:vertical;color:var(--sp-text);margin-top:4px}
+.kvor{font-family:Consolas,"Courier New",monospace;font-size:14.5px;line-height:1.55;background:#f7f8f9;border:1px solid var(--sp-line);border-radius:10px;padding:16px 18px;white-space:pre-wrap;overflow-wrap:anywhere;margin:0;max-height:72vh;overflow:auto}
+.ph{background:#e3efed;color:#1f524e;border-radius:4px;padding:0 3px;font-weight:700}
+mark.sus{background:#f6dc7a;color:#3d3200;border-radius:4px;padding:0 3px;font-weight:700;text-decoration:underline}
+mark.sus.blink{outline:3px solid #b8860b}
+mark.sus-ok{background:#eef1f3;color:inherit;border-radius:4px;padding:0 3px}
+.kwarn{background:#fdf1d3;color:#4a3800;border-radius:8px;padding:12px 14px;font-size:15px;display:flex;flex-direction:column;gap:10px}
+.kstelle{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;justify-content:space-between;border-top:1px solid #f0dca6;padding-top:8px}
+.kstelle-text{flex:1 1 260px;min-width:0}
+.kstelle-knoepfe{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.kstelle .sp-knopf{height:40px;font-size:15px}
+.kstelle .linkknopf{font-size:15px;font-weight:700;color:#3d3200}
+.kfuss{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px}
+.sp-haupt:disabled{background:#9aa8b2;cursor:not-allowed}
 </style>
 </head>
 <body>
@@ -290,7 +323,39 @@ code{font-size:.95em}
         <div class="zeile"><div class="gross" id="ergebnisZeile" aria-live="polite"></div><div class="klein" id="woerterZeile"></div></div>
         <div id="treffer" style="display:flex;flex-direction:column;gap:16px"></div>
         <button id="btnMehrTreffer" class="sp-knopf" type="button" hidden></button>
+        <div class="auswahl-leiste" id="auswahlLeiste" hidden><strong id="auswahlText"></strong>
+          <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="sp-knopf" type="button" id="btnAuswahlLeeren">Auswahl leeren</button><button class="sp-knopf sp-knopf-app" type="button" id="btnAuswahlKopieren">Ausgewählte für ChatGPT kopieren …</button></div></div>
         <div class="fuss">LexiKit liest nur. Es schreibt nichts in die Projektordner und fügt nichts in einen Bericht ein. Ein Fall ist ein Projektordner mit allen seinen fertigen Word-Mitteilungen (ohne Anschreiben, Entwürfe, PDF; englische Fassungen stehen nur im Verlauf). Jedes eigene Wort muss im Text des Falls vorkommen, Überschriften zählen nicht. „Untersucht“ nennt, was laut Probenahme und Befund beprobt oder gemessen wurde – ein Klick auf ein Schildchen zeigt die Stelle.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Für ChatGPT kopieren: Vorschau – nichts kommt ohne sie in die Zwischenablage -->
+  <section id="kopieren" class="kopie" hidden>
+    <div class="kopie-kopf"><h1>Für ChatGPT kopieren</h1><button class="sp-knopf" type="button" id="btnKopieZurueck">Zurück zu den Fällen</button></div>
+    <div class="kopie-spalten">
+      <form class="kkarte" id="kopieForm" autocomplete="off">
+        <div><p class="lab">Fälle</p><div id="kopieFaelle"></div></div>
+        <div><p class="lab">Abschnitte</p>
+          <label class="chk"><input type="checkbox" data-kk="untersucht" checked> Untersucht (Kurzzeile aus der Fallkarte)</label>
+          <label class="chk"><input type="checkbox" data-kk="befund" checked> Befund</label>
+          <label class="chk"><input type="checkbox" data-kk="schluss" checked> Schlussfolgerungen</label>
+          <label class="chk"><input type="checkbox" data-kk="massnahmen" checked> Sanierungsmaßnahmen</label>
+          <label class="chk"><input type="checkbox" data-kk="arbeitsschutz"> Arbeitsschutz</label>
+          <div class="kmeta" style="margin-top:8px">Veranlassung, Aufgabenstellung und Ortstermin/Probenahme werden nie kopiert – dort stehen die Namen und Adressen. Namen und Adressen aus dem Berichtskopf werden durch Platzhalter ersetzt, der Projektordner erscheint nur als Nummer.</div></div>
+        <div class="kfrage"><p class="lab">Frage</p>
+          <div id="kFragen" role="radiogroup" aria-label="Frage"></div>
+          <label class="kmeta" for="kFrageText" style="display:block;margin-top:8px">Frage an ChatGPT</label>
+          <textarea id="kFrageText" rows="3"></textarea>
+          <div id="kFallBox" hidden><label class="kmeta" for="kMeinFall" style="display:block;margin:8px 0 0">Mein Fall in ein paar Sätzen</label><textarea id="kMeinFall" rows="4"></textarea></div>
+        </div>
+      </form>
+      <div class="kkarte" style="gap:14px" id="kopieRechts">
+        <div class="kfuss"><p class="lab" style="margin:0">Das wird kopiert</p><span class="kmeta" id="kopieMeta"></span></div>
+        <pre class="kvor" id="kopieVorschau" tabindex="0" aria-label="Text für die Zwischenablage"></pre>
+        <div class="kwarn" id="kopieWarn" hidden></div>
+        <div class="kfuss"><span class="kmeta">LexiKit sendet nichts. Du fügst den Text selbst in ChatGPT ein.</span><button class="sp-haupt" id="btnKopieKopieren" type="button">In die Zwischenablage kopieren</button></div>
+        <div class="kmeta" id="kopieStatus" aria-live="polite" style="text-align:right"></div>
       </div>
     </div>
   </section>
@@ -323,6 +388,7 @@ code{font-size:.95em}
         <li>Der Index enthält Berichtstext und ist so vertraulich wie die Berichte. Er bleibt in <code>_LexiKit</code>.</li>
         <li>Der Berichtskopf (Projektnummer, Schaden vom, VN, Risiko, Versicherer, Schaden-Nr.; auch Auftraggeber, Schadenort, Bestell-/Auftrags-Nr.) kommt nicht in den Index und wird nicht gezeigt.</li>
         <li>Die Fälle (Abschnitte nach Art, „Was war“, „Untersucht“) baut LexiKit bei jedem Start aus dem Index – der Index selbst ist derselbe wie in 0.1.0, neu eingelesen wird dafür nichts.</li>
+        <li>„Für ChatGPT kopieren“ sendet nichts: Der Text kommt nach der Vorschau in die Zwischenablage, eingefügt wird er von Hand. Veranlassung, Aufgabenstellung und Ortstermin/Probenahme werden nie kopiert. Den Berichtskopf liest LexiKit dafür frisch aus dem Bericht und ersetzt seine Namen und Adressen durch Platzhalter – gespeichert wird er nicht.</li>
       </ul>
       <b>Änderungen</b>
       <ul id="aenderungen"></ul>
@@ -490,11 +556,14 @@ code{font-size:.95em}
     return { form, marke: iMarke >= 0, abschnitte: abschnitte.filter(x => x.p.length || x.h) };
   }
 
-  /** Ganze Datei lesen: lies/groesse/inflate wie zipEintrag. → { form, marke, abschnitte, zeichen } */
-  async function docxLesen(lies, groesse, inflate) {
+  /** Ganze Datei lesen: lies/groesse/inflate wie zipEintrag. → { form, marke, abschnitte, zeichen } (mit opt.kopf auch kopf, siehe kopfAus) */
+  async function docxLesen(lies, groesse, inflate, opt) {
     const xml = await zipEintrag(lies, groesse, 'word/document.xml', inflate);
     if (!xml) throw new Error('kein Text (word/document.xml fehlt)');
-    const b = bericht(absaetze(new TextDecoder('utf-8').decode(xml)));
+    const liste = absaetze(new TextDecoder('utf-8').decode(xml));
+    const b = bericht(liste);
+    // Nur beim Kopieren für ChatGPT (opt.kopf): die Werte des Berichtskopfs – sie kommen nie in den Index
+    if (opt && opt.kopf) b.kopf = kopfAus(liste);
     b.zeichen = b.abschnitte.reduce((s, x) => s + x.h.length + x.p.reduce((t, p) => t + p.length, 0), 0);
     return b;
   }
@@ -846,6 +915,333 @@ code{font-size:.95em}
     return n;
   }
 
+  /* ---------- Für ChatGPT kopieren (ab 0.3.0) ----------
+     Alles nach Regel und offline – LexiKit sendet nichts. Die Kopie besteht aus Prompt, Frage und Auszügen. Datenschutz:
+     - Nie kopiert (keine Wahl): Veranlassung (mit Aufgabenstellung und der Einleitung ohne Überschrift), Probenahme/Ortstermin,
+       „Weiteres“, Berichte ohne Überschriften, englische Fassungen. Angeboten: Befund, Schlussfolgerungen, Maßnahmen, Arbeitsschutz.
+     - Vor jedem Auszug nur Projektnummer, Gebäude als Nummer, Mitteilung, Abschnitt – nie der Ordnername.
+     - Werte aus dem Berichtskopf (beim Kopieren frisch aus dem Bericht gelesen, nie im Index) und die Wörter des Projektordners
+       werden nach Namensteilen ersetzt (Nachname, Straße, PLZ, Ort, Nummern), nur als ganzes Wort.
+     - Ein Kopfwort, das auch ein Parameter- oder Themenwort ist („Brand“ steckt in „Brandgeruch“), wird nicht ersetzt, sondern
+       als Stelle markiert. Stellen (Herr/Frau + Name, Straße + Nummer, PLZ + Ort, Telefon, E-Mail, Firmenform) müssen vor dem
+       Kopieren entfernt oder als „ist kein Name“ bestätigt werden. */
+  const KOPIER_KLASSEN = ['befund', 'schluss', 'massnahmen', 'arbeitsschutz'];
+  const KOPIER_NAMEN = { befund: 'Befund', schluss: 'Schlussfolgerungen', massnahmen: 'Maßnahmen', arbeitsschutz: 'Arbeitsschutz' };
+  const PROMPT = 'Du unterstützt ein Sachverständigenbüro für Brand- und Wasserschäden.\n'
+    + 'Unten stehen Auszüge aus unseren eigenen früheren Berichten. Vor jedem\nAuszug stehen Projektnummer, Mitteilung und Abschnitt.\n\n'
+    + 'Regeln:\n'
+    + '1. Antworte nur aus diesen Auszügen. Steht etwas nicht darin, sag das\n   ausdrücklich. Allgemeines Wissen nur getrennt und als solches\n   gekennzeichnet.\n'
+    + '2. Nenne zu jeder Aussage Projektnummer und Abschnitt.\n'
+    + '3. Wird nach dem Wortlaut gefragt, zitiere wörtlich.\n'
+    + '4. Unterschiede zwischen den Fällen benennen, nicht glätten.\n'
+    + '5. Die Auszüge sind ältere Berichte. Normen, Richtwerte und\n   Entsorgungsregeln können sich geändert haben – weise darauf hin,\n   wo es darauf ankommt.\n\n'
+    + 'Meine Frage: <Frage>';
+  const FRAGEN = [
+    { id: 'wortlaut', name: 'Wortlaut der Maßnahmen', text: 'Gib die empfohlenen Sanierungsmaßnahmen je Fall im Wortlaut wieder und nenne die Unterschiede zwischen den Fällen.' },
+    { id: 'gemessen', name: 'Was wurde gemessen und warum', text: 'Was wurde in diesen Fällen gemessen, mit wie vielen Proben, und warum? Welche Ergebnisse führten zu welchen Schlussfolgerungen?' },
+    { id: 'vergleich', name: 'Vergleich mit meinem Fall', text: 'Vergleiche die Fälle mit meinem Fall. Was wurde dort gemessen, welche Maßnahmen wurden empfohlen, und was davon passt auf meinen Fall, was nicht?', meinFall: true },
+    { id: 'eigene', name: 'Eigene Frage', text: '' },
+  ];
+
+  /** Kopfzeile → Platzhalter und Art des Werts. Projektnummer und Schadendatum bleiben (sie nennen niemanden). */
+  const KOPF_ART = [
+    [/^(?:vn|versicherungsnehmer(?:in)?)$/i, 'VN', 'name'],
+    [/^risiko(?:ort)?$/i, 'Risikoort', 'adresse'],
+    [/^(?:versicherer|versicherung)$/i, 'Versicherer', 'name'],
+    [/^(?:schaden\s*-?\s*n(?:umme)?r\.?|schadennummer)$/i, 'Schaden-Nr.', 'nummer'],
+    [/^vs\s*-?\s*nr\.?$/i, 'VS-Nr.', 'nummer'],
+    [/^auftraggeber(?:in)?$/i, 'Auftraggeber', 'name'],
+    [/^schadens?ort$/i, 'Schadenort', 'adresse'],
+    [/^(?:ihr\s+zeichen|unser\s+zeichen|aktenzeichen|bestell\s*-?\s*n(?:umme)?r\.?|auftrags?\s*-?\s*n(?:umme)?r\.?)$/i, 'Az.', 'nummer'],
+  ];
+  const PLATZHALTER = ['VN', 'Risikoort', 'Versicherer', 'Schaden-Nr.', 'VS-Nr.', 'Auftraggeber', 'Schadenort', 'Az.', 'Projekt'];
+  const PH_RE = new RegExp('\\[(?:' + PLATZHALTER.map(p => p.replace(/\./g, '\\.')).join('|') + ')\\]', 'g');
+  const PH_DOPPELT = new RegExp('\\[(' + PLATZHALTER.map(p => p.replace(/\./g, '\\.')).join('|') + ')\\](?:[\\s-]+\\[\\1\\])+', 'g');
+
+  /** Berichtskopf aus den Absätzen (beide Kopf-Formen, Tabelle, Fortsetzungszeilen wie beim Weglassen in bericht()) →
+      [{ key, art, zeilen: [{ t, tab }] }] – nur Felder mit Platzhalter. Liest bis zur ersten bekannten Abschnittsüberschrift. */
+  function kopfAus(liste) {
+    const aus = []; let akt = null, fort = 0;
+    for (let i = 0; i < liste.length && i < 150; i++) {
+      const a = liste[i];
+      if (istKopf(a)) {
+        let label, wert;
+        if (a.tabelle) { const t = a.t.split(' · '); label = t[0]; wert = t.slice(1).join(' '); }
+        else { const m = /^\s*([^:\t]+?)\s*(?::|\t)\s*([\s\S]*)$/.exec(a.roh); label = m ? m[1] : a.t; wert = m ? m[2] : ''; }
+        const art = KOPF_ART.find(k => k[0].test(sauber(label).replace(/:$/, '')));
+        akt = { key: art ? art[1] : '', art: art ? art[2] : '', zeilen: [] }; fort = 0;
+        for (const z of String(wert).split(/[\t\n]+/)) if (sauber(z)) akt.zeilen.push({ t: sauber(z), tab: false });
+        if (art) aus.push(akt);
+        continue;
+      }
+      if (akt && !a.tabelle) {
+        if (/^\t/.test(a.roh)) { akt.zeilen.push({ t: a.t, tab: true }); continue; }
+        if (fort < 3 && !(a.unter || a.fett) && kopfFortsetzung(a.t)) { akt.zeilen.push({ t: a.t, tab: false }); fort++; continue; }
+      }
+      akt = null;
+      if (aus.length && !a.tabelle && a.t.length < 90 && (a.unter || a.fett) && klasseVon(a.t)) break;
+    }
+    return aus.filter(k => k.zeilen.length);
+  }
+
+  /** Wörter, die nie als Name gelten (Anrede, Rechtsform, Verbindungswörter, Adress- und Schadenwörter) – keine Fachwörter */
+  const KEIN_NAME = new Set(('herr herrn frau familie fam eheleute ehepaar und u dr prof dipl ing med rer nat gmbh mbh ag kg ohg gbr ug se co kgaa ev '
+    + 'versicherung versicherungen versicherungs versicherungsgesellschaft gesellschaft gruppe holding verwaltung hausverwaltung immobilien grundstücksgesellschaft '
+    + 'weg wohnungseigentümergemeinschaft eigentümergemeinschaft stadt gemeinde kreis landkreis straße strasse str platz haus nr allgemeine deutsche '
+    + 'niederlassung filiale zentrale abteilung schadenabteilung schaden brandschaden wasserschaden leitungswasserschaden sturmschaden elementarschaden '
+    + 'einbruchschaden postfach bad am an auf im in der die das den dem des zum zur von vom bei hd firma fa').split(' '));
+  const STR_WORT = /^(?:Stra(?:ß|ss)e|Str\.?|Weg|Allee|Platz|Ring|Gasse|Damm|Ufer|Pfad|Chaussee|Steig|Markt)$/;
+  const STR_ENDE = /(?:stra(?:ß|ss)e|str\.?|weg|allee|platz|ring|gasse|damm|ufer|pfad|chaussee|steig|stieg|graben|wall|kamp|markt)$/i;
+  const HAUSNR = /^\d{1,4}\s?[a-zA-Z]?(?:[-–/]\d{1,4}[a-zA-Z]?)?,?$/;
+  const grossWort = t => /^[A-ZÄÖÜ]/.test(t) && (t.match(/[A-Za-zÄÖÜäöüß]/g) || []).length >= 3;
+  const reEsc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+  /** Staff-Kürzel am Ende des Projektordners („… Tst“, „… Ben Luc“, „… Dr. Ka“) bleiben stehen – sie nennen keinen Kunden */
+  function ordnerWoerter(projekt) {
+    const t = String(projekt).replace(/^\d{2}\.\d{3,5}\s*/, '').replace(/[()_]+/g, ' ').split(/\s+/).filter(Boolean);
+    for (let n = 0; n < 2 && t.length; n++) {
+      const l = t[t.length - 1];
+      if (/^(?:Dr\.?)?[A-ZÄÖÜ][a-zäöü]{1,2}\.?$|^[A-ZÄÖÜ]{2,3}$/.test(l)) { t.pop(); if (/^Dr\.?$/.test(t[t.length - 1] || '')) t.pop(); } else break;
+    }
+    return t.join(' ');
+  }
+
+  /** Eine Zeile → Teile. stil 'name': jedes groß geschriebene Wort (Bindestrich-Namen auch einzeln), Straße mit Nummer;
+      'adresse': nur Straße (+ Nummer), PLZ und Ort; 'nummer': die Ziffernfolge. → [{ wort?, zahl?, hausnr?, ph }] */
+  function teileAusZeile(zeile, stil, ph, nachStrasse) {
+    const aus = [], tok = String(zeile).split(/[\s,;·/()&+]+/).filter(Boolean).map(t => t.replace(/[:]+$/, ''));
+    if (stil === 'nummer') {
+      for (const seg of String(zeile).split(/[,;]/)) {
+        const w = seg.split(/\s+/).filter(Boolean), halt = [];
+        w.forEach((x, i) => { if (/\d/.test(x) || (/^[A-Z]{1,4}[-/.]?$/.test(x) && w.slice(i + 1).some(y => /\d/.test(y)))) halt.push(x); });
+        // Gruppen wie im Kopf („77-123 456/24“ → 77|123|456|24); im Text darf zwischen den Gruppen ein anderes Trennzeichen stehen,
+        // ab drei Gruppen auch keines. Zwei Gruppen brauchen ein Trennzeichen – sonst träfe „12-3456“ auch „123456“ in einer Telefonnummer
+        const gr = halt.join(' ').split(/[^A-Za-z0-9]+/).filter(Boolean);
+        if (gr.join('').length >= 5 && /\d/.test(gr.join(''))) aus.push({ zahl: gr, ph });
+        for (const x of halt) { const g2 = x.split(/[^A-Za-z0-9]+/).filter(Boolean); if (g2.join('').length >= 6 && g2.join('|') !== gr.join('|') && /\d/.test(x)) aus.push({ zahl: g2, ph }); }
+      }
+      return aus;
+    }
+    for (let i = 0; i < tok.length; i++) {
+      const t = tok[i].replace(/\.$/, m => /str$/i.test(tok[i].slice(0, -1)) ? '.' : ''), nach = tok[i + 1] || '';
+      if (/^\d{5}$/.test(t)) {   // PLZ, danach der Ort (groß geschriebene Wörter)
+        aus.push({ zahl: [t], ph }); nachStrasse = true;
+        for (let j = i + 1; j < tok.length && grossWort(tok[j]) && !KEIN_NAME.has(klein(tok[j])); j++) aus.push({ wort: tok[j].replace(/\.$/, ''), ph });
+        continue;
+      }
+      if (STR_WORT.test(t) && i > 0 && grossWort(tok[i - 1]) && !KEIN_NAME.has(klein(tok[i - 1]))) { aus.push({ wort: tok[i - 1] + ' ' + t, hausnr: true, ph }); continue; }
+      if (HAUSNR.test(t) && i > 0) nachStrasse = true;
+      if (!grossWort(t) || KEIN_NAME.has(klein(t)) || STR_WORT.test(t)) continue;
+      const strasse = STR_ENDE.test(t) || HAUSNR.test(nach);
+      if (strasse) { aus.push({ wort: t, hausnr: true, ph }); continue; }
+      if (stil !== 'name' && !nachStrasse) continue;   // Adresse: der Ort steht nach Straße und Nummer (oder auf der Zeile darunter)
+      aus.push({ wort: t, ph });
+      if (t.includes('-')) for (const x of t.split('-')) if (grossWort(x) && !KEIN_NAME.has(klein(x))) aus.push({ wort: x, ph });
+    }
+    return aus;
+  }
+
+  /** Stichwörter der Abschnittsklassen (wie in KLASSEN) – auch sie sind LexiKits eigene Fachwörter */
+  const KLASSEN_WOERTER = 'veranlassung aufgabenstellung ortstermin ortsbesichtigung besichtigung probenahme befund ergebnis mikrobiologie sensorische prüfung schlussfolgerung bewertung stellungnahme maßnahme massnahme sanierung arbeitsschutz';
+  /** Fachwörter: Namen der Parameter, Stichwörter der Abschnittsklassen und alle Wörter der Themen (beide Gruppen, mit Nebenwörtern), klein */
+  function fachwoerter(themen) {
+    const w = new Set();
+    const add = s => { for (const x of klein(s).split(/[\s/·,.()-]+/)) if (x.length >= 3) w.add(x); };
+    for (const P of PARAMETER) { add(P.name); for (const t of P.teile || []) add(t[0]); }
+    add(KLASSEN_WOERTER);
+    for (const t of themen || []) for (const x of themaWoerter(t)) add(x);
+    return [...w];
+  }
+
+  /** Köpfe (mehrerer Berichte) und Projektordner → Ersetzer. Ein Kopfwort, das in einem Fachwort steckt, wird nicht ersetzt,
+      sondern als Stelle markiert (kollisionen). → { teile, kollisionen, re } */
+  function ersetzerBauen(koepfe, projekte, fach) {
+    const roh = [];
+    for (const kopf of koepfe || []) for (const k of kopf) {
+      let strasse = false;
+      k.zeilen.forEach((z, zi) => {
+        const stil = k.art === 'nummer' ? 'nummer' : k.art === 'adresse' ? 'adresse' : (zi === 0 || (z.tab && !/\d/.test(z.t))) ? 'name' : 'adresse';
+        const t = teileAusZeile(z.t, stil, k.key, strasse && !/\d/.test(z.t));
+        if (t.some(x => x.hausnr || (x.zahl && /^\d{5}$/.test(x.zahl.join(''))))) strasse = true;
+        roh.push(...t);
+      });
+    }
+    for (const p of projekte || []) roh.push(...teileAusZeile(ordnerWoerter(p), 'name', 'Projekt'));
+    const fw = fach || [], teile = [], kollisionen = [], gesehen = new Set();
+    for (const t of roh) {
+      const key = (t.zahl ? '#' + t.zahl.join('|') : klein(t.wort)) + (t.hausnr ? '|h' : '');
+      if (gesehen.has(key)) continue; gesehen.add(key);
+      if (t.wort && !/\s/.test(t.wort)) {
+        const w = klein(t.wort).replace(/\.$/, '');
+        if (w.length >= 4 && fw.some(f => f.includes(w))) { if (!kollisionen.some(k => k.wort === t.wort)) kollisionen.push({ wort: t.wort, ph: t.ph }); continue; }
+      }
+      teile.push(t);
+    }
+    // Muster: längere zuerst; Namen nur als ganzes Wort (Genitiv-s, „-er“), Straßen mit Varianten Straße/Strasse/Str. und Hausnummer;
+    // Nummern mit beliebigen Trennzeichen, aber nie als Teil einer längeren Nummer (Laborproben-Nummern bleiben)
+    const muster = teile.map(t => {
+      let core;
+      if (t.zahl) core = '(?<![\\p{L}\\p{N}\\-/.,])' + t.zahl.map(reEsc).join(t.zahl.length >= 3 ? '[\\s./-]{0,3}' : '[\\s./-]{1,3}') + '(?![\\p{L}\\p{N}]|[-/.,]\\p{N})';
+      else {
+        const st = /^([\s\S]*?)(stra(?:ß|ss)e|str\.?)$/i.exec(t.wort);
+        const w = st && st[1] ? reEsc(st[1]).replace(/\s+/g, '\\s+') + '(?:stra(?:ß|ss)e|str\\.?)' : reEsc(t.wort).replace(/\s+/g, '\\s+');
+        core = '(?<![\\p{L}\\p{N}])' + w + "(?:'s|’s|s|'|er)?"
+          + (t.hausnr ? '(?:\\s?\\d{1,4}(?:\\s?[a-zA-Z](?![\\p{L}\\p{N}]))?(?:\\s?[-–/]\\s?\\d{1,4}(?:[a-zA-Z](?![\\p{L}\\p{N}]))?)?)?' : '') + '(?![\\p{L}\\p{N}])';
+      }
+      return { t, core, len: t.zahl ? t.zahl.join('').length : t.wort.length };
+    }).sort((a, b) => b.len - a.len);
+    const re = muster.length ? new RegExp(muster.map(m => '(' + m.core + ')').join('|'), 'giu') : null;
+    return { teile: muster.map(m => m.t), kollisionen, re };
+  }
+  /** Text → { t, n } (n = eingesetzte Platzhalter). Namen nur, wenn groß geschrieben; „[VN] [VN]“ (Vor- und Nachname) wird ein [VN]. */
+  function ersetzen(text, E) {
+    if (!E || !E.re) return { t: text, n: 0 };
+    let n = 0;
+    let t = text.replace(E.re, (m, ...g) => {
+      const i = g.findIndex((x, j) => j < E.teile.length && x !== undefined), teil = E.teile[i];
+      if (!teil) return m;
+      if (teil.wort && !/^[A-ZÄÖÜ]/.test(m)) return m;
+      n++; return '[' + teil.ph + ']';
+    });
+    t = t.replace(PH_DOPPELT, (m, p) => { n -= (m.match(PH_RE) || []).length - 1; return '[' + p + ']'; });
+    return { t, n };
+  }
+
+  /** Labore, Verbände, Normgeber – ihre Firmenform ist keine Stelle */
+  // (ergänzt nach der Prüfung an echten Berichten 13.11.2026: Urbanus, Umweltmykologie, eco-Luft, GDV und DGUV ausgeschrieben)
+  const ERLAUBT = /Eurofins|Geotaix|Raumklima|Urbanus|Umweltmykologie|eco-?Luft|Versicherungswirtschaft|Unfallversicherung|Berufsgenossenschaft|(?<![\p{L}])(?:GDV|DGUV|VdS|VDI|DIN|TÜV|DEKRA|BG\s?BAU|IFA|UBA|LANUV|Fraunhofer)(?![\p{L}])/u;
+  const ARTIKEL = /^(?:Der|Die|Das|Dem|Den|Des|Vom|Beim|Zum|Zur|Ein|Eine|Einer|Eines|Dieser|Diese|Durch|Für|Mit|Von)$/;
+  const STELLEN = [
+    ['anrede', /(?<![\p{L}])(?:Herrn?|Frau|Hr\.|Fr\.)\s+(?:(?:Dr|Prof|Dipl\.?-?\s?Ing)\.?\s+)*(?!(?:Dr|Prof|Dipl)\.)[A-ZÄÖÜ][\p{L}'’-]+/gu],
+    ['strasse', /(?<![\p{L}])(?:[A-ZÄÖÜ][\p{L}.-]*(?:straße|strasse|str\.|weg|allee|platz|ring|gasse|damm|ufer|pfad|chaussee)|(?:Straße|Strasse|Str\.|Weg|Allee|Platz|Ring|Gasse|Damm|Ufer|Pfad|Chaussee))\s?\d{1,4}(?:\s?[a-z](?![\p{L}]))?(?![\p{L}\p{N}])/gu],
+    ['plz', /(?<![\p{N}.,:\/-])\d{5}(?![\p{N}.,])\s+[A-ZÄÖÜ][\p{L}-]+/gu],
+    // Telefon: Vorwahl, dann mindestens 4 Ziffern; nie direkt nach Buchstabe oder Ziffer – Laborproben-Nummern wie „22W09435-001“ bleiben
+    ['telefon', /(?:(?:Tel(?:efon)?|Mobil|Handy|Fax)\.?\s*:?\s*)?(?:\+49[\s/-]?(?:\(0\))?\d{2,5}|\(0\d{2,5}\)|(?<![\p{L}\p{N}.,\/-])0\d{2,5})[\s/-](?=(?:\d[\s-]?){4,})\d{2,}(?:[\s-]\d{2,})*(?![\p{N}])/gu],
+    ['email', /[\w.+-]+@[\w-]+(?:\.[\w-]+)+/gu],
+    ['firma', /(?<![\p{L}])(?:GmbH|mbH|AG|UG|OHG|GbR|KGaA|e\.\s?K\.|e\.\s?V\.|&\s?Co\.?)(?![\p{L}])/gu],
+  ];
+  const STELLEN_NAME = { anrede: 'Herr/Frau mit Name', strasse: 'Straße mit Nummer', plz: 'PLZ und Ort', telefon: 'Telefonnummer', email: 'E-Mail-Adresse', firma: 'Firmenname', kopf: 'Wort aus dem Berichtskopf' };
+  /** Verdächtige Stellen in einem (schon ersetzten) Text → [{ a, e, art, t }] ohne Überlappung */
+  function stellenIn(text, kollisionen) {
+    const aus = [];
+    for (const [art, re] of STELLEN) {
+      re.lastIndex = 0; let m;
+      while ((m = re.exec(text))) {
+        let a = m.index; const e = a + m[0].length;
+        if (art === 'firma') {
+          const vor = /((?:(?:[A-ZÄÖÜ][\p{L}\d.&'’-]*|&|\[[^\]]+\])\s+){1,3})$/u.exec(text.slice(Math.max(0, a - 80), a));
+          if (!vor) continue;
+          const w = vor[1].trim().split(/\s+/); while (w.length && ARTIKEL.test(w[0])) w.shift();
+          if (!w.length || w.some(x => x.startsWith('['))) continue;   // schon ersetzt oder nur „Der AG“ (Auftraggeber)
+          a = a - vor[1].length + vor[1].indexOf(w[0]);
+          if (ERLAUBT.test(text.slice(a, e))) continue;
+        }
+        aus.push({ a, e, art, t: text.slice(a, e) });
+      }
+    }
+    if (kollisionen && kollisionen.length) {
+      const re = new RegExp('(?<![\\p{L}\\p{N}])(?:' + kollisionen.map(k => reEsc(k.wort)).join('|') + ")(?:'s|’s|s)?(?![\\p{L}\\p{N}])", 'giu');
+      let m; while ((m = re.exec(text))) if (/^[A-ZÄÖÜ]/.test(m[0])) aus.push({ a: m.index, e: m.index + m[0].length, art: 'kopf', t: m[0] });
+    }
+    aus.sort((x, y) => x.a - y.a || y.e - x.e);
+    const ohne = []; for (const s of aus) if (!ohne.length || s.a >= ohne[ohne.length - 1].e) ohne.push(s);
+    return ohne;
+  }
+
+  /** Sätze für die Kopie: wie saetze(), aber nie zwischen „…str.“ und der Hausnummer getrennt */
+  function kopieSaetze(t) {
+    const aus = [];
+    for (const s of saetze(t)) { if (aus.length && /str\.$/i.test(aus[aus.length - 1]) && /^\d/.test(s)) aus[aus.length - 1] += ' ' + s; else aus.push(s); }
+    return aus;
+  }
+  /** „1. Mitteilung“, „1. Mitteilung Ergänzung“ – aus Nummer und Dateiname, ohne andere Teile des Namens */
+  const mitteilungLabel = b => (b.nr ? b.nr + '. Mitteilung' : 'Mitteilung') + (/erg(?:ä|ae)nzung/i.test(b.datei || '') ? ' Ergänzung' : '');
+  /** Gebäude als Nummer in der Reihenfolge der Fallkarte (Hauptstrang ohne Gebäude: keine Angabe) – nie der Ordnername */
+  function gebaeudeNr(f, b) {
+    if (!f.straenge || f.straenge.length < 2) return '';
+    const mit = f.straenge.filter(s => s.key !== ''), key = ableiten(b).strang.key, i = mit.findIndex(s => s.key === key);
+    return i < 0 ? '' : 'Gebäude ' + (i + 1);
+  }
+  const auszugLabel = (f, b, k) => '[' + [f.kennung, gebaeudeNr(f, b), mitteilungLabel(b), KOPIER_NAMEN[k] || 'Untersucht'].filter(Boolean).join(' · ') + ']';
+  /** „Untersucht“-Zeile wie auf der Fallkarte, aber ohne Gebäudenamen */
+  function untersuchtZeile(f) {
+    return f.tags.map(t => {
+      const kopf = t.n ? t.n + ' ' + t.art : '', spaeter = t.n && f.deutsch.length > 1 && t.b !== f.deutsch[0];
+      return kopf + (kopf && t.namen.length ? ' · ' : '') + t.namen.join(', ') + (spaeter ? ' (' + [gebaeudeNr(f, t.b), mitteilungLabel(t.b)].filter(Boolean).join(' · ') + ')' : '');
+    }).join('; ');
+  }
+
+  /** Die Kopie bauen. o = {
+        faelle: [{ f, aus?, berichte: [{ b (Index-Eintrag des Falls), frisch: { abschnitte, kopf } | null, gewaehlt }] }] – aus: Fall
+          abgewählt, zählt nur noch für die Köpfe,
+        klassen: [ids], untersucht: bool, frage, meinFall, entfernt: Set(Satz-ids), ok: Set(klein(Stellentext)), fachwoerter }
+      → { text, stuecke: [{ t, ph?, stelle? }], stellen: [{ id, satz, art, t, wo, offen, entfernbar }], ersetzt, abschnitte, faelle, entfernt } */
+  function kopieBauen(o) {
+    const klassen = KOPIER_KLASSEN.filter(k => (o.klassen || []).includes(k));   // nie etwas anderes
+    const entfernt = o.entfernt || new Set(), ok = o.ok || new Set();
+    const koepfe = [], projekte = [];
+    // Köpfe aller gelesenen Berichte der gewählten Fälle (auch abgewählter Berichte und Fälle) zusammen – ersetzt wird überall
+    for (const c of o.faelle) { projekte.push(c.f.projekt); for (const r of c.berichte) if (r.frisch && r.frisch.kopf) koepfe.push(r.frisch.kopf); }
+    const E = ersetzerBauen(koepfe, projekte, o.fachwoerter);
+    const stuecke = [], stellen = []; let ersetzt = 0, abschnitte = 0, faelle = 0, nEntfernt = 0;
+    const roh = t => stuecke.push({ t });
+    // ein Satz: ersetzen, Stellen suchen, in Stücke zerlegen
+    const satz = (id, s, wo, entfernbar) => {
+      const r = { t: s };
+      const st = stellenIn(r.t, E.kollisionen), marken = [];
+      if (entfernbar) { let m; PH_RE.lastIndex = 0; while ((m = PH_RE.exec(r.t))) marken.push({ a: m.index, e: m.index + m[0].length, ph: true }); }
+      st.forEach((x, i) => {
+        const sid = id + '#' + i, offen = !ok.has(klein(x.t));
+        stellen.push({ id: sid, satz: id, art: x.art, artName: STELLEN_NAME[x.art], t: x.t, wo, offen, entfernbar });
+        marken.push({ a: x.a, e: x.e, stelle: sid, offen });
+      });
+      marken.sort((a, b) => a.a - b.a);
+      let pos = 0;
+      for (const m of marken) { if (m.a < pos) continue; if (m.a > pos) stuecke.push({ t: r.t.slice(pos, m.a), satz: id }); stuecke.push({ t: r.t.slice(m.a, m.e), satz: id, ph: !!m.ph, stelle: m.stelle, offen: m.offen }); pos = m.e; }
+      if (pos < r.t.length) stuecke.push({ t: r.t.slice(pos), satz: id });
+    };
+    // Prompt und Frage (die eigene Frage wird nicht ersetzt, aber auf Stellen geprüft)
+    const [vorFrage] = PROMPT.split('<Frage>');
+    roh(vorFrage); satz('frage', sauber(o.frage || ''), 'Deine Frage', false);
+    if (o.meinFall && sauber(o.meinFall)) { roh('\nMein Fall: '); satz('fall', sauber(o.meinFall), 'Dein Fall', false); }
+    roh('\n\n--- Auszüge ---');
+    for (const c of o.faelle) {
+      if (c.aus) continue;
+      const f = c.f; let vom = 0;
+      if (o.untersucht && f.tags.length) { roh('\n[' + f.kennung + ' · Untersucht]\n' + untersuchtZeile(f)); vom++; }
+      for (const r of c.berichte) {
+        if (!r.gewaehlt || !r.frisch) continue;
+        const frisch = Object.assign({}, r.b, { abschnitte: r.frisch.abschnitte, _d: undefined }), d = ableiten(frisch);
+        if (d.ohne || d.englisch) continue;   // Bericht ohne Überschriften: Namen und Adressen lassen sich nicht abtrennen
+        for (const k of klassen) {
+          const tl = d.teile.filter(t => t.k === k && !t.vor);
+          if (!tl.length) continue;
+          const zeilen = [];
+          tl.forEach((t, ti) => {
+            if (t.h && ti > 0) zeilen.push({ id: frisch.pfad + '|' + t.ai + '|h', p: t.h, tab: true });
+            t.p.forEach((p, pi) => zeilen.push({ id: frisch.pfad + '|' + t.ai + '|' + pi, p, tab: p.includes(' · ') }));
+          });
+          const ids = [];
+          for (const z of zeilen) {   // erst im ganzen Absatz ersetzen (eine Adresse kann über eine Satzgrenze reichen), dann in Sätze teilen
+            const r = ersetzen(z.p, E); z.n = r.n;
+            (z.tab ? [r.t] : kopieSaetze(r.t)).forEach((s, si) => ids.push({ id: z.id + '|' + si, s, z }));
+          }
+          const bleiben = ids.filter(x => !entfernt.has(x.id)); nEntfernt += ids.length - bleiben.length;
+          if (!bleiben.length) continue;
+          for (const x of bleiben) ersetzt += (x.s.match(PH_RE) || []).length;
+          const wo = auszugLabel(f, frisch, k).slice(1, -1);
+          roh('\n' + auszugLabel(f, frisch, k));
+          let letzte = null;
+          for (const x of bleiben) { roh(x.z === letzte ? ' ' : '\n'); letzte = x.z; satz(x.id, x.s, wo, true); }
+          abschnitte++; vom++;
+        }
+      }
+      if (vom) faelle++;
+    }
+    const text = stuecke.map(s => s.t).join('');
+    return { text, stuecke, stellen, ersetzt, abschnitte, faelle, entfernt: nEntfernt, offen: stellen.filter(s => s.offen).length };
+  }
+
   /* ---------- Gemeinsame Dateien in _LexiKit: vor jedem Schreiben neu lesen und zusammenführen ----------
      Index je Jahr: lexikit-index-<Jahr>.json  { format, version, jahr, geaendert, berichte: { <Pfad>: Eintrag } }
      Jede Schreibstelle bringt nur ihre Änderungen mit: neu/geändert (Eintrag mit stempel + gelesenAm) und weg (Pfad + am). */
@@ -948,6 +1344,7 @@ code{font-size:.95em}
   g.LexiKern = { VERSION, zipEintrag, absaetze, bericht, docxLesen, sauber, istBerichtName, mitteilungNr, projektOrdner, berichtSchluessel, auswaehlen,
     woerterAus, markiere, ausschnitt, indexName, leererIndex, indexLesen, indexMergen,
     KLASSEN, klassenName, klasseVon, saetze, PARAMETER, untersuchtImSatz, strangVon, ableiten, faelleBauen, tagText, berichtBeschriftung, bloecke, sucheFaelle, zaehleFaelle,
+    KOPIER_KLASSEN, KOPIER_NAMEN, PROMPT, FRAGEN, kopfAus, ordnerWoerter, fachwoerter, ersetzerBauen, ersetzen, stellenIn, kopieBauen, untersuchtZeile, auszugLabel, mitteilungLabel, gebaeudeNr,
     THEMEN_VERSION, THEMEN_DATEI, ERSTE_THEMEN, ERSTE_FAELLE, GRUPPEN, gruppeVon, ersteThemen, themenHeben, themenLesen, themaWoerter, themaEinspielen, neueThemaId, themaId };
 })(typeof globalThis !== 'undefined' ? globalThis : this);
 /* ===== Ende LEXIKIT-KERN ===== */
@@ -955,8 +1352,9 @@ code{font-size:.95em}
 <script id="lexikit-app">
 /* LexiKit – Oberfläche. Liest das Archiv, hält den Index im Speicher, schreibt nur nach _LexiKit (Funktion schreibe). */
 'use strict';
-const APP_VERSION = '0.2.0';
+const APP_VERSION = '0.3.0';
 const AENDERUNGEN = [
+  ['0.3.0', '13.11.2026', 'Für ChatGPT kopieren: bis zu drei Fälle auswählen (oder im offenen Fall) und in der Vorschau genau sehen, was in die Zwischenablage kommt – Prompt, Frage und Auszüge aus Befund, Schlussfolgerungen, Maßnahmen, Arbeitsschutz. Veranlassung, Aufgabenstellung und Ortstermin/Probenahme werden nie kopiert. Namen und Adressen aus dem Berichtskopf und dem Projektordner werden durch Platzhalter ersetzt; verdächtige Stellen müssen vor dem Kopieren entfernt oder bestätigt werden. LexiKit sendet nichts – der Text wird selbst in ChatGPT eingefügt.'],
   ['0.2.0', '13.11.2026', 'Fälle statt Textstellen: Ein Treffer ist jetzt ein Projektordner mit allen Mitteilungen – mit „Was war“, „Untersucht“ (Probenzahl und Parameter, ein Klick zeigt die Stelle), Verlauf und Reitern für Veranlassung, Probenahme, Befund, Schlussfolgerungen, Sanierungsmaßnahmen und Arbeitsschutz. Thema und eigene Wörter lassen sich verbinden; Fälle mit Fund in der Veranlassung stehen oben. Neue Filter „Untersucht auf“, zweite Themengruppe „Art des Falls“. Der Index bleibt, wie er ist – neu eingelesen wird nichts.'],
   ['0.1.0', '13.11.2026', 'Erste Fassung: Word-Mitteilungen aller Projektordner einlesen (nur Text, ohne Fotos, ohne Berichtskopf), Abschnitte nach den Überschriften, gemeinsamer Index und Themenliste in „_LexiKit“, Suche nach Themen und eigenen Wörtern, Jahr-Filter, Treffer mit markierten Wörtern, neueste zuerst.'],
 ];
@@ -991,6 +1389,7 @@ const S = {
   wahl: { thema: null, q: '', jahr: '', parameter: [] }, zeigeN: 20, treffer: [],
   offen: new Map(), mehrTags: new Set(),      // offene Fälle: Projektordner → { tab, beleg }
   form: null,                                 // offenes Themenformular { id|null, basis }
+  auswahl: [], kopie: null,                   // für ChatGPT ausgewählte Fälle (Projektordner, höchstens 3); offene Vorschau
   ansicht: 'zugang', meldungen: [],
 };
 let archivGen = 0;   // je Verbindung zu einem Archivordner eine neue Nummer – ein Einlesen der alten Verbindung ändert nichts mehr
@@ -999,7 +1398,7 @@ const L = { laeuft: null, aktiv: false, stop: false, art: '', projekte: 0, ferti
 /* ---------- Ansichten ---------- */
 function zeige(ansicht) {
   S.ansicht = ansicht;
-  for (const id of ['zugang', 'einlesen', 'suche', 'einstellungen', 'ueberLexi']) $(id).hidden = id !== ansicht;
+  for (const id of ['zugang', 'einlesen', 'suche', 'einstellungen', 'ueberLexi', 'kopieren']) $(id).hidden = id !== ansicht;
   $('mehr').open = false;
   if (ansicht === 'suche') { renderAlles(); }
   if (ansicht === 'einlesen') zeigeLauf();
@@ -1363,6 +1762,7 @@ function renderTreffer() {
     $('btnMehrTreffer').hidden = true; return;
   }
   box.innerHTML = r.treffer.slice(0, S.zeigeN).map(t => fallKarte(t, a.marken)).join('');
+  auswahlZeigen();
   const rest = n - S.zeigeN;
   $('btnMehrTreffer').hidden = rest <= 0; $('btnMehrTreffer').textContent = `Weitere ${zahl(Math.min(20, rest))} zeigen (noch ${zahl(rest)})`;
 }
@@ -1393,6 +1793,7 @@ function fallKarte(tr, marken) {
         <a class="sp-knopf sp-knopf-app" href="${esc(wordLink(b0.pfad))}" data-word="${esc(b0.pfad)}">${WORD_ICON}<span>Bericht in Word öffnen</span></a>
         <button class="sp-knopf" type="button" data-kopieren>Abschnitt kopieren</button>
         <button class="sp-knopf" type="button" data-ordner="${esc(f.projekt)}">Projektordner</button>
+        <button class="sp-knopf" type="button" data-chatgpt>Für ChatGPT kopieren</button>
         <button class="sp-knopf" type="button" data-zu>Fall schließen</button>
       </div>`;
   } else {
@@ -1400,7 +1801,7 @@ function fallKarte(tr, marken) {
     unten = `<div class="f-knoepfe"><button class="sp-knopf sp-knopf-app" type="button" data-oeffnen="">Fall öffnen</button>${ziel ? `<button class="sp-knopf" type="button" data-oeffnen="${ziel}">${ziel === 'massnahmen' ? 'Maßnahmen zeigen' : 'Schlussfolgerungen zeigen'}</button>` : ''}</div>`;
   }
   return `<article class="fall${o ? ' offen' : ''}" data-fall="${esc(f.projekt)}">
-    <div class="f-kopf"><h2>${esc(f.projekt)}</h2><span class="meta">${f.jahr} · ${nM === 1 ? '1 Mitteilung' : nM + ' Mitteilungen'}</span></div>
+    <div class="f-kopf"><h2>${esc(f.projekt)}</h2><span class="meta">${f.jahr} · ${nM === 1 ? '1 Mitteilung' : nM + ' Mitteilungen'}</span>${waehlenHtml(f)}</div>
     <div class="gitter"><div class="lab">Was war</div><div>${was}</div><div class="lab">Untersucht</div><div class="tags">${unters}</div></div>
     ${unten}
   </article>`;
@@ -1411,6 +1812,165 @@ async function kopiere(text) {
   catch (e) {
     try { const ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); const ok = document.execCommand('copy'); ta.remove(); return ok; } catch (e2) { return false; }
   }
+}
+
+/* ---------- Auswählen und „Für ChatGPT kopieren“ ----------
+   Höchstens 3 Fälle. Die Auswahl bleibt beim Weitersuchen stehen. Kopiert wird nur aus der Vorschau – und erst, wenn jede
+   verdächtige Stelle entfernt oder als „ist kein Name“ bestätigt ist. Berichtskopf und Text liest LexiKit dafür frisch aus dem
+   Bericht; der Index bleibt, wie er ist. LexiKit sendet nichts. */
+const MAX_AUSWAHL = 3;
+let kopieGen = 0, kopieTimer = 0;
+const fallVon = projekt => faelle().find(f => f.projekt === projekt);
+function waehlenHtml(f) {
+  const an = S.auswahl.includes(f.projekt), aus = !an && S.auswahl.length >= MAX_AUSWAHL;
+  return `<label class="waehlen${aus ? ' aus' : ''}"${aus ? ' title="Höchstens 3 Fälle"' : ''}><input type="checkbox" data-waehlen="${esc(f.projekt)}"${an ? ' checked' : ''}${aus ? ' disabled' : ''}> Auswählen</label>`;
+}
+function auswahlZeigen() {
+  S.auswahl = S.auswahl.filter(p => fallVon(p));
+  const n = S.auswahl.length;
+  $('auswahlLeiste').hidden = !n;
+  $('auswahlText').textContent = (n === 1 ? '1 Fall ausgewählt' : n + ' Fälle ausgewählt') + (n >= MAX_AUSWAHL ? ' – mehr geht nicht' : '');
+  document.querySelectorAll('[data-waehlen]').forEach(x => {
+    const an = S.auswahl.includes(x.dataset.waehlen), l = x.closest('label');
+    x.checked = an; x.disabled = !an && n >= MAX_AUSWAHL; l.classList.toggle('aus', x.disabled); l.title = x.disabled ? 'Höchstens 3 Fälle' : '';
+  });
+}
+/** Einen Bericht frisch aus dem Archiv lesen – mit den Werten des Berichtskopfs (nur für die Kopie, nie gespeichert) */
+async function berichtFrisch(pfad) {
+  if (!S.archiv || !(await erlaubt(S.archiv, 'read', true))) throw new Error('kein Lesezugriff auf den Archivordner');
+  const t = pfad.split('/'); let d = S.archiv;
+  for (const x of t.slice(0, -1)) d = await d.getDirectoryHandle(x);
+  const f = await (await d.getFileHandle(t[t.length - 1])).getFile();
+  return K.docxLesen(async (a, z) => new Uint8Array(await f.slice(a, z).arrayBuffer()), f.size, inflate, { kopf: true });
+}
+const fragePreset = () => K.FRAGEN.find(q => q.id === S.kopie.frage) || K.FRAGEN[0];
+async function kopieOeffnen(projekte) {
+  const fs = projekte.map(fallVon).filter(Boolean); if (!fs.length) return;
+  const gen = ++kopieGen;
+  S.kopie = { faelle: fs.map(f => ({ f, an: true, berichte: f.deutsch.map(b => ({ b, frisch: null, gewaehlt: false, laden: true, fehler: '', ohne: false, kopfFehlt: false })) })),
+    klassen: ['befund', 'schluss', 'massnahmen'], untersucht: true, frage: K.FRAGEN[0].id, entfernt: new Set(), ok: new Set(), laden: true, kopiert: false };
+  document.querySelectorAll('#kopieForm [data-kk]').forEach(x => { x.checked = x.dataset.kk === 'untersucht' ? true : S.kopie.klassen.includes(x.dataset.kk); });
+  $('kFragen').innerHTML = K.FRAGEN.map((q, i) => `<label class="chk"><input type="radio" name="kFrage" value="${q.id}"${i === 0 ? ' checked' : ''}> ${esc(q.name)}</label>`).join('');
+  $('kFrageText').value = K.FRAGEN[0].text; $('kMeinFall').value = ''; $('kFallBox').hidden = true; $('kopieStatus').textContent = '';
+  zeige('kopieren'); kopieLinks(); kopieRechts();
+  for (const c of S.kopie.faelle) for (const r of c.berichte) {
+    try {
+      r.frisch = await berichtFrisch(r.b.pfad);
+      r.ohne = K.ableiten(Object.assign({}, r.b, { abschnitte: r.frisch.abschnitte, _d: undefined })).ohne;
+      r.kopfFehlt = !r.frisch.kopf.length;
+      r.gewaehlt = !r.ohne && !r.kopfFehlt;   // ohne erkannten Kopf: erst abgewählt, kann von Hand gewählt werden
+    } catch (e) { r.fehler = String(e && e.message || e); r.frisch = null; }
+    r.laden = false;
+    if (gen !== kopieGen) return;
+  }
+  S.kopie.laden = false; kopieLinks(); kopieRechts();
+}
+/** Welche angebotenen Abschnitte hat ein (frisch gelesener) Bericht? */
+function kopieAbschnitte(r) {
+  if (!r.frisch || r.ohne) return [];
+  const d = K.ableiten(Object.assign({}, r.b, { abschnitte: r.frisch.abschnitte, _d: undefined }));
+  return K.KOPIER_KLASSEN.filter(k => d.teile.some(t => t.k === k && !t.vor && t.p.length)).map(k => K.KOPIER_NAMEN[k]);
+}
+function kopieLinks() {
+  const k = S.kopie;
+  $('kopieFaelle').innerHTML = k.faelle.map((c, ci) => {
+    const f = c.f, mehr = f.straenge.length > 1;
+    const ber = f.straenge.map(s => {
+      const rs = s.berichte.map(b => c.berichte.findIndex(r => r.b === b)).filter(i => i >= 0);
+      if (!rs.length) return '';
+      const nr = mehr ? K.gebaeudeNr(f, s.berichte[0]) : '';
+      return (mehr ? `<div class="kmeta ein">${esc(s.name || 'Ohne Gebäude')}${nr ? ` – in der Kopie „${esc(nr)}“` : ''}</div>` : '') + rs.map(ri => {
+        const r = c.berichte[ri], ab = kopieAbschnitte(r);
+        const notiz = r.laden ? 'wird gelesen …' : r.fehler ? 'ließ sich nicht lesen – wird nicht mitkopiert' : r.ohne ? 'ohne Überschriften – wird nicht mitkopiert (Namen und Adressen lassen sich nicht abtrennen)'
+          : r.kopfFehlt ? 'Berichtskopf nicht erkannt – Namen aus dem Kopf können nicht ersetzt werden. Erst ansehen, dann von Hand wählen.' : !ab.length ? 'keiner der angebotenen Abschnitte' : '';
+        const aus = !c.an || r.laden || !!r.fehler || r.ohne;
+        return `<label class="chk ein"><input type="checkbox" data-kber="${ci}:${ri}"${r.gewaehlt && !aus ? ' checked' : ''}${aus ? ' disabled' : ''}> <span>${esc(K.mitteilungLabel(r.b))}${r.b.form ? ' · ' + esc(r.b.form) : ''}${ab.length ? ` <span class="kmeta">(${esc(ab.join(', '))})</span>` : ''}</span></label>`
+          + (notiz ? `<div class="knotiz">${esc(notiz)}</div>` : '');
+      }).join('');
+    }).join('');
+    return `<label class="chk"><input type="checkbox" data-kfall="${ci}"${c.an ? ' checked' : ''}> <b>${esc(f.projekt)}</b></label>${ber}`;
+  }).join('');
+}
+function kopieErgebnis() {
+  const k = S.kopie;
+  return K.kopieBauen({ faelle: k.faelle.map(c => ({ f: c.f, aus: !c.an, berichte: c.berichte })), klassen: k.klassen, untersucht: k.untersucht,
+    frage: $('kFrageText').value, meinFall: fragePreset().meinFall ? $('kMeinFall').value : '', entfernt: k.entfernt, ok: k.ok, fachwoerter: K.fachwoerter(aktiveThemen()) });
+}
+function kopieRechts() {
+  const k = S.kopie; if (!k) return;
+  const r = kopieErgebnis(); k.letzte = r;
+  $('kopieVorschau').innerHTML = r.stuecke.map(s => s.ph ? `<span class="ph">${esc(s.t)}</span>`
+    : s.stelle ? `<mark class="${s.offen ? 'sus' : 'sus-ok'}" data-stelle="${esc(s.stelle)}"${s.offen ? '' : ' title="als „ist kein Name“ bestätigt"'}>${esc(s.t)}</mark>` : esc(s.t)).join('');
+  const n = (x, eins, viele) => x === 1 ? '1 ' + eins : zahl(x) + ' ' + viele;
+  $('kopieMeta').textContent = `ca. ${zahl(Math.max(100, Math.round(r.text.length / 100) * 100))} Zeichen · ${n(r.faelle, 'Fall', 'Fälle')} · ${n(r.abschnitte, 'Abschnitt', 'Abschnitte')} · ${n(r.ersetzt, 'Name ersetzt', 'Namen ersetzt')}`;
+  const offen = r.stellen.filter(s => s.offen), w = $('kopieWarn');
+  // gleicher Wortlaut = eine Zeile („Schimmel“ 2×): „ist kein Name“ gilt für alle, „Satz entfernen“ nimmt alle Sätze
+  const gruppen = []; for (const s of offen) { const g = gruppen.find(x => x.t.toLowerCase() === s.t.toLowerCase() && x.entfernbar === s.entfernbar); if (g) { g.ids.push(s.id); g.saetze.push(s.satz); if (!g.wo.includes(s.wo)) g.wo.push(s.wo); } else gruppen.push({ t: s.t, artName: s.artName, entfernbar: s.entfernbar, ids: [s.id], saetze: [s.satz], wo: [s.wo] }); }
+  const zurueck = (r.entfernt ? `<button class="linkknopf" type="button" data-zurueckholen>${n(r.entfernt, 'entfernten Satz', 'entfernte Sätze')} zurückholen</button>` : '')
+    + (k.ok.size ? `${r.entfernt ? ' · ' : ''}<button class="linkknopf" type="button" data-okzurueck>„ist kein Name“ zurücknehmen (${zahl(k.ok.size)})</button>` : '');
+  w.hidden = !offen.length && !zurueck;
+  w.innerHTML = (offen.length ? `<div><strong>${offen.length === 1 ? '1 Stelle sieht' : offen.length + ' Stellen sehen'} nach einem Namen oder einer Adresse aus.</strong> Kopieren geht erst, wenn jede entfernt oder als „ist kein Name“ bestätigt ist.</div>` : '')
+    + gruppen.map(g => `<div class="kstelle"><div class="kstelle-text"><button class="linkknopf" type="button" data-zeige="${esc(g.ids[0])}" title="Stelle im Text zeigen">${esc(g.t)}</button>${g.ids.length > 1 ? ` <b>${g.ids.length}×</b>` : ''}<span class="kmeta"> · ${esc(g.artName)} · ${esc(g.wo.join('; '))}</span></div>`
+      + `<div class="kstelle-knoepfe">${g.entfernbar ? `<button class="sp-knopf" type="button" data-entfernen="${esc(g.saetze.join('\n'))}">${new Set(g.saetze).size > 1 ? 'Sätze entfernen' : 'Satz entfernen'}</button>` : '<span class="kmeta">oben im Text ändern oder</span>'}`
+      + `<button class="sp-knopf" type="button" data-ok="${esc(g.t)}">ist kein Name</button></div></div>`).join('')
+    + (zurueck ? `<div class="kmeta">${zurueck}</div>` : '');
+  const nichts = !r.faelle, btn = $('btnKopieKopieren');
+  btn.disabled = k.laden || nichts || offen.length > 0;
+  if (!k.kopiert || btn.disabled) $('kopieStatus').textContent = k.laden ? 'Berichte werden gelesen …' : nichts ? 'Nichts ausgewählt – mindestens einen Abschnitt oder „Untersucht“ wählen.' : offen.length ? `Noch ${offen.length === 1 ? '1 Stelle' : offen.length + ' Stellen'} offen.` : '';
+}
+async function kopieKopieren() {
+  const k = S.kopie; if (!k) return;
+  kopieRechts(); const r = k.letzte;
+  if (k.laden || !r.faelle || r.offen) return;
+  const ok = await kopiere(r.text);
+  if (!ok) { $('kopieStatus').textContent = 'Kopieren ging nicht – bitte den Text oben markieren und mit Strg+C kopieren.'; return; }
+  k.kopiert = true; S.auswahl = [];
+  $('kopieStatus').textContent = `Kopiert (${zahl(r.text.length)} Zeichen). Jetzt in ChatGPT einfügen (Strg+V).`;
+  toast(`In der Zwischenablage (${zahl(r.text.length)} Zeichen) – in ChatGPT einfügen mit Strg+V.`, 5000);
+}
+function kopieVerdrahten() {
+  $('btnAuswahlLeeren').onclick = () => { S.auswahl = []; auswahlZeigen(); };
+  $('btnAuswahlKopieren').onclick = () => kopieOeffnen(S.auswahl.slice());
+  $('btnKopieZurueck').onclick = () => { kopieGen++; S.kopie = null; zeige('suche'); };
+  $('treffer').addEventListener('change', e => {
+    const x = e.target.closest('[data-waehlen]'); if (!x) return;
+    const p = x.dataset.waehlen;
+    if (x.checked) { if (S.auswahl.length >= MAX_AUSWAHL) x.checked = false; else if (!S.auswahl.includes(p)) S.auswahl.push(p); }
+    else S.auswahl = S.auswahl.filter(y => y !== p);
+    auswahlZeigen();
+  });
+  $('kopieForm').addEventListener('submit', e => e.preventDefault());
+  $('kopieForm').addEventListener('change', e => {
+    const k = S.kopie, x = e.target; if (!k || x.tagName === 'TEXTAREA') return;   // Text: über „input“ (sonst baut das Verlassen des Felds die Knöpfe neu, während man klickt)
+    k.kopiert = false;
+    if (x.dataset.kfall != null) { k.faelle[+x.dataset.kfall].an = x.checked; kopieLinks(); }
+    else if (x.dataset.kber != null) { const [ci, ri] = x.dataset.kber.split(':').map(Number); k.faelle[ci].berichte[ri].gewaehlt = x.checked; }
+    else if (x.dataset.kk === 'untersucht') k.untersucht = x.checked;
+    else if (x.dataset.kk) { k.klassen = K.KOPIER_KLASSEN.filter(id => id === x.dataset.kk ? x.checked : k.klassen.includes(id)); }
+    else if (x.name === 'kFrage') {
+      k.frage = x.value; const q = fragePreset();
+      $('kFrageText').value = q.text; $('kFallBox').hidden = !q.meinFall;
+      if (q.id === 'eigene') $('kFrageText').focus(); else if (q.meinFall) $('kMeinFall').focus();
+    }
+    kopieRechts();
+  });
+  const tippen = () => { clearTimeout(kopieTimer); kopieTimer = setTimeout(() => { if (S.kopie) { S.kopie.kopiert = false; kopieRechts(); } }, 200); };
+  $('kFrageText').addEventListener('input', tippen); $('kMeinFall').addEventListener('input', tippen);
+  $('kopieRechts').addEventListener('click', e => {
+    const k = S.kopie; if (!k) return;
+    const zeigeStelle = id => { const m = [...document.querySelectorAll('#kopieVorschau mark')].find(x => x.dataset.stelle === id); if (m) { m.scrollIntoView({ block: 'center' }); m.classList.add('blink'); setTimeout(() => m.classList.remove('blink'), 1200); } };
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.id === 'btnKopieKopieren') { kopieKopieren(); return; }
+    if (b.dataset.zeige) { zeigeStelle(b.dataset.zeige); return; }
+    k.kopiert = false;
+    if (b.dataset.entfernen) for (const id of b.dataset.entfernen.split('\n')) k.entfernt.add(id);
+    else if (b.dataset.ok != null) k.ok.add(b.dataset.ok.toLowerCase());
+    else if (b.hasAttribute('data-zurueckholen')) k.entfernt.clear();
+    else if (b.hasAttribute('data-okzurueck')) k.ok.clear();
+    else return;
+    kopieRechts();
+    const naechste = document.querySelector('#kopieWarn [data-zeige]'); (naechste || $('btnKopieKopieren')).focus({ preventScroll: true });
+  });
 }
 
 /* ---------- Themen bearbeiten ---------- */
@@ -1481,7 +2041,7 @@ async function archivWaehlen() {
 }
 async function archivWechseln(h) {
   await laufStoppen();   // erst das Einlesen des alten Archivs beenden, dann den Stand leeren
-  S.archiv = h; S.lx = null; S.berichte.clear(); S.aend = {}; S.themen = null; S.meldungen = []; S.offen.clear(); S.mehrTags.clear(); geaendert();
+  S.archiv = h; S.lx = null; S.berichte.clear(); S.aend = {}; S.themen = null; S.meldungen = []; S.offen.clear(); S.mehrTags.clear(); S.auswahl = []; S.kopie = null; geaendert();
   await verbinden(true);
 }
 
@@ -1529,6 +2089,7 @@ function verdrahten() {
     const auf = e.target.closest('[data-oeffnen]');
     if (auf) { S.offen.set(projekt, { tab: auf.dataset.oeffnen || ersterReiter(tr), beleg: null }); neuZeigen('.tab[aria-selected="true"], [data-zu]'); return; }
     if (e.target.closest('[data-zu]')) { S.offen.delete(projekt); neuZeigen('[data-oeffnen]'); return; }
+    if (e.target.closest('[data-chatgpt]')) { kopieOeffnen([projekt]); return; }
     const tab = e.target.closest('[data-tab]');
     if (tab) { S.offen.set(projekt, { tab: tab.dataset.tab, beleg: null }); neuZeigen('.tab[aria-selected="true"]'); return; }
     if (e.target.closest('[data-mehr-tags]')) { S.mehrTags.add(projekt); neuZeigen('.tag'); return; }
@@ -1552,6 +2113,7 @@ function verdrahten() {
     if (a.dataset.aktion === 'thema-bearbeiten') { const t = aktiveThemen().find(x => x.id === S.wahl.thema); if (t) formOeffnen(t); }
     if (a.dataset.aktion === 'schreiben-erlauben') $('btnSchreibenErlauben').onclick();
   });
+  kopieVerdrahten();
   // Themenformular
   $('btnNeuesThema').onclick = () => formOeffnen(null);
   $('themaForm').onsubmit = e => { e.preventDefault(); themaSpeichern(false); };

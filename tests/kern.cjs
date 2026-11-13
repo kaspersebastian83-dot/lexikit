@@ -340,5 +340,132 @@ let n = 0; const test = async (name, f) => { await f(); n++; console.log('ok', n
     assert.ok(!text.includes('_d') && !text.includes('"kl"'), 'Abgeleitetes wird nicht gespeichert');
     assert.deepEqual(Object.keys(JSON.parse(text).berichte[eintraege[0].pfad]).sort(), ['abschnitte', 'datei', 'form', 'gelesenAm', 'jahr', 'nr', 'pfad', 'pnr', 'projekt', 'stempel'], 'dieselben Felder wie in 0.1.0');
   });
+
+  /* ---------- ab 0.3.0: „Für ChatGPT kopieren“ ---------- */
+  const { KOPIE, KOPIE_ORDNER: KO } = require('./daten/berichte.cjs');
+  const leseKopie = async k => { const buf = docx(KOPIE[k]); return K.docxLesen(async (a, e) => new Uint8Array(buf.subarray(a, e)), buf.length, inflate, { kopf: true }); };
+  const kEintrag = async (k, projekt, rel, nr) => { const r = await leseKopie(k); return { b: { pfad: projekt + '/' + rel, projekt, datei: rel.split('/').pop(), jahr: 2000 + +projekt.slice(0, 2), pnr: 1, nr, form: r.form, abschnitte: r.abschnitte }, r }; };
+  const kopieFaelle = async () => {
+    const xs = [await kEintrag('a1', KO.a, 'Mitteilungen/1. Mitteilung.docx', 1), await kEintrag('a1en', KO.a, 'Mitteilungen/1. Mitteilung_Englisch.docx', 1),
+      await kEintrag('a1erg', KO.a, 'Mitteilungen/1. Mitteilung Ergänzung.docx', 1), await kEintrag('a2', KO.a, 'Mitteilungen/2. Mitteilung.docx', 2),
+      await kEintrag('b1', KO.b, 'Beispielstraße 5/1. Mitteilung.docx', 1), await kEintrag('b2', KO.b, 'Neubau/1. Mitteilung.docx', 1),
+      await kEintrag('c1', KO.c, 'Mitteilungen/1. Mitteilung.docx', 1)];
+    return K.faelleBauen(xs.map(x => x.b)).map(f => ({ f, berichte: f.deutsch.map(b => ({ b, frisch: xs.find(x => x.b === b).r, gewaehlt: true })) }));
+  };
+  const FW = K.fachwoerter(K.ersteThemen('').themen);
+  const alleKlassen = ['veranlassung', 'probenahme', 'befund', 'schluss', 'massnahmen', 'arbeitsschutz', 'weiteres'];
+  const auszuege = t => t.split('--- Auszüge ---')[1];
+
+  await test('Berichtskopf beim Kopieren: beide Kopf-Formen, Tabelle, Fortsetzungszeilen – nur für die Kopie', async () => {
+    const a1 = await leseKopie('a1');
+    assert.deepEqual(a1.kopf.map(k => [k.key, k.zeilen.map(z => z.t)]), [['VN', ['Herr Konrad Probemann-Lindtal']], ['Risikoort', ['Backstube, Hauptstraße 12 a', '52999 Probehausen']],
+      ['Versicherer', ['Beispiel Versicherung AG']], ['Schaden-Nr.', ['77-123 456/24']], ['VS-Nr.', ['KV 9988776', 'Brandschaden']]]);
+    assert.deepEqual((await leseKopie('a2')).kopf.map(k => [k.key, k.zeilen.map(z => z.t)]), [['Auftraggeber', ['Schimmel Sanierungstechnik GmbH', 'Musterweg 3', '52999 Probehausen']], ['Schadenort', ['Hauptstraße 12a']], ['Az.', ['12-3456']]]);
+    assert.deepEqual((await lesen(BERICHTE.ohneMarke)).b.kopf, undefined, 'ohne opt.kopf kein Kopf – der Index bekommt ihn nie');
+    const tab = await K.docxLesen(async (a, e) => new Uint8Array(docx(BERICHTE.ohneMarke).subarray(a, e)), docx(BERICHTE.ohneMarke).length, inflate, { kopf: true });
+    assert.deepEqual(tab.kopf.map(k => [k.key, k.zeilen.map(z => z.t)]), [['VN', ['Max Beispielmensch']], ['Schaden-Nr.', ['AB-1']]], 'Kopf als Tabelle');
+    assert.deepEqual((await leseKopie('d1')).kopf, [], 'kein Kopf erkannt');
+  });
+  await test('Projektordner: Wörter ohne Nummer und ohne Kürzel am Ende', async () => {
+    assert.equal(K.ordnerWoerter('25.0815 Musterbäckerei Probehausen Tst'), 'Musterbäckerei Probehausen');
+    assert.equal(K.ordnerWoerter('24.0777 Beispielstraße 5 Musterort Dr. Ka'), 'Beispielstraße 5 Musterort');
+    assert.equal(K.ordnerWoerter('23.0450 Kurzweg Prüfstadt Ben Luc'), 'Kurzweg Prüfstadt');
+    assert.equal(K.ordnerWoerter('22.00999 Ohnekopf Teststadt (Ric)'), 'Ohnekopf Teststadt');
+  });
+  await test('Kopie: nie kopierte Abschnitte fehlen – auch wenn alles angehakt und jede Klasse verlangt ist', async () => {
+    const k = K.kopieBauen({ faelle: await kopieFaelle(), klassen: alleKlassen, untersucht: true, frage: 'Wie?', fachwoerter: FW });
+    for (const m of ['VERANLASSUNGSMARKE', 'AUFGABENMARKE', 'ORTSTERMINMARKE', 'EINLEITUNGSMARKE', 'EINLEITUNG2MARKE', 'ENGLISCHMARKE', 'WEITERESMARKE', 'OHNEMARKE'])
+      assert.ok(!k.text.includes(m), m + ' darf nicht in die Kopie');
+    // Vor jedem Auszug nur Projektnummer, Gebäude als Nummer, Mitteilung, Abschnitt
+    const labels = auszuege(k.text).split('\n').filter(z => z.startsWith('['));
+    for (const l of labels) assert.match(l, /^\[\d{2}\.\d{3,5}(?: · Gebäude \d)?(?: · Untersucht| · \d+\. Mitteilung(?: Ergänzung)? · (?:Befund|Schlussfolgerungen|Maßnahmen|Arbeitsschutz))\]$/, l);
+    assert.deepEqual(labels, ['[25.0815 · Untersucht]', '[25.0815 · 1. Mitteilung · Befund]', '[25.0815 · 1. Mitteilung · Schlussfolgerungen]', '[25.0815 · 1. Mitteilung · Maßnahmen]',
+      '[25.0815 · 1. Mitteilung · Arbeitsschutz]', '[25.0815 · 2. Mitteilung · Befund]', '[25.0815 · 2. Mitteilung · Schlussfolgerungen]',
+      '[24.0777 · Gebäude 1 · 1. Mitteilung · Befund]', '[24.0777 · Gebäude 1 · 1. Mitteilung · Maßnahmen]', '[24.0777 · Gebäude 2 · 1. Mitteilung · Befund]', '[23.0450 · Untersucht]']);
+    assert.match(k.text, /\[23\.0450 · Untersucht\]\n2 Materialproben · Asbest$/, 'Bericht ohne Überschriften: nur die Zeile „Untersucht“');
+    for (const ordner of Object.values(KO)) assert.ok(!k.text.includes(ordner.slice(8)), 'kein Ordnername: ' + ordner);
+    assert.ok(!k.text.includes('Neubau]') && !k.text.includes('· Neubau'), 'Gebäude-Ordner nur als Nummer');
+    assert.equal(k.faelle, 3); assert.equal(k.abschnitte, 9);
+    // nur Befund + Sanierungsmaßnahmen, ohne „Untersucht“
+    const k2 = K.kopieBauen({ faelle: await kopieFaelle(), klassen: ['befund', 'massnahmen'], untersucht: false, frage: 'Wie?', fachwoerter: FW });
+    assert.ok(!/Schlussfolgerungen\]|Arbeitsschutz\]|Untersucht\]/.test(k2.text)); assert.equal(k2.faelle, 2, 'Fall ohne Überschriften fällt ohne „Untersucht“ ganz weg');
+    assert.ok(k.text.startsWith(K.PROMPT.replace('<Frage>', 'Wie?')), 'Prompt aus dem Stufe-2-Plan, dann die Frage');
+  });
+  await test('Kopie: Kopfwerte und Ordnerwörter werden nach Namensteilen ersetzt, nur als ganzes Wort', async () => {
+    const k = K.kopieBauen({ faelle: await kopieFaelle(), klassen: K.KOPIER_KLASSEN, untersucht: true, frage: 'Wie?', fachwoerter: FW });
+    const t = auszuege(k.text);
+    for (const v of ['Probemann', 'Lindtal', 'Konrad', 'Hauptstr', 'Hauptstraße', 'Probehausen', 'Musterbäckerei', '9988776', '77 123 456', '77-123', 'Beispiel Versicherung',
+      '12-3456', 'Sanierungstechnik', 'Feldmohn', 'Beispielstraße', 'Musterort', 'Kurzweg', ' 52999'])
+      assert.ok(!t.includes(v), `„${v}“ steht noch in der Kopie`);
+    for (const v of ['Herrn [VN] ([Risikoort])', 'Die [VN] hatten', '; [VN] bestätigte', 'Schaden [Schaden-Nr.] ist bei der [Versicherer] Versicherung', 'Vertrag [VS-Nr.]', 'Auftrag [Az.]',
+      'W1 · [Projekt] [Risikoort] · 14', 'Frau Dr. [VN] ist', 'in [Risikoort] ist trocken', 'Im Gebäude [Risikoort] wurde', 'Frau [VN] war'])
+      assert.ok(t.includes(v), 'erwartet: ' + v);
+    // Laborproben-Nummern bleiben – auch wenn die PLZ darin steckt; Kürzel und KG (Kellergeschoss) bleiben
+    for (const v of ['Labornummer 925-2025-00052999', 'Die Probe 24-123456 aus dem KG', 'Chlorid (Tst).', 'Telefonische Rückfrage unter 02405 123456.']) assert.ok(t.includes(v), 'bleibt: ' + v);
+    assert.equal(k.ersetzt, (t.match(/\[(?:VN|Risikoort|Versicherer|Schaden-Nr\.|VS-Nr\.|Auftraggeber|Schadenort|Az\.|Projekt)\]/g) || []).length, 'Zahl der ersetzten Namen = Platzhalter im Text');
+  });
+  await test('Kopie: verdächtige Stellen – Mitarbeiter mit Herr/Frau im Befund, Telefon, Firma, E-Mail, Straße, Kopfwort = Themenwort', async () => {
+    const f = await kopieFaelle(), basis = { faelle: f, klassen: K.KOPIER_KLASSEN, untersucht: true, frage: 'Wie?', fachwoerter: FW };
+    const k = K.kopieBauen(basis);
+    assert.deepEqual(k.stellen.map(s => [s.art, s.t]), [['anrede', 'Herrn Probenehmer'], ['telefon', '02405 123456'], ['firma', 'Firma Kältebau Nord GmbH'],
+      ['email', 'info@musterbaeckerei.example'], ['strasse', 'Beispielallee 4'], ['kopf', 'Schimmel'], ['kopf', 'Schimmel']]);
+    assert.equal(k.stellen[0].wo, '25.0815 · 1. Mitteilung · Befund', 'Mitarbeitername mit „Herrn“ im Befund wird gefunden');
+    assert.ok(!k.stellen.some(s => /Eurofins|KG$|925-2025|24-123456/.test(s.t)), 'keine Stelle: Labor, KG, Laborproben-Nummern');
+    // Regel 4: „Schimmel“ ist ein Thema – das Kopfwort wird nicht ersetzt, sondern markiert; „Sanierungstechnik“ ist keines → ersetzt
+    assert.ok(auszuege(k.text).includes('Die Kontrollwischproben der Schimmel [Auftraggeber] waren'));
+    assert.equal(k.offen, 7);
+    // Satz entfernen und „ist kein Name“
+    const entfernt = new Set(k.stellen.filter(s => s.art !== 'kopf').map(s => s.satz)), ok = new Set(['schimmel']);
+    const k2 = K.kopieBauen(Object.assign({}, basis, { entfernt, ok }));
+    assert.equal(k2.offen, 0); assert.equal(k2.entfernt, 4, 'E-Mail und Straße stehen im selben Satz');
+    for (const v of ['Probenehmer', '02405', 'Kältebau', 'info@', 'Beispielallee']) assert.ok(!k2.text.includes(v), 'entfernt: ' + v);
+    assert.ok(k2.text.includes('Schimmel wurde in keiner Probe nachgewiesen.'), 'bestätigt, bleibt stehen');
+    assert.ok(k2.text.includes('Die Probe 24-123456 aus dem KG'), 'nur die Sätze mit Stellen fallen weg');
+    // die eigene Frage wird geprüft, aber nicht ersetzt und nicht entfernt
+    const k3 = K.kopieBauen(Object.assign({}, basis, { entfernt, ok, frage: 'Passt das auf den Fall von Herrn Meier?', meinFall: 'Bäckerei, Tel. 0241 998877' }));
+    assert.deepEqual(k3.stellen.filter(s => s.offen).map(s => [s.art, s.t, s.entfernbar]), [['anrede', 'Herrn Meier', false], ['telefon', 'Tel. 0241 998877', false]]);
+    assert.ok(k3.text.includes('Meine Frage: Passt das auf den Fall von Herrn Meier?\nMein Fall: Bäckerei, Tel. 0241 998877\n\n--- Auszüge ---'));
+  });
+  await test('Keine Stelle: Laborproben-Nummern, Labore und Verbände (Fehlalarme aus der Prüfung an echten Berichten)', async () => {
+    const t = 'In den Proben (22W09435-001 und 002) sowie 05408-003 wurde Asbest nachgewiesen. Anlage: Ergebnisse (Labor Urbanus GmbH), Untersuchungsbericht (Umweltmykologie GmbH), '
+      + 'Prüfbericht (eco-Luftqualität + Raumklima GmbH). Gesamtverband der deutschen Versicherungswirtschaft e. V. (GDV); Deutsche Gesetzliche Unfallversicherung e.V. (DGUV).';
+    assert.deepEqual(K.stellenIn(t, []), []);
+    assert.deepEqual(K.stellenIn('Rückruf unter 0241 1234 oder (02405) 12 34 56, Fax 02405-998877.', []).map(s => s.t), ['0241 1234', '(02405) 12 34 56', 'Fax 02405-998877'], 'echte Telefonnummern bleiben Stellen');
+  });
+  await test('Kopfwort-Regel: Parameter-, Themen- und Abschnittswörter werden markiert, alle anderen ersetzt', async () => {
+    const kopf = [{ key: 'VN', art: 'name', zeilen: [{ t: 'Max Brand und Erika Keller' }] }];
+    const E = K.ersetzerBauen([kopf], [], FW);
+    assert.deepEqual(E.kollisionen.map(k => k.wort), ['Brand'], '„Brand“ steckt in „Brandgeruch“/„Brandschutt“');
+    // „Keller“ ist weder Parameter- noch Themenwort → wird ersetzt, auch „im Keller“ (Grenze der Regel; siehe Stand)
+    assert.equal(K.ersetzen('Im Keller von Max Keller roch es nach Brand.', E).t, 'Im [VN] von [VN] roch es nach Brand.');
+    assert.deepEqual(K.stellenIn('Der Brand bei [VN].', E.kollisionen).map(s => s.t), ['Brand']);
+    assert.equal(K.ersetzen('der kleine keller', E).t, 'der kleine keller', 'klein geschrieben bleibt');
+  });
+  await test('Erzeugte Fälle: 300 erfundene Köpfe, Kopfwerte in vielen Schreibweisen – nichts bleibt stehen', async () => {
+    let s = 7; const zz = n => { s = (s * 1103515245 + 12345) % 2147483648; return s % n; };
+    const sil = ['bra', 'kel', 'mor', 'tan', 'vil', 'gru', 'sen', 'dor', 'lim', 'wes', 'rup', 'hag', 'nol', 'fie', 'zan', 'bek'];
+    const wort = (n = 2) => { let w = ''; for (let i = 0; i < n + zz(2); i++) w += sil[zz(sil.length)]; return w[0].toUpperCase() + w.slice(1); };
+    const STR = ['straße', 'weg', 'allee', 'gasse', 'ring'], ORT = ['hausen', 'dorf', 'heim', 'berg'];
+    let lecks = 0, faelle = 0, spot = 0;
+    for (let i = 0; i < 300; i++) {
+      const vor = wort(1), nach = wort(2), nach2 = wort(2), str = wort(2) + STR[zz(STR.length)], hnr = 1 + zz(80), plz = String(10000 + zz(89999)), ort = wort(2) + ORT[zz(ORT.length)];
+      const vers = wort(2), sn = `${10 + zz(89)}-${100 + zz(899)} ${100 + zz(899)}/${20 + zz(7)}`, doppel = zz(2);
+      const kopf = [{ key: 'VN', art: 'name', zeilen: [{ t: `${zz(2) ? 'Herr ' : ''}${vor} ${nach}${doppel ? '-' + nach2 : ''}` }] },
+        { key: 'Risikoort', art: 'adresse', zeilen: [{ t: `Wohnhaus, ${str} ${hnr}` }, { t: `${plz} ${ort}`, tab: true }] },
+        { key: 'Versicherer', art: 'name', zeilen: [{ t: `${vers} Versicherung AG` }] }, { key: 'Schaden-Nr.', art: 'nummer', zeilen: [{ t: sn }] }];
+      const kurz = str.replace(/straße$/, 'str.');
+      const text = [`Bei ${vor} ${nach} wurde gemessen.`, `In ${nach}s Keller lag Ruß.`, `Herrn ${nach} war nicht da.`, `Adresse ${str} ${hnr}, ${plz} ${ort}.`, `Auch ${kurz} ${hnr}a war betroffen.`,
+        `Die Feuerwehr aus ${ort} half.`, `Schaden ${sn.replace(/[-/]/g, ' ')} bei der ${vers}.`, `Nummer ${sn.replace(/\s/g, '')} gemeldet.`, doppel ? `${nach2}-${nach} und ${nach2} waren dort.` : 'Sonst nichts.'].join(' ');
+      const E = K.ersetzerBauen([kopf], [], FW), r = K.ersetzen(text, E), st = K.stellenIn(r.t, E.kollisionen).map(x => x.t);
+      faelle++;
+      for (const v of [vor, nach, doppel ? nach2 : null, str.replace(/straße$/, ''), ort, plz, vers, sn, sn.replace(/[-/]/g, ' '), sn.replace(/\s/g, '')].filter(Boolean)) {
+        if (!r.t.includes(v)) continue;
+        if (st.some(x => x.includes(v))) { spot++; continue; }   // Kollision mit einem Fachwort: markiert statt ersetzt
+        lecks++; console.log('  Leck:', v, '→', r.t);
+      }
+    }
+    assert.equal(lecks, 0, `${lecks} Kopfwerte in ${faelle} erzeugten Fällen nicht ersetzt`);
+    console.log(`  ${faelle} erzeugte Fälle, 0 Lecks, ${spot} Kopfwörter als Stelle markiert statt ersetzt`);
+  });
   console.log(`\nKern: ${n} Prüfungen bestanden`);
 })().catch(e => { console.error(e); process.exit(1); });

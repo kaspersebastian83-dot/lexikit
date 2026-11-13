@@ -2,7 +2,8 @@
 
 **Frühere Fälle aus den fertigen Word-Berichten des Büros finden** – „Wie haben wir das früher gemacht?“. Für alle, die ein altes
 Vorgehen nachsehen wollen, ohne jemanden fragen zu müssen. Läuft im Browser (Edge/Chrome), ohne Server, ohne KI, ohne Netz.
-Ab 0.2.0 ist die Einheit der **Fall**: ein Projektordner mit allen seinen Mitteilungen.
+Ab 0.2.0 ist die Einheit der **Fall**: ein Projektordner mit allen seinen Mitteilungen. Ab 0.3.0 lassen sich bis zu drei Fälle
+**für ChatGPT kopieren** – LexiKit selbst sendet nichts, man fügt den Text selbst ein.
 
 Adresse: `https://kaspersebastian83-dot.github.io/lexikit/` (GitHub Pages muss für dieses Repo eingeschaltet sein).
 Gleiche Adresse wie die anderen Apps → LexiKit nimmt den Archivordner, den die Projektzentrale gewählt hat
@@ -103,6 +104,33 @@ Im offenen Fall:
   je PC) – der Browser kennt den echten Pfad nicht. Der Pfad wird zusätzlich kopiert.
 - **Abschnitt kopieren**: der gezeigte Reiter in die Zwischenablage (LexiKit fügt nirgends ein).
 - **Projektordner**: kopiert den Pfad (im Explorer in die Adresszeile einfügen).
+- **Für ChatGPT kopieren**: öffnet die Vorschau mit diesem Fall (siehe unten).
+
+## Für ChatGPT kopieren (ab 0.3.0)
+
+Auftragsverarbeitungsvertrag mit OpenAI für ChatGPT Business: geklärt (Basti, 13.11.2026). Die Regeln unten gelten trotzdem.
+
+- **Auswählen** an jeder Fallkarte, höchstens 3 Fälle; die Leiste „n Fälle ausgewählt“ öffnet die Vorschau. Die Auswahl bleibt beim
+  Weitersuchen stehen und ist nach dem Kopieren leer. Im offenen Fall: „Für ChatGPT kopieren“ mit diesem einen Fall.
+- **Nichts ohne Vorschau**: Die Vorschau zeigt genau den Text der Zwischenablage, mit Länge, Zahl der Fälle/Abschnitte und der ersetzten
+  Namen. Kopieren geht erst, wenn jede verdächtige Stelle entfernt oder als „ist kein Name“ bestätigt ist.
+- **Inhalt**: Prompt (aus `claude/lexikit-stufe2-plan.md`), Frage (Vorlagen: Wortlaut der Maßnahmen · Was wurde gemessen und warum ·
+  Vergleich mit meinem Fall · eigene Frage), dann die Auszüge. Angeboten: „Untersucht“ (Zeile der Fallkarte), Befund, Schlussfolgerungen,
+  Sanierungsmaßnahmen (angehakt), Arbeitsschutz (nicht angehakt). Je Fall wählbar, welche Mitteilungen (nach Gebäude) mitgehen.
+- **Nie kopiert, ohne Wahl**: Veranlassung, Aufgabenstellung, die Einleitung ohne Überschrift, Ortstermin/Probenahme, „Weiteres“,
+  Berichte ohne Überschriften (Namen lassen sich dort nicht abtrennen – nur die Zeile „Untersucht“ geht mit), englische Fassungen.
+- **Vor jedem Auszug** nur `[Projektnummer · Gebäude n · n. Mitteilung · Abschnitt]` – nie der Ordnername; Gebäude als Nummer.
+- **Platzhalter**: Den Berichtskopf liest LexiKit beim Öffnen der Vorschau frisch aus dem Bericht (nie im Index – der bleibt Fassung 1).
+  VN, Risiko, Versicherer, Schaden-Nr., VS-Nr., Auftraggeber, Schadenort, Zeichen/Auftrags-Nr. und die Wörter des Projektordners (ohne
+  Kürzel am Ende) werden nach Namensteilen ersetzt: Vor- und Nachnamen, Straße (auch „Str.“/„Strasse“) mit Hausnummer, PLZ, Ort,
+  Nummern mit anderen Trennzeichen – nur ganze, groß geschriebene Wörter. → `[VN]`, `[Risikoort]`, `[Versicherer]`, `[Schaden-Nr.]`,
+  `[VS-Nr.]`, `[Auftraggeber]`, `[Schadenort]`, `[Az.]`, `[Projekt]`. Laborproben-Nummern bleiben (nie Teil einer längeren Nummer).
+  Bericht ohne erkannten Kopf: erst abgewählt.
+- **Kopfwort = Fachwort**: Ein Kopfwort, das in einem Parameter-, Themen- oder Abschnittswort steckt („Schimmel“, „Brand“), wird nicht
+  ersetzt, sondern als Stelle markiert.
+- **Stellen**: Herr/Frau + Name, Straße + Nummer, PLZ + Ort, Telefon, E-Mail, Firmenform (GmbH, AG, e. V. …; nicht „KG“ = Kellergeschoss;
+  Labore und Verbände wie Eurofins, GDV, DGUV, VdS ausgenommen), dazu die Kopfwörter oben. Auch die eigene Frage wird geprüft.
+- Grenze: Namen, die nicht im Kopf stehen und ohne Herr/Frau, Firmenform oder Adresse vorkommen, erkennt keine Regel.
 
 ## Aufbau
 
@@ -112,9 +140,11 @@ Eine Datei `index.html` (Spektron-Look v1 byte-gleich, Kern-Block `LEXIKIT-KERN`
 ## Tests
 
 ```
-node tests/kern.cjs       # Word lesen (erfundene .docx), Abschnitte, Kopf weg, Auswahl, Fälle, „Untersucht“, Rangfolge, Zusammenführen
+node tests/kern.cjs       # Word lesen (erfundene .docx), Abschnitte, Kopf weg, Auswahl, Fälle, „Untersucht“, Rangfolge, Zusammenführen,
+                          # Kopie für ChatGPT: Kopf, Platzhalter, Stellen, nie kopierte Abschnitte, 300 erzeugte Köpfe ohne Leck
 node tests/dateien.cjs    # Spektron-Look gleich wie ../berichtkit, Offline-Dateien, kein Netz
-node tests/browser.cjs    # Chromium mit erfundenem Archiv im OPFS (NODE_PATH auf playwright; CHROME=… optional)
+node tests/browser.cjs    # Chromium mit erfundenem Archiv im OPFS (NODE_PATH auf playwright; CHROME=… optional);
+                          # ab 0.3.0 zweites Archiv: Auswahl, Vorschau, Stellen, Zwischenablage = Vorschau
 node tests/zeit-archivgroesse.cjs   # nicht in CI: Startzeit mit 4.663 erfundenen Berichten (einige Minuten; LC_ALL=C.UTF-8)
 ```
 
@@ -125,4 +155,5 @@ Testberichte (`tests/daten/berichte.cjs`) sind erfunden – keine echten Bericht
 - Liest nur in den Projektordnern, schreibt nie dorthin. Fügt nichts in Berichte ein.
 - Keine KI, kein Netz – Wortsuche im Index.
 - Außerhalb der Spektron-Kette (kein Schritt in der Leiste, kein Projektstand).
-- Nicht in 0.2.0: „Für ChatGPT kopieren“, „Vorbild“-Markierungen, Links aus BerichtKit, Suchprotokoll, PDF, `.doc`.
+- Keine KI und kein Netz in LexiKit, auch nicht beim Kopieren für ChatGPT (`connect-src 'self'`).
+- Nicht in 0.3.0: „Vorbild“-Markierungen, Links aus BerichtKit, Suchprotokoll, PDF, `.doc`.

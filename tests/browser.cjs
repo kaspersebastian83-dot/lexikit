@@ -7,7 +7,7 @@
 // LEXIKIT_BILDER=<Ordner> legt Bildschirmfotos ab.
 const assert = require('node:assert/strict'), http = require('node:http'), fs = require('node:fs'), path = require('node:path');
 const { chromium } = require('playwright');
-const { archiv, docx, BERICHTE } = require('./daten/berichte.cjs');
+const { archiv, docx, BERICHTE, archivKopie, KOPIE_ORDNER_OPFS: KO } = require('./daten/berichte.cjs');
 const K = require('./kern-laden.cjs');
 // Themenliste, wie LexiKit 0.1.0 sie hinterlassen hat (Fassung 1, ohne Gruppen): eigenes Thema des Büros, ein gelöschtes
 const THEMEN_010 = { format: 'lexikit-themen', version: 1, themen: [
@@ -30,7 +30,7 @@ const b64 = x => (Buffer.isBuffer(x) ? x : Buffer.from(String(x))).toString('bas
   const context = await browser.newContext({ viewport: { width: 1320, height: 1000 } });
   await context.grantPermissions(['clipboard-read', 'clipboard-write'], { origin: new URL(url).origin });
   // Archiv-Handle wie aus „mosaik-suite“/„archiv“ der Projektzentrale – direkt aus dem OPFS (wie BerichtKit tests/browser.cjs)
-  await context.addInitScript(() => {
+  const initSkript = () => {
     const orig = IDBObjectStore.prototype.get;
     IDBObjectStore.prototype.get = function (k) {
       if (k !== 'archiv' || this.name !== 'kv') return orig.call(this, k);
@@ -46,7 +46,8 @@ const b64 = x => (Buffer.isBuffer(x) ? x : Buffer.from(String(x))).toString('bas
       const cw = FileSystemFileHandle.prototype.createWritable;
       FileSystemFileHandle.prototype.createWritable = function () { if (this.name.startsWith('.lexikit-schreibprobe')) return Promise.reject(new DOMException('Zugriff verweigert', 'NotAllowedError')); return cw.apply(this, arguments); };
     }
-  });
+  };
+  await context.addInitScript(initSkript);
   const page = await context.newPage();
   const fehler = []; page.on('pageerror', e => fehler.push(e.message)); page.on('console', m => { if (m.type() === 'error') fehler.push(m.text()); });
   page.on('dialog', d => { fehler.push('Browser-Dialog: ' + d.message()); d.dismiss(); });
@@ -148,7 +149,7 @@ const b64 = x => (Buffer.isBuffer(x) ? x : Buffer.from(String(x))).toString('bas
     assert.equal(await k1.locator('.tab[aria-selected="true"]').textContent(), 'Sanierungsmaßnahmen');
     assert.equal(await k1.locator('.block-kopf span').textContent(), '1. Mitteilung · 6. Sanierungsmaßnahmen');
     assert.deepEqual(await k1.locator('.txt mark').allTextContents(), ['Löschpulver']);
-    assert.deepEqual(await k1.locator('.f-knoepfe .sp-knopf').allTextContents().then(a => a.map(s => s.trim())), ['Bericht in Word öffnen', 'Abschnitt kopieren', 'Projektordner', 'Fall schließen'], 'ohne „Für ChatGPT kopieren“');
+    assert.deepEqual(await k1.locator('.f-knoepfe .sp-knopf').allTextContents().then(a => a.map(s => s.trim())), ['Bericht in Word öffnen', 'Abschnitt kopieren', 'Projektordner', 'Für ChatGPT kopieren', 'Fall schließen'], 'ab 0.3.0 mit „Für ChatGPT kopieren“');
     assert.equal(await k1.locator('.f-knoepfe [data-word]').getAttribute('href'), 'ms-word:ofv|u|file:///C:/Daten/Mosaik%20Archivordner/24.0412%20Musterlager%20Beispielheim%20Tst/Mitteilungen/1.%20Mitteilung.docx');
     await k1.locator('[data-ordner]').click();
     assert.equal(await page.evaluate(() => navigator.clipboard.readText()), 'C:\\Daten\\Mosaik Archivordner\\24.0412 Musterlager Beispielheim Tst');
@@ -337,6 +338,122 @@ const b64 = x => (Buffer.isBuffer(x) ? x : Buffer.from(String(x))).toString('bas
     await page.click('#btnNeuesThema'); await page.fill('#themaName', 'Test'); await page.click('#btnThemaSpeichern');
     assert.match(await page.textContent('#themaFehler'), /nicht gespeichert werden/);
     await bild('7-nur-lesen');
+
+    /* ---------- 8. Für ChatGPT kopieren – eigenes Archiv mit erfundenen Fällen und Fallen ---------- */
+    {
+      const ctx2 = await browser.newContext({ viewport: { width: 1320, height: 1000 } });
+      await ctx2.grantPermissions(['clipboard-read', 'clipboard-write'], { origin: new URL(url).origin });
+      await ctx2.addInitScript(initSkript);
+      const p = await ctx2.newPage();
+      p.on('pageerror', e => fehler.push(e.message)); p.on('console', m => { if (m.type() === 'error') fehler.push(m.text()); });
+      p.on('dialog', d => { fehler.push('Browser-Dialog: ' + d.message()); d.dismiss(); });
+      const bild2 = async name => { if (BILDER) await p.screenshot({ path: path.join(BILDER, name + '.png'), fullPage: true }); };
+      await p.goto(url); await p.waitForSelector('#zugang:not([hidden])'); await p.evaluate(H);
+      for (const [pfad, inhalt] of Object.entries(archivKopie())) await p.evaluate(([q, b]) => __schreib(q, b), [pfad, inhalt == null ? "" : b64(inhalt)]).catch(e => { throw new Error(pfad + ": " + e.message); });
+      const dateien = async () => Object.fromEntries(Object.entries(await p.evaluate(() => __liste())).filter(([k]) => !k.startsWith('_LexiKit/')));
+      const vorher2 = await dateien();
+      await p.reload(); await p.evaluate(H);
+      await p.waitForSelector('#einlesen:not([hidden])');
+      await p.waitForFunction(() => window.LexiKit && !window.LexiKit.L.aktiv && window.LexiKit.L.ende, null, { timeout: 30000 });
+      await p.click('#btnSchonSuchen');
+      await p.fill('#q', 'Musterfall');
+      await p.waitForFunction(() => /^4 Fälle/.test(document.getElementById('ergebnisZeile').textContent));
+      const box = o => p.locator(`.fall[data-fall="${o}"] [data-waehlen]`);
+      // nichts in der Zwischenablage ohne Vorschau
+      await p.evaluate(() => navigator.clipboard.writeText('VORHER'));
+      assert.ok(await p.locator('#auswahlLeiste').isHidden(), 'ohne Auswahl keine Leiste');
+      await box(KO.a).check(); await box(KO.b).check();
+      assert.equal(await p.textContent('#auswahlText'), '2 Fälle ausgewählt');
+      await box(KO.c).check();
+      assert.equal(await p.textContent('#auswahlText'), '3 Fälle ausgewählt – mehr geht nicht');
+      assert.ok(await box(KO.d).isDisabled(), 'höchstens 3 Fälle');
+      // die Auswahl bleibt beim Weitersuchen
+      await p.fill('#q', 'Kontrollwischproben'); await p.waitForFunction(() => /^1 Fall/.test(document.getElementById('ergebnisZeile').textContent));
+      assert.equal(await p.textContent('#auswahlText'), '3 Fälle ausgewählt – mehr geht nicht');
+      await p.fill('#q', 'Musterfall'); await p.waitForFunction(() => /^4 Fälle/.test(document.getElementById('ergebnisZeile').textContent));
+      assert.ok(await box(KO.a).isChecked() && await box(KO.d).isDisabled());
+      await box(KO.b).uncheck(); assert.ok(!(await box(KO.d).isDisabled())); await box(KO.d).check();
+      await bild2('8-auswahl');
+      await p.click('#btnAuswahlKopieren');
+      await p.waitForSelector('#kopieren:not([hidden])');
+      await p.waitForFunction(() => window.LexiKit.S.kopie && !window.LexiKit.S.kopie.laden);
+      assert.equal(await p.evaluate(() => navigator.clipboard.readText()), 'VORHER', 'Öffnen der Vorschau kopiert nichts');
+      // Fälle und Berichte: Bericht ohne Überschriften wird nicht mitkopiert, ohne erkannten Kopf erst abgewählt, englische Fassung fehlt
+      assert.equal(await p.locator('#kopieFaelle [data-kfall]').count(), 3);
+      const ber = await p.$$eval('#kopieFaelle [data-kber]', x => x.map(e => [e.closest('label').textContent.trim(), e.checked, e.disabled]));
+      assert.deepEqual(ber.map(x => [x[0].replace(/\s+/g, ' ').split(' (')[0], x[1], x[2]]), [
+        ['1. Mitteilung Ergänzung · Stellungnahme', false, true], ['1. Mitteilung · Sanierungsvorschlag', true, false], ['2. Mitteilung · Untersuchungsbericht', true, false],
+        ['1. Mitteilung · Untersuchungsbericht', false, true], ['1. Mitteilung · Sanierungsvorschlag', false, false]]);
+      const notizen = await p.$$eval('#kopieFaelle .knotiz', x => x.map(e => e.textContent));
+      assert.ok(notizen.some(t => /ohne Überschriften – wird nicht mitkopiert/.test(t)) && notizen.some(t => /Berichtskopf nicht erkannt/.test(t)));
+      const vor = () => p.textContent('#kopieVorschau');
+      let t = await vor();
+      for (const v of ['VERANLASSUNGSMARKE', 'AUFGABENMARKE', 'ORTSTERMINMARKE', 'EINLEITUNGSMARKE', 'EINLEITUNG2MARKE', 'ENGLISCHMARKE', 'WEITERESMARKE', 'OHNEMARKE',
+        'Probemann', 'Lindtal', 'Probehausen', 'Hauptstr', '9988776', 'Sanierungstechnik', 'Kurzweg', ...Object.values(KO)]) assert.ok(!t.includes(v), 'nicht in der Vorschau: ' + v);
+      assert.match(t, /\[23\.0450 · Untersucht\]\n2 Materialproben · Asbest/);
+      assert.ok(!t.includes('[22.00999 · 1. Mitteilung') && t.includes('[22.00999 · Untersucht]'), 'Bericht ohne Kopf erst abgewählt, die Zeile „Untersucht“ des Falls bleibt');
+      assert.match(await p.textContent('#kopieMeta'), /^ca\. [\d.]+ Zeichen · 3 Fälle · 5 Abschnitte · \d+ Namen ersetzt$/, "Arbeitsschutz ist erst abgewählt");
+      assert.ok(await p.locator('#btnKopieKopieren').isDisabled(), 'Stellen offen → kein Kopieren');
+      assert.match(await p.textContent('#kopieWarn'), /7 Stellen sehen nach einem Namen oder einer Adresse aus/);
+      assert.match(await p.textContent('#kopieStatus'), /Noch 7 Stellen offen/);
+      await bild2('9-vorschau-stellen');
+      // Bericht ohne Kopf von Hand wählen: der Ordnername ersetzt auch dort den Namen
+      await p.locator('#kopieFaelle [data-kber="2:0"]').check();
+      t = await vor(); assert.ok(t.includes('[22.00999 · 1. Mitteilung · Befund]\nMusterfall: Herr [Projekt] zeigte uns den Keller.'));
+      // Stellen abarbeiten: Satz entfernen, „Schimmel“ (Thema = Kopfwort) ist kein Name
+      for (let i = 0; i < 12; i++) {
+        const st = p.locator('#kopieWarn .kstelle').first(); if (!(await st.count())) break;
+        if ((await st.locator('[data-zeige]').textContent()) === 'Schimmel') await st.locator('[data-ok]').click(); else await st.locator('[data-entfernen]').click();
+      }
+      assert.ok(await p.locator('#btnKopieKopieren').isEnabled(), 'alle Stellen erledigt');
+      t = await vor();
+      for (const v of ['Probenehmer', '02405', 'Kältebau', 'info@', 'Beispielallee']) assert.ok(!t.includes(v), 'Satz entfernt: ' + v);
+      assert.ok(t.includes('Die Probe 24-123456 aus dem KG') && t.includes('Schimmel wurde in keiner Probe nachgewiesen.'), 'nur die Sätze mit Stellen fallen weg');
+      assert.match(await p.textContent('#kopieWarn'), /4 entfernte Sätze zurückholen/);
+      // Fragen: Vorlagen füllen die Frage; „Vergleich mit meinem Fall“ zeigt das Feld für den eigenen Fall – auch dort zählen Stellen
+      await p.check('input[name="kFrage"][value="gemessen"]');
+      assert.equal(await p.inputValue('#kFrageText'), 'Was wurde in diesen Fällen gemessen, mit wie vielen Proben, und warum? Welche Ergebnisse führten zu welchen Schlussfolgerungen?');
+      assert.ok((await vor()).includes('Meine Frage: Was wurde in diesen Fällen gemessen'));
+      await p.check('input[name="kFrage"][value="vergleich"]');
+      assert.ok(await p.locator('#kFallBox').isVisible());
+      await p.fill('#kMeinFall', 'Herr Meier hat eine Bäckerei mit Ofenbrand.');
+      await p.waitForFunction(() => document.getElementById('btnKopieKopieren').disabled);
+      assert.match(await p.textContent('#kopieWarn'), /1 Stelle sieht nach einem Namen/);
+      assert.equal(await p.locator('#kopieWarn .kstelle [data-entfernen]').count(), 0, 'eigener Text: nicht entfernen, nur ändern oder bestätigen');
+      await p.locator('#kopieWarn .kstelle [data-ok]').click();
+      await bild2('10-vorschau-fertig');
+      // Kopieren: die Zwischenablage ist genau die Vorschau
+      await p.click('#btnKopieKopieren');
+      await p.waitForFunction(() => /^Kopiert/.test(document.getElementById('kopieStatus').textContent));
+      const ab = await p.evaluate(() => navigator.clipboard.readText());
+      assert.equal(ab, await vor(), 'Zwischenablage = Vorschau');
+      assert.ok(ab.startsWith('Du unterstützt ein Sachverständigenbüro') && ab.includes('\nMein Fall: Herr Meier hat eine Bäckerei mit Ofenbrand.\n\n--- Auszüge ---\n[25.0815 · Untersucht]'));
+      for (const v of ['VERANLASSUNGSMARKE', 'ORTSTERMINMARKE', 'Probemann', 'Probenehmer', KO.a]) assert.ok(!ab.includes(v), 'nicht kopiert: ' + v);
+      // Fall abwählen: fällt aus der Kopie
+      await p.locator('#kopieFaelle [data-kfall="0"]').uncheck();
+      assert.ok(!(await vor()).includes('[25.0815') && await p.locator('#kopieFaelle [data-kber="0:1"]').isDisabled());
+      // zurück: Auswahl ist nach dem Kopieren leer; „Für ChatGPT kopieren“ im geöffneten Fall
+      await p.click('#btnKopieZurueck'); await p.waitForSelector('#suche:not([hidden])');
+      assert.ok(await p.locator('#auswahlLeiste').isHidden() && !(await box(KO.a).isChecked()));
+      await p.locator(`.fall[data-fall="${KO.b}"] [data-oeffnen=""]`).click();
+      await p.locator(`.fall[data-fall="${KO.b}"] [data-chatgpt]`).click();
+      await p.waitForFunction(() => window.LexiKit.S.kopie && !window.LexiKit.S.kopie.laden);
+      assert.equal(await p.locator('#kopieFaelle [data-kfall]').count(), 1);
+      assert.match(await p.textContent('#kopieFaelle'), /Beispielstrasse 5 – in der Kopie „Gebäude 1“[\s\S]*Neubau – in der Kopie „Gebäude 2“/);
+      t = await vor();
+      // „Beispielstrasse 5“ steht im Kopf und im Ordnernamen – welcher Platzhalter, ist gleich
+      assert.match(t, /\[24\.0777 · Gebäude 1 · 1\. Mitteilung · Befund\]\nMusterfall: Im Gebäude \[(?:Risikoort|Projekt)\] wurde Ruß festgestellt; Frau \[VN\] war nicht anwesend\.\n\[24\.0777 · Gebäude 1 · 1\. Mitteilung · Maßnahmen\][\s\S]*\[24\.0777 · Gebäude 2 · 1\. Mitteilung · Befund\]/);
+      assert.ok(!/Beispielstra(?:ß|ss)e/.test(t) && !t.includes('Feldmohn') && !t.includes('Musterort'));
+      // nichts in die Projektordner geschrieben, der Index bleibt Fassung 1 ohne Kopfwerte
+      assert.deepEqual(await dateien(), vorher2, 'Projektordner unverändert');
+      const lx = await p.evaluate(() => __liste());
+      for (const k of Object.keys(lx).filter(k => /lexikit-index/.test(k))) {
+        const j = await p.evaluate(q => __lies(q), k); assert.equal(JSON.parse(j).version, 1);
+        // nur Werte, die allein im Berichtskopf stehen (der Index enthält Berichtstext – im Text genannte Namen stehen darin wie in 0.2.0)
+        for (const v of ['Konrad', 'Probemann-Lindtal', 'Gerda', 'Hanna', 'Beispiel Versicherung AG', 'KV 9988776', '77-123 456/24', 'Musterweg 3']) assert.ok(!j.includes(v), k + ': ' + v);
+      }
+      await ctx2.close();
+    }
 
     assert.deepEqual(fehler, [], 'keine Fehler in der Konsole');
     console.log('Browser: alle Schritte bestanden');
