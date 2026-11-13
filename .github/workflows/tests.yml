@@ -25,7 +25,7 @@ jobs:
           node-version: 24
       - name: BerichtKit daneben holen (Spektron-Look byte-gleich prüfen)
         run: git clone --quiet --depth 1 https://github.com/kaspersebastian83-dot/berichtkit.git ../berichtkit
-      - name: Kern – Word lesen, Abschnitte, Berichtskopf, Auswahl, Suche, Zusammenführen
+      - name: Kern – Word lesen, Abschnitte, Berichtskopf, Auswahl, Fälle, Untersucht, Rangfolge, Zusammenführen
         run: node tests/kern.cjs
       - name: Spektron-Look, Offline-Dateien, kein Netz
         run: node tests/dateien.cjs
@@ -46,5 +46,5 @@ jobs:
           npm install --no-save --no-package-lock --prefix "$RUNNER_TEMP/pw" playwright@1.56.1
           echo "NODE_PATH=$RUNNER_TEMP/pw/node_modules" >> "$GITHUB_ENV"
           "$RUNNER_TEMP/pw/node_modules/.bin/playwright" install --with-deps chromium
-      - name: Einlesen, Suche, Themen mit zweitem PC, nur Neues nachlesen, Schreibprobe
+      - name: Einlesen, Fälle, Suche, Themen mit zweitem PC, vorhandener Index, nur Neues nachlesen, Schreibprobe
         run: node tests/browser.cjs

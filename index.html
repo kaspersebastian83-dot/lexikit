@@ -99,10 +99,10 @@ mark{background:var(--mark);color:var(--sp-text);border-radius:3px;padding:0 2px
 .rechts{flex:999 1 560px;min-width:0;display:flex;flex-direction:column;gap:16px}
 .ueber{font-size:13px;font-weight:700;color:var(--sp-muted);text-transform:uppercase;letter-spacing:.04em}
 .themen{display:flex;flex-direction:column;gap:8px}
-.thema{width:100%;min-height:48px;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 16px;background:var(--sp-panel);border:1px solid var(--sp-line2);border-radius:12px;font-size:16px;font-weight:500;color:var(--sp-text);text-align:left}
+.thema{width:100%;min-height:54px;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 16px;background:var(--sp-panel);border:1.5px solid var(--sp-line2);border-radius:10px;font-size:17px;font-weight:700;color:var(--sp-text);text-align:left}
 .thema:hover{border-color:var(--sp-app)}
-.thema small{font-size:13px;color:var(--sp-muted);white-space:nowrap}
-.thema[aria-pressed="true"]{border:3px solid var(--sp-app-dunkel);padding:6px 14px;font-weight:700}
+.thema small{font-size:14px;font-weight:600;color:var(--sp-muted);white-space:nowrap}
+.thema[aria-pressed="true"]{border:3px solid var(--sp-app-dunkel);padding:6.5px 14.5px}
 .thema[aria-pressed="true"] small{color:var(--sp-app-dunkel);font-weight:600}
 .neu-thema{min-height:44px;padding:8px 14px;background:transparent;border:1px dashed var(--sp-line2);border-radius:12px;font-size:15px;color:var(--sp-muted);text-align:left}
 .neu-thema:hover{border-color:var(--sp-app);color:var(--sp-text)}
@@ -112,14 +112,20 @@ mark{background:var(--mark);color:var(--sp-text);border-radius:3px;padding:0 2px
 .formular input,.formular textarea{font-size:16px;padding:8px 10px;border:1px solid var(--sp-line2);border-radius:8px;color:var(--sp-text);background:#fff}
 .formular textarea{min-height:110px;resize:vertical}
 .formular .knoepfe{display:flex;flex-wrap:wrap;gap:8px}
+.formular fieldset{border:0;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:4px 18px;font-size:14px}
+.formular legend{font-weight:600;padding:0;margin-bottom:4px}
+.formular fieldset label{flex-direction:row;align-items:center;gap:8px;font-weight:400;font-size:15px;min-height:44px}
+.formular fieldset input{width:22px;height:22px;accent-color:var(--sp-app-dunkel);padding:0}
 .formular .zahl{font-size:14px;color:var(--sp-app-dunkel);font-weight:600}
 .fehlertext{font-size:14px;color:#a3281c}
 .suchkarte{background:var(--sp-panel);border:1px solid var(--sp-line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:14px}
-.suchfeld{display:flex;align-items:center;gap:10px;border:1px solid var(--sp-line2);border-radius:12px;padding:0 14px;min-height:50px}
+.suchkarte > label{font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--sp-muted)}
+.suchfeld{display:flex;align-items:center;gap:10px;border:1.5px solid var(--sp-line2);border-radius:10px;padding:0 14px;min-height:54px}
 .suchfeld:focus-within{border-color:var(--sp-app-dunkel)}
 .suchfeld input{flex-grow:1;min-width:0;border:0;outline-offset:6px;font-size:18px;color:var(--sp-text);background:transparent;height:46px}
 .jahre{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
-.jahr{min-height:44px;min-width:64px;padding:0 14px;background:var(--sp-panel);border:1px solid var(--sp-line2);border-radius:999px;font-size:15px;color:var(--sp-text)}
+.jahre .filtername{flex:none;width:110px;font-size:15px;color:var(--sp-muted)}
+.jahr{min-height:44px;min-width:64px;padding:0 16px;background:var(--sp-panel);border:1.5px solid var(--sp-line2);border-radius:999px;font-size:16px;color:var(--sp-text)}
 .jahr:hover{border-color:var(--sp-app)}
 .jahr[aria-pressed="true"]{background:var(--sp-app-dunkel);border-color:var(--sp-app-dunkel);color:#fff;font-weight:600}
 .zeile{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px}
@@ -127,16 +133,33 @@ mark{background:var(--mark);color:var(--sp-text);border-radius:3px;padding:0 2px
 .zeile .klein{font-size:14px;color:var(--sp-muted)}
 .linkknopf{background:none;border:0;padding:0;color:var(--sp-app-dunkel);text-decoration:underline;font-size:14px}
 .leer{background:var(--sp-panel);border:1px dashed var(--sp-line2);border-radius:14px;padding:28px;font-size:16px;line-height:1.5;color:var(--sp-muted)}
-.treffer{background:var(--sp-panel);border:1px solid var(--sp-line);border-radius:14px;padding:18px 20px;display:flex;flex-direction:column;gap:10px}
-.t-kopf{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px}
-.t-kopf b{font-size:16px}
-.t-kopf span{font-size:14px;color:var(--sp-muted)}
-.t-abschnitt{font-size:15px;font-weight:600;color:var(--sp-app-dunkel);text-decoration:underline}
-.t-text{font-size:16px;line-height:1.6;overflow-wrap:anywhere}
-.t-text p{margin:0 0 8px}
-.t-text p.fund{background:#fbf6e2;border-radius:6px;padding:2px 6px;margin-left:-6px;margin-right:-6px}
-.t-knoepfe{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
-.t-knoepfe .sp-knopf{display:inline-flex;align-items:center;gap:8px;text-decoration:none}
+/* Fallkarte (Mock-up „Fälle – Suche und geöffneter Fall“) */
+.fall{background:var(--sp-panel);border:1px solid var(--sp-line);border-radius:14px;padding:22px 24px;font-size:17px;line-height:1.5}
+.fall.offen{border:2px solid var(--sp-app-dunkel);padding:21px 23px}
+.f-kopf{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 12px}
+.f-kopf h2{margin:0;font-size:20px;font-weight:700;overflow-wrap:anywhere}
+.f-kopf .meta{font-size:15px;color:var(--sp-muted)}
+.gitter{display:grid;grid-template-columns:130px 1fr;gap:10px 16px;margin-top:14px}
+.gitter > div{min-width:0;overflow-wrap:anywhere}
+.lab{font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--sp-muted);padding-top:4px}
+.aus{font-size:14px;color:var(--sp-muted);margin-top:4px}
+.tags{display:flex;flex-wrap:wrap;gap:8px}
+.tag{font:inherit;font-size:15px;line-height:1.35;min-height:32px;background:#eef1f3;border:0;border-radius:8px;padding:5px 10px;color:var(--sp-text);text-align:left}
+.tag:hover{background:#e3efed}
+.tag.mehr-tags{background:none;color:var(--sp-app-dunkel);text-decoration:underline}
+.tabs{display:flex;flex-wrap:wrap;gap:4px;margin-top:18px;border-bottom:1px solid var(--sp-line)}
+.tab{font:inherit;min-height:44px;padding:6px 16px;border:0;border-bottom:3px solid transparent;background:none;color:var(--sp-muted);font-weight:600;display:inline-flex;align-items:center;gap:6px}
+.tab:hover{color:var(--sp-text)}
+.tab[aria-selected="true"]{color:#1f524e;border-bottom-color:var(--sp-app-dunkel)}
+.tab .punkt{width:8px;height:8px;border-radius:50%;background:#c9a41c}
+.txt{background:#f7f8f9;border-radius:10px;padding:16px 18px;margin-top:12px;display:flex;flex-direction:column;gap:14px;overflow-wrap:anywhere}
+.txt p{margin:0 0 10px}
+.txt p:last-child{margin-bottom:0}
+.txt p.fund{background:#fbf6e2;box-shadow:0 0 0 6px #fbf6e2;border-radius:2px}
+.block-kopf{font-size:15px;color:var(--sp-muted);margin-bottom:8px;display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline}
+.f-knoepfe{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+.f-knoepfe .sp-knopf{display:inline-flex;align-items:center;gap:8px;text-decoration:none;height:46px;font-size:16px;font-weight:600}
+@media(max-width:800px){.gitter{grid-template-columns:1fr}.jahre .filtername{width:100%}}
 .fuss{font-size:13px;line-height:1.5;color:var(--sp-muted);border-top:1px solid var(--sp-line);padding-top:12px}
 /* Einlesen */
 .einlesen{max-width:820px;margin:0 auto;padding:40px 24px;display:flex;flex-direction:column;gap:20px}
@@ -229,11 +252,17 @@ code{font-size:.95em}
     <div class="spalten">
       <div class="links">
         <div class="ueber" id="themenTitel">Themen</div>
-        <div class="themen" id="themen"></div>
+        <div class="themen" id="themen" role="group" aria-labelledby="themenTitel"></div>
+        <div class="ueber" id="themenFallTitel" style="margin-top:8px">Art des Falls</div>
+        <div class="themen" id="themenFall" role="group" aria-labelledby="themenFallTitel"></div>
         <button class="neu-thema" id="btnNeuesThema" type="button">+ Neues Thema …</button>
         <form class="formular" id="themaForm" hidden autocomplete="off">
           <b id="themaFormTitel">Neues Thema</b>
           <label>Name<input id="themaName" maxlength="60" required></label>
+          <fieldset><legend>Gruppe</legend>
+            <label><input type="radio" name="themaGruppe" value="thema" checked> Themen</label>
+            <label><input type="radio" name="themaGruppe" value="fall"> Art des Falls</label>
+          </fieldset>
           <label>Findet auch <span class="hinweis" style="font-weight:400">ein Wort pro Zeile – Teile von Wörtern reichen, Groß/Klein egal</span><textarea id="themaWoerter"></textarea></label>
           <div class="zahl" id="themaZahl" aria-live="polite"></div>
           <div class="fehlertext" id="themaFehler" role="alert"></div>
@@ -246,21 +275,22 @@ code{font-size:.95em}
             <button class="sp-knopf" type="button" id="btnLoeschenJa">Löschen</button><button class="sp-knopf" type="button" id="btnLoeschenNein">Abbrechen</button></div>
           <div class="hinweis" id="themaStand"></div>
         </form>
-        <div class="hinweis">Ein Thema ist eine gespeicherte Suche mit ihren Nebenwörtern. Das Büro pflegt die Liste selbst – Änderungen gelten für alle.</div>
+        <div class="hinweis">Ein Thema ist eine gespeicherte Suche mit ihren Nebenwörtern. Das Büro pflegt beide Gruppen selbst – Änderungen gelten für alle. Ein Thema lässt sich mit eigenen Wörtern verbinden; noch einmal antippen wählt es ab.</div>
       </div>
       <div class="rechts">
         <div class="suchkarte">
+          <label for="q">Fall in ein paar Worten beschreiben</label>
           <div class="suchfeld">
             <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#5b6b78" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>
-            <label for="q" style="position:absolute;left:-9999px">In allen Berichten suchen</label>
-            <input id="q" type="search" placeholder="Oder ein eigenes Wort suchen, z. B. Estrich" autocomplete="off" spellcheck="false">
+            <input id="q" type="search" placeholder="z. B. Lagerhalle Elektronik" autocomplete="off" spellcheck="false">
           </div>
-          <div class="jahre" id="jahre"></div>
+          <div class="jahre" id="chips" role="group" aria-label="Untersucht auf"></div>
+          <div class="jahre" id="jahre" role="group" aria-label="Jahr"></div>
         </div>
         <div class="zeile"><div class="gross" id="ergebnisZeile" aria-live="polite"></div><div class="klein" id="woerterZeile"></div></div>
         <div id="treffer" style="display:flex;flex-direction:column;gap:16px"></div>
         <button id="btnMehrTreffer" class="sp-knopf" type="button" hidden></button>
-        <div class="fuss">LexiKit liest nur. Es schreibt nichts in die Projektordner und fügt nichts in einen Bericht ein. Gesucht wird in den fertigen Word-Mitteilungen (ohne Anschreiben, Entwürfe und PDF).</div>
+        <div class="fuss">LexiKit liest nur. Es schreibt nichts in die Projektordner und fügt nichts in einen Bericht ein. Ein Fall ist ein Projektordner mit allen seinen fertigen Word-Mitteilungen (ohne Anschreiben, Entwürfe, PDF; englische Fassungen stehen nur im Verlauf). Jedes eigene Wort muss im Text des Falls vorkommen, Überschriften zählen nicht. „Untersucht“ nennt, was laut Probenahme und Befund beprobt oder gemessen wurde – ein Klick auf ein Schildchen zeigt die Stelle.</div>
       </div>
     </div>
   </section>
@@ -286,12 +316,13 @@ code{font-size:.95em}
   <section id="ueberLexi" class="einstellungen" hidden>
     <h1>Über LexiKit <span class="leise" id="version" style="font-size:16px;font-weight:400"></span></h1>
     <div class="karte" style="display:flex;flex-direction:column;gap:10px;font-size:15px;line-height:1.55">
-      <div>Themensuche über die fertigen Word-Berichte des Büros – ohne KI, ohne Netz, nur Wortsuche im Index.</div>
+      <div>Fälle aus den fertigen Word-Berichten des Büros finden – ohne KI, ohne Netz, nur Wortsuche im Index. Ein Fall ist ein Projektordner mit allen Mitteilungen.</div>
       <ul>
         <li>Liest nur in den Projektordnern. Schreibt nur in <code>_LexiKit</code> im Archivordner: <code>lexikit-themen.json</code> und <code>lexikit-index-&lt;Jahr&gt;.json</code>.</li>
         <li>Mehrere PCs nutzen dieselben Dateien: Vor jedem Schreiben liest LexiKit die Datei neu und führt die Änderungen zusammen.</li>
         <li>Der Index enthält Berichtstext und ist so vertraulich wie die Berichte. Er bleibt in <code>_LexiKit</code>.</li>
-        <li>Der Berichtskopf (Projektnummer, Schaden vom, VN, Risiko, Versicherer, Schaden-Nr.) kommt nicht in den Index.</li>
+        <li>Der Berichtskopf (Projektnummer, Schaden vom, VN, Risiko, Versicherer, Schaden-Nr.; auch Auftraggeber, Schadenort, Bestell-/Auftrags-Nr.) kommt nicht in den Index und wird nicht gezeigt.</li>
+        <li>Die Fälle (Abschnitte nach Art, „Was war“, „Untersucht“) baut LexiKit bei jedem Start aus dem Index – der Index selbst ist derselbe wie in 0.1.0, neu eingelesen wird dafür nichts.</li>
       </ul>
       <b>Änderungen</b>
       <ul id="aenderungen"></ul>
@@ -305,7 +336,10 @@ code{font-size:.95em}
 /* ===== LEXIKIT-KERN – Lesen, Auswahl, Suche, Zusammenführen (ohne Browserteile; Tests: node tests/kern.cjs) ===== */
 (function (g) {
   'use strict';
-  const FORMAT_INDEX = 'lexikit-index', FORMAT_THEMEN = 'lexikit-themen', VERSION = 1;
+  const FORMAT_INDEX = 'lexikit-index', FORMAT_THEMEN = 'lexikit-themen';
+  // Index bleibt Fassung 1 (0.2.0 baut die Fälle beim Laden daraus – kein Neu-Einlesen). Die Themenliste ist Fassung 2 (Gruppen):
+  // LexiKit 0.1.0 fasst eine Liste der Fassung 2 nicht an.
+  const VERSION = 1, THEMEN_VERSION = 2;
 
   /* ---------- Word-Datei (.docx = ZIP): nur word/document.xml lesen, Fotos nie ----------
      lies(start, ende) → Promise<Uint8Array> liest nur diesen Bereich der Datei (im Browser File.slice).
@@ -413,8 +447,10 @@ code{font-size:.95em}
      Regel aus dem Lesetest: nach der Zeile „(n. Mitteilung)“; Überschrift = kurzer Absatz (unter 90 Zeichen) außerhalb einer Tabelle,
      ganz unterstrichen oder ganz fett. Berichtskopf (Projektnummer … Schaden-Nr.) fällt immer weg, auch mit Fortsetzungszeilen. */
   const MARKE = /^\(\s*\d{1,2}\s*\.?\s*mit+e?i+l+u?n+g\s*\)$/i;
-  const KOPF = /^(projekt\s*-?\s*n(umme)?r\.?|projekt|schaden\s*vom|schadentag|schadendatum|vn|versicherungsnehmer(in)?|risiko(ort)?|versicherer|versicherung|schaden\s*-?\s*n(umme)?r\.?|schadennummer|vs\s*-?\s*nr\.?|ihr\s+zeichen|unser\s+zeichen|aktenzeichen)\s*(:|\t|$)/i;
-  const KEINE_UEBERSCHRIFT = /^(tabelle|tab\.|abb\.?|abbildung|bild|foto|anlage)\s*\d/i;
+  const KOPF = /^(projekt\s*-?\s*n(umme)?r\.?|projekt|schaden\s*vom|schadentag|schadendatum|vn|versicherungsnehmer(in)?|risiko(ort)?|versicherer|versicherung|schaden\s*-?\s*n(umme)?r\.?|schadennummer|vs\s*-?\s*nr\.?|ihr\s+zeichen|unser\s+zeichen|aktenzeichen|auftraggeber(in)?|schadens?ort|bestell\s*-?\s*n(umme)?r\.?|auftrags?\s*-?\s*n(umme)?r\.?)\s*(:|\t|$)/i;
+  /** Fortsetzung einer Kopfzeile ohne Tab (Anschrift unter „Auftraggeber:“): kurzer Absatz ohne Satzende */
+  const kopfFortsetzung = t => t.length < 70 && !/[.!?]$/.test(t);
+  const KEINE_UEBERSCHRIFT = /^(tabelle|tab\.|abb\.?|abbildung|bild|foto|anlage)\s*\d|\S@\S+\.[a-z]{2,}|^https?:|^www\./i;   // auch keine unterstrichene E-Mail-Adresse
   const STIL_TITEL = /titel|title|berschrift|heading/i;
   const FORMEN = /(sanierungsvorschlag|untersuchungsbericht|stellungnahme|kurzbericht|messbericht|ergänzungsbericht|gutachten)/i;
 
@@ -437,11 +473,15 @@ code{font-size:.95em}
       let iTitel = -1; for (let i = 0; i < bis; i++) if (!liste[i].tabelle && STIL_TITEL.test(liste[i].stil)) iTitel = i;
       rumpf = liste.slice(Math.max(iTitel, stilForm ? liste.indexOf(stilForm) : -1) + 1);
     }
-    const abschnitte = []; let akt = null, nachKopf = false;
+    const abschnitte = []; let akt = null, nachKopf = false, fort = 0;
     for (const a of rumpf) {
-      if (istKopf(a)) { nachKopf = true; continue; }
+      if (istKopf(a)) { nachKopf = true; fort = 0; continue; }
       if (nachKopf && !a.tabelle && /^\t/.test(a.roh)) continue;   // Fortsetzung einer Kopfzeile (z. B. Anschrift unter „Risiko:“)
+      // … auch ohne Tab, solange noch keine Überschrift kam (höchstens drei Zeilen je Kopfzeile, nie eine Überschrift)
+      const vorspann = !akt || !akt.h;
+      if (nachKopf && vorspann && !a.tabelle && !(a.unter || a.fett) && fort < 3 && kopfFortsetzung(a.t)) { fort++; continue; }
       nachKopf = false;
+      if (vorspann && !a.tabelle && /^\S+@\S+\.[a-z]{2,}$/i.test(a.t)) continue;   // E-Mail-Adresse aus einem Anschreiben
       const ueber = !a.tabelle && a.t.length < 90 && (a.unter || a.fett) && /[A-Za-zÄÖÜäöüß]/.test(a.t) && !KEINE_UEBERSCHRIFT.test(a.t);
       if (ueber) { akt = { h: a.t, p: [] }; abschnitte.push(akt); continue; }
       if (!akt) { akt = { h: '', p: [] }; abschnitte.push(akt); }
@@ -482,15 +522,18 @@ code{font-size:.95em}
   /** Schlüssel „derselbe Bericht“: gleiche Nummer und gleicher Zusatz im selben Unterordner. Korrektur-Wörter, „- Kopie“, „(2)“,
       Leerzeichen und Unterstriche am Ende zählen nicht; Ordner „Mitteilungen“, „n. Mitt“ und eine Kopie des Projektordners auch nicht.
       Andere Zusätze (Gebäude A, Englisch, Ergänzung) und Gebäude-Ordner bleiben eigene Berichte. */
-  function berichtSchluessel(teile, projektName) {
+  /** Unterordner, die einen eigenen Bericht ausmachen (Gebäude-Ordner) – ohne „Mitteilungen“, „n. Mitt“ und eine Kopie des Projektordners */
+  function eigeneOrdner(teile, projektName) {
     const pk = (projektOrdner(projektName) || {}).kennung || '';
-    const ordner = teile.slice(0, -1).filter(s => {
-      const x = s.trim();
+    return teile.slice(0, -1).map(s => s.trim()).filter(x => {
       if (new RegExp('^' + MITT + '(en)?$', 'i').test(x)) return false;
       if (new RegExp('^\\d{1,2}\\s*\\.?\\s*mitt', 'i').test(x)) return false;
       if (pk && x.startsWith(pk)) return false;
       return true;
-    }).map(s => s.trim().toLowerCase());
+    });
+  }
+  function berichtSchluessel(teile, projektName) {
+    const ordner = eigeneOrdner(teile, projektName).map(s => s.toLowerCase());
     let name = teile[teile.length - 1].replace(/\.docx$/i, '').normalize('NFC').toLowerCase();
     const nr = mitteilungNr(name);
     name = name.replace(new RegExp('(\\d{1,2})\\s*\\.?\\s*[_-]?\\s*' + MITT, 'i'), ' ').replace(new RegExp(MITT, 'gi'), ' ')
@@ -508,49 +551,12 @@ code{font-size:.95em}
     return [...beste.values()];
   }
 
-  /* ---------- Suche ---------- */
+  /* ---------- Suche: Wörter, Markieren ---------- */
   const klein = s => String(s).toLowerCase();
   /** Eingabe → Suchwörter: Leerzeichen trennt, „…“ hält zusammen; Teilwörter, Groß/Klein egal */
   function woerterAus(q) {
     const w = []; String(q).replace(/"([^"]+)"|„([^“”]+)[“”]|(\S+)/g, (m, a, b, c) => { const x = sauber(a || b || c); if (x.length >= 2) w.push(x); return ''; });
     return w;
-  }
-  /** Sortierung „neueste zuerst“: Jahr, Projektnummer, Mitteilung, dann Lage im Bericht */
-  const neuer = (a, b) => (b.jahr - a.jahr) || (b.pnr - a.pnr) || ((b.nr || 0) - (a.nr || 0)) || (a.pfad < b.pfad ? -1 : a.pfad > b.pfad ? 1 : 0);
-  /** berichte: Liste der Index-Einträge. modus 'oder' (Thema: eines der Wörter) / 'und' (eigene Suche: alle Wörter in der Textstelle).
-      → { treffer: [{ b, ai, pi }], berichte: Anzahl } – Treffer = Absatz (Textstelle); Abschnittsüberschriften zählen mit */
-  function suche(berichte, woerter, opt) {
-    opt = opt || {};
-    const w = woerter.map(klein).filter(Boolean); if (!w.length) return { treffer: [], berichte: 0 };
-    const und = opt.modus === 'und', inS = s => w.some(x => s.includes(x));
-    const passtP = (h, p) => inS(p) && (!und || w.every(x => p.includes(x) || h.includes(x)));
-    const passtH = h => und ? w.every(x => h.includes(x)) : inS(h);
-    const treffer = []; let n = 0;
-    const liste = berichte.filter(b => !opt.jahr || b.jahr === +opt.jahr).sort(neuer);
-    for (const b of liste) {
-      let eins = false;
-      const kl = b._klein || (b._klein = b.abschnitte.map(a => ({ h: klein(a.h), p: a.p.map(klein) })));
-      kl.forEach((a, ai) => {
-        let im = false;
-        a.p.forEach((p, pi) => { if (passtP(a.h, p)) { treffer.push({ b, ai, pi }); im = true; } });
-        // nur die Überschrift passt: eine Textstelle (erster Absatz) für den Abschnitt
-        if (!im && a.h && passtH(a.h)) { treffer.push({ b, ai, pi: a.p.length ? 0 : -1 }); im = true; }
-        if (im) eins = true;
-      });
-      if (eins) n++;
-    }
-    return { treffer, berichte: n };
-  }
-  /** Zahl der Textstellen je Thema (alle Jahre) */
-  function zaehle(berichte, woerter) {
-    const w = woerter.map(klein).filter(Boolean); if (!w.length) return 0;
-    const inS = x => { for (const y of w) if (x.includes(y)) return true; return false; };
-    let n = 0;
-    for (const b of berichte) {
-      const kl = b._klein || (b._klein = b.abschnitte.map(a => ({ h: klein(a.h), p: a.p.map(klein) })));
-      for (const a of kl) { let im = 0; for (const p of a.p) if (inS(p)) im++; n += im || (a.h && inS(a.h) ? 1 : 0); }
-    }
-    return n;
   }
   /** Text → Teile mit markierten Fundstellen [{ t, hit }] */
   function markiere(text, woerter) {
@@ -571,6 +577,267 @@ code{font-size:.95em}
     if (a > 0) { const sp = text.indexOf(' ', a); if (sp > 0 && sp - a < 30) a = sp + 1; }
     if (e < text.length) { const sp = text.lastIndexOf(' ', e); if (sp > a && e - sp < 30) e = sp; }
     return (a > 0 ? '… ' : '') + text.slice(a, e) + (e < text.length ? ' …' : '');
+  }
+
+  /* ---------- Fälle (ab 0.2.0): die Einheit ist der Projektordner mit allen Mitteilungen ----------
+     Alles hier wird beim Laden aus dem Index der Fassung 1 abgeleitet (Abschnitte mit Überschrift h und Absätzen p) und nicht
+     gespeichert – Regeländerungen gelten deshalb ab dem nächsten Start, ohne neu einzulesen. */
+
+  /** Abschnittsklassen = Reiter am Fall, in dieser Reihenfolge. Stichwörter aus der Zählung am echten Archiv (13.11.2026):
+      kein „Bewertung“ (heißt Schlussfolgerungen), kein „Entsorgung“ (steht in den Sanierungsmaßnahmen). */
+  const KLASSEN = [
+    { id: 'veranlassung', name: 'Veranlassung', re: /veranlassung|aufgabenstellung/i },
+    { id: 'probenahme', name: 'Probenahme', re: /ortstermin|besichtigung|proben?nahme/i },
+    { id: 'befund', name: 'Befund', re: /befund|ergebnis|mikrobiologie|sensorische prüfung/i },
+    { id: 'schluss', name: 'Schlussfolgerungen', re: /schlu(?:ss|ß)folgerung|bewertung|stellungnahme/i },
+    { id: 'massnahmen', name: 'Sanierungsmaßnahmen', re: /ma(?:ß|ss)nahme|sanierung/i },
+    { id: 'arbeitsschutz', name: 'Arbeitsschutz', re: /arbeitsschutz/i },
+    { id: 'weiteres', name: 'Weiteres', re: null },   // Text unter keiner bekannten Überschrift – nur gezeigt, wenn es ihn gibt
+  ];
+  const klassenName = id => (KLASSEN.find(k => k.id === id) || { name: '' }).name;
+  /** Überschrift → Klasse ('' = unbekannt). Mehrere Stichwörter: das erste in der Überschrift zählt; „Arbeitsschutzmaßnahmen“
+      und „Maßnahmen zum Arbeitsschutz“ sind Arbeitsschutz. */
+  function klasseVon(h) {
+    let beste = '', pos = Infinity;
+    for (const k of KLASSEN) { if (!k.re) continue; const m = k.re.exec(h); if (m && m.index < pos) { pos = m.index; beste = k.id; } }
+    if (beste === 'massnahmen' && /arbeitsschutz/i.test(h) && !/sanierung/i.test(h)) beste = 'arbeitsschutz';
+    return beste;
+  }
+
+  /** Text → Sätze. Kein Satzende nach Abkürzungen („z. B.“, „ca.“, „Nr.“), einzelnen Buchstaben („E. coli“) und Zahlen („3. März“). */
+  const ABK = /(?:(?<![A-Za-zÄÖÜäöüß])(?:[A-Za-zÄÖÜäöüß]|Nr|ca|bzw|ggf|inkl|evtl|Abb|Tab|Dr|Fa|Str|Abs|Kap|vgl|max|min|sog|gem|einschl|zzgl|lfd|Pos|usw|etc|bspw)|\d)\.$/;
+  function saetze(p) {
+    const aus = [], re = /[.!?]["“”)]*\s+(?=[A-ZÄÖÜ„"(\d])/g; let start = 0, m;
+    while ((m = re.exec(p))) {
+      if (p[m.index] === '.' && ABK.test(p.slice(Math.max(0, m.index - 11), m.index + 1))) continue;
+      aus.push(p.slice(start, m.index + m[0].length).trim()); start = m.index + m[0].length;
+    }
+    if (start < p.length) aus.push(p.slice(start).trim());
+    return aus.filter(Boolean);
+  }
+
+  /** Parameter-Wörterbuch für „Untersucht“ und die Filter „Untersucht auf“. Kürzel in Großbuchstaben nur als ganzes Wort
+      (PAK ≠ Paket), Stoffnamen nur am Wortanfang (Chlorid ≠ Polyvinylchlorid). teile: einzeln genannte Namen im Schildchen. */
+  const VOR = '(?<![A-Za-zÄÖÜäöüß])', KUERZEL = k => new RegExp(VOR + '(?:' + k + ')(?![A-Za-zäöüß])');
+  const PARAMETER = [
+    { id: 'pak', name: 'PAK', re: new RegExp(KUERZEL('PAK').source + '|[Pp]oly[zc]y[kc]lische|Benzo[\\[(]a[\\])]pyren') },
+    { id: 'chlorid', name: 'Chlorid', re: new RegExp(VOR + '[Cc]hlorid') },
+    { id: 'sap', name: 'Sulfat · Ammonium · Phosphat', re: new RegExp(VOR + '(?:[Ss]ulfat|[Aa]mmonium|[Pp]hosphat)'),
+      teile: [['Sulfat', new RegExp(VOR + '[Ss]ulfat')], ['Ammonium', new RegExp(VOR + '[Aa]mmonium')], ['Phosphat', new RegExp(VOR + '[Pp]hosphat')]] },
+    { id: 'loeschpulver', name: 'Löschpulver', re: /Löschpulverpartikel|Löschpulverrückst|löschmittelrelevante[nr]? Parameter/ },
+    { id: 'asbest', name: 'Asbest', re: new RegExp(VOR + '[Aa]sbest') },
+    // KMF: Mineralwolle wird oft als Material beprobt (Geruch, PAK) – als Parameter zählt nur die Untersuchung auf Fasern selbst
+    { id: 'kmf', name: 'KMF', re: new RegExp('(?:auf|hinsichtlich)\\s[^.]{0,40}(?:' + KUERZEL('KMF').source + '|Mineralfasern?(?![a-zäöüß]))|Kanzerogenitätsindex|KI-Index|WHO-Fasern|(?:KMF|Mineralfaser)-?(?:[Aa]nalyse|[Uu]ntersuchung|[Bb]estimmung)') },
+    { id: 'depv', name: 'DepV', re: /DepV|Deponieverordnung|Deklarationsanaly/ },
+    { id: 'dioxine', name: 'Dioxine/Furane', re: new RegExp('[Dd]ioxin|' + VOR + '[Ff]uran|PCDD|PCDF') },
+    { id: 'pcb', name: 'PCB', re: new RegExp(KUERZEL('PCB').source + '|[Pp]olychlorierte[nr]? Biphenyl') },
+    { id: 'voc', name: 'VOC', re: new RegExp(KUERZEL('T?VOC').source + '|flüchtige[nr]? organische') },
+    { id: 'schimmel', name: 'Schimmel', re: /[Ss]chimmel/ },   // „KBE“ allein zählt nicht – so werden auch Bakterien angegeben
+    { id: 'faekal', name: 'Fäkalkeime', re: /E\.\s?coli|Escherichia|[Cc]oliforme|Enterokokken|Enterobakteri|Fäkalkeim|Fäkalbakteri/ },
+    { id: 'holzpilze', name: 'Holzzerstörende Pilze', re: /[Hh]olzzerstörend|Hausschwamm/ },
+    { id: 'feuchte', name: 'Feuchtemessung', re: /[Ff]euchtemess|Feuchtigkeitsmess|Materialfeuchte|Feuchtegehalt|CM-Messung/ },
+    { id: 'geruch', name: 'Brandgeruch', re: /Brandgeruch|[Ss]ensorische[nr]? Prüfung|Geruchsprüfung|Geruchsprobe/ },
+    { id: 'pfas', name: 'PFAS', re: new RegExp(KUERZEL('PFAS|PFC|PFT|PFOS|PFOA').source + '|[Pp]olyfluorierte') },
+    { id: 'mkw', name: 'MKW', re: new RegExp(KUERZEL('MKW').source + '|Mineralölkohlenwasserstoff|Kohlenwasserstoffindex|KW-Index') },
+    { id: 'schwermetalle', name: 'Schwermetalle', re: /[Ss]chwermetall|Metalle und Metalloide/ },
+    { id: 'holzschutz', name: 'Holzschutzmittel', re: new RegExp('Holzschutzmittel|' + KUERZEL('PCP').source + '|Pentachlorphenol|Lindan') },
+    { id: 'legionellen', name: 'Legionellen', re: /Legionelle/ },
+    { id: 'formaldehyd', name: 'Formaldehyd', re: /[Ff]ormaldehyd/ },
+  ];
+  /** „Untersucht“ heißt gemessen, nicht nur erwähnt: Der Satz muss von einer Probe, einer Messung oder einem Ergebnis sprechen … */
+  const HINWEIS_MESSUNG = /probe|beprob|entnommen|entnahme|gemessen|messung|messwert|analy|labor|nachgewiesen|nachweis|gehalt(?:e|es|s)?(?![a-zäöüß])|konzentration|µg|mg\/|ng\/|(?<![a-zäöüß])kbe(?![a-zäöüß])|bestimmungsgrenze|richtwert|grenzwert|zuordnungswert|überschr[ei]|unterschr[ei]|untersuch[^.]{0,60}(?<![a-zäöüß])auf(?![a-zäöüß])|(?<![a-zäöüß])auf(?![a-zäöüß])[^.]{0,80}untersuch/i;
+  /** … und darf nicht sagen, dass es unterblieb oder erst empfohlen wird. „Nicht nachgewiesen“ ist ein Ergebnis und zählt. */
+  const UNTERBLIEBEN = /nicht\s+(?:\S+\s+){0,1}(?:untersucht|beprobt|analysiert|gemessen|bestimmt|entnommen|beauftragt|durchgeführt)|nicht\s+(?:erforderlich|notwendig|Gegenstand|Bestandteil|möglich)|verzichtet|abgesehen(?!\s+von)|entfällt|entfiel|keine\s+(?:\S+\s+){0,2}(?:Beprobung|Untersuchung|Analyse|Analytik|Messung)(?![a-zäöüß])|keine\s+(?:\S+\s+){0,2}Proben?\s+(?:\S+\s+){0,2}(?:entnommen|genommen|gezogen)|ohne\s+(?:Beprobung|Untersuchung|Analyse|Analytik)|empfehlen|empfohlen|empfiehlt|(?:ist|sind|wäre[n]?)\s+(?:\S+\s+){0,8}zu\s+(?:prüfen|untersuchen|beproben|analysieren)/i;
+  const ZAHLWORT = { eine: 1, zwei: 2, drei: 3, vier: 4, fünf: 5, sechs: 6, sieben: 7, acht: 8, neun: 9, zehn: 10, elf: 11, zwölf: 12,
+    dreizehn: 13, vierzehn: 14, fünfzehn: 15, sechzehn: 16, siebzehn: 17, achtzehn: 18, neunzehn: 19, zwanzig: 20 };
+  const PROBEN_ZAHL = /(?<![\dA-Za-zÄÖÜäöüß.,])(\d{1,3}|[Ee]ine|[Zz]wei|[Dd]rei(?:zehn)?|[Vv]ier(?:zehn)?|[Ff]ünf(?:zehn)?|[Ss]ech(?:s|zehn)|[Ss]ieb(?:en|zehn)|[Aa]cht(?:zehn)?|[Nn]eun(?:zehn)?|[Zz]ehn|[Ee]lf|[Zz]wölf|[Zz]wanzig)\s+(?:(?:weitere[nr]?|zusätzliche[nr]?|orientierende[nr]?|verschiedene[nr]?)\s+)?((?:[A-ZÄÖÜ][A-Za-zäöüß-]*)?[Pp]roben?)(?![a-zäöüß])/g;
+  /** Ein Satz (oder eine Tabellenzeile) → { ids, namen, proben: [{ n, art }] } oder null, wenn er nicht als Untersuchung zählt */
+  function untersuchtImSatz(s, tabelle) {
+    const ids = [], namen = [];
+    for (const P of PARAMETER) if (P.re.test(s)) { ids.push(P.id); namen.push(P.teile ? P.teile.filter(t => t[1].test(s)).map(t => t[0]).join(', ') : P.name); }
+    const proben = []; let m; PROBEN_ZAHL.lastIndex = 0;
+    while ((m = PROBEN_ZAHL.exec(s))) {
+      // keine Gesamtzahl: „jeweils eine Wischprobe“, „in 3 Proben wurde … nachgewiesen“, „der sieben Wischproben“, „den weiteren sechs“, „eine Probe“ ohne Art
+      if (/(?:^|\s)(?:je|jeweils|pro\s+\S+|(?:in|bei)(?:\s+(?:den|allen))?|(?:der|den|die|diese[rn]?|beiden?)(?:\s+(?:weiteren|übrigen|anderen|restlichen|ersten|letzten))?|weiteren|übrigen|restlichen)\s*$/i.test(s.slice(0, m.index))) continue;
+      const n = /^\d/.test(m[1]) ? +m[1] : ZAHLWORT[klein(m[1])]; if (!n) continue;
+      if (!/^\d/.test(m[1]) && n === 1 && /^proben?$/i.test(m[2])) continue;
+      let art = m[2][0].toUpperCase() + m[2].slice(1);
+      if (n === 1) art = art.replace(/n$/, ''); else if (!/n$/.test(art)) art += 'n';
+      proben.push({ n, art });
+    }
+    if (!ids.length && !proben.length) return null;
+    if (UNTERBLIEBEN.test(s)) return null;
+    if (!tabelle && !HINWEIS_MESSUNG.test(s)) return null;
+    return { ids, namen, proben };
+  }
+
+  /** Englische Fassung (Dateiname): steht im Verlauf, aber nicht in Suche und Reitern – sie wiederholt den deutschen Text */
+  const ENGLISCH = /engl/i;
+  const GEBAEUDE = /(?<![A-Za-zÄÖÜäöüß])(?:geb(?:äude|aeude)?\.?(?:\s*[A-Za-z0-9]{1,3}(?![A-Za-zäöüß0-9]))?|(?:haus|halle|bauteil|block)\s*[A-Za-z0-9]{1,4}(?![A-Za-zäöüß0-9])|altbau|neubau|anbau)/i;
+  /** Strang eines Berichts: Gebäude-Ordner (Altbau/Neubau) oder Gebäude-Zusatz im Namen („1. Mitteilung Gebäude A“) → { key, name } */
+  function strangVon(pfad, projektName) {
+    const teile = String(pfad).split('/').slice(1);
+    const ordner = eigeneOrdner(teile, projektName);
+    const rest = (teile[teile.length - 1] || '').replace(/\.docx$/i, '').replace(new RegExp('(\\d{1,2})\\s*\\.?\\s*[_-]?\\s*' + MITT, 'i'), ' ').replace(new RegExp(MITT, 'gi'), ' ').replace(/_/g, ' ');
+    const m = GEBAEUDE.exec(rest);
+    const name = [...ordner, m ? sauber(m[0]) : ''].filter(Boolean).join(' · ');
+    return { key: klein(name), name };
+  }
+  const berichtName = b => String(b.datei || '').replace(/\.docx$/i, '').replace(/[\s_]+$/, '').trim();
+
+  function ohneKopf(p) {
+    const aus = []; let nach = false, fort = 0;
+    p.forEach((x, i) => {
+      if (i < 15 && (KOPF.test(x) || /^(?:ortstermin|bestellung)\s*:/i.test(x))) { nach = true; fort = 0; return; }
+      if (/^\S+@\S+\.[a-z]{2,}$/i.test(x) || /^(?:mit freundlichen grüßen|sehr geehrte)/i.test(x)) return;   // Adressen und Grußformeln eines Anschreibens
+      if (nach && fort < 3 && kopfFortsetzung(x)) { fort++; return; }
+      nach = false; aus.push(x);
+    });
+    return aus;
+  }
+  /** Ein Index-Eintrag → abgeleitete Angaben (einmal je Eintrag, im Speicher): Abschnitte mit Klasse, Kleinschreibung je Klasse
+      für die Suche, „Untersucht“. Unbekannte Unterüberschriften („5.1 Wischproben“) bleiben in der Klasse darüber. */
+  function ableiten(b) {
+    if (b._d) return b._d;
+    let teile = [], akt = '', hat = false;
+    (b.abschnitte || []).forEach((a, ai) => {
+      // unterstrichene E-Mail-Adressen im Vorspann hat LexiKit 0.1.0 als Überschrift in den Index gelesen – hier sind sie keine
+      let k = '', h = KEINE_UEBERSCHRIFT.test(a.h) ? '' : a.h;
+      if (h) { hat = true; k = klasseVon(h); if (k) akt = k; else k = akt; }
+      // Text vor der ersten Überschrift: Kopfzeilen der zweiten Kopf-Form (Auftraggeber, Schadenort, …-Nr.), die LexiKit 0.1.0 noch
+      // mit in den Index gelesen hat, fallen hier wieder heraus – mit bis zu drei kurzen Folgezeilen (Anschrift)
+      teile.push({ k: k || 'weiteres', h, p: !h && ai === 0 ? ohneKopf(a.p) : a.p, ai });
+    });
+    // Vorspann vor der ersten bekannten Überschrift ohne richtigen Text (Betreffzeile „Wasserschaden“, E-Mail-Adressen, eine
+    // abgewandelte Marke „(1. Mitteilung Gebäude A)“) zählt nicht als Text
+    if (teile.some(t => t.k !== 'weiteres')) teile = teile.filter(t => t.k !== 'weiteres' || t.p.some(x => x.length >= 40));
+    const englisch = ENGLISCH.test(b.datei || ''), roh = {};
+    if (!englisch) for (const t of teile) (roh[t.k] || (roh[t.k] = [])).push(t.p.join('\n'));
+    const kl = {}; for (const k in roh) kl[k] = klein(roh[k].join('\n'));
+    // Untersucht: nur in Ortstermin/Probenahme und Befund – und im Vorspann ohne Überschrift (kurze Folgeberichte nennen dort,
+    // was beprobt wurde). Berichte ohne Überschriften: ganzer Text, gleiche Satzregel
+    const params = {}, zahlen = [];
+    if (!englisch) for (const t of teile) {
+      if (hat && t.k !== 'probenahme' && t.k !== 'befund' && !(t.k === 'weiteres' && !t.h)) continue;
+      t.p.forEach((p, pi) => {
+        const tab = p.includes(' · ');
+        for (const s of tab ? [p] : saetze(p)) {
+          const u = untersuchtImSatz(s, tab); if (!u) continue;
+          u.ids.forEach((id, i) => { if (!params[id]) params[id] = { name: u.namen[i], ai: t.ai, pi }; });
+          // Probenzahlen stehen mit den Parametern desselben Satzes
+          for (const pr of u.proben) zahlen.push({ n: pr.n, art: pr.art, ids: u.ids, namen: u.namen, ai: t.ai, pi, k: t.k });
+        }
+      });
+    }
+    // Zahlen aus der Probenahme; nur wenn dort keine steht, die aus dem Befund (dort sind es oft Teilmengen: „bei sechs Wischproben …“)
+    const ausProbe = zahlen.filter(z => z.k !== 'befund'), tags = ausProbe.length ? ausProbe : zahlen;
+    return (b._d = { teile, ohne: !hat, englisch, kl, params, tags, strang: strangVon(b.pfad, b.projekt), name: berichtName(b) });
+  }
+
+  /** Anfang eines Abschnitts als Zusammenfassung (ohne Anrede und Tabellenzeilen), an einem Satzende gekürzt */
+  function anfang(p, max) {
+    max = max || 480; let t = '';
+    for (const x of p) {
+      if (x.includes(' · ') || /^sehr geehrte/i.test(x) || x.length < 25) continue;
+      t += (t ? ' ' : '') + x; if (t.length >= 280) break;
+    }
+    if (!t) t = p.filter(x => !/^sehr geehrte/i.test(x)).join(' ');
+    if (t.length <= max) return t;
+    const s = saetze(t); let aus = '';
+    for (const x of s) { if (aus && (aus + ' ' + x).length > max) break; aus += (aus ? ' ' : '') + x; }
+    if (aus.length > max) { aus = aus.slice(0, max); const sp = aus.lastIndexOf(' '); if (sp > max - 60) aus = aus.slice(0, sp); }
+    return aus.replace(/[\s,;:]+$/, '') + (aus.length < t.length ? ' …' : '');
+  }
+
+  const neuerFall = (a, b) => (b.jahr - a.jahr) || (b.pnr - a.pnr) || (a.projekt < b.projekt ? -1 : a.projekt > b.projekt ? 1 : 0);
+  /** Index-Einträge → Fälle (neueste zuerst). Ein Fall:
+      { projekt, kennung, jahr, pnr, berichte, deutsch, straenge: [{ key, name, berichte }], wasWar: { text, art, bericht, strang },
+        klassen: [id …], ohne, params: { id: true }, tags: [{ n?, art?, ids, namen, ai, pi, b }], verErsatz } */
+  function faelleBauen(berichte) {
+    const nach = new Map();
+    for (const b of berichte) { let f = nach.get(b.projekt); if (!f) nach.set(b.projekt, f = { projekt: b.projekt, jahr: b.jahr, pnr: b.pnr, berichte: [] }); f.berichte.push(b); }
+    const aus = [];
+    for (const f of nach.values()) {
+      f.kennung = (projektOrdner(f.projekt) || {}).kennung || '';
+      // Stränge: Hauptstrang (ohne Gebäude) zuerst, dann nach Namen; darin nach Mitteilungsnummer, deutsche Fassung vor der englischen
+      const st = new Map();
+      for (const b of f.berichte) { const d = ableiten(b); let s = st.get(d.strang.key); if (!s) st.set(d.strang.key, s = { key: d.strang.key, name: d.strang.name, berichte: [] }); s.berichte.push(b); }
+      f.straenge = [...st.values()].sort((a, b) => (a.key === '' ? -1 : b.key === '' ? 1 : a.name.localeCompare(b.name, 'de', { numeric: true })));
+      for (const s of f.straenge) s.berichte.sort((a, b) => ((a.nr == null ? 99 : a.nr) - (b.nr == null ? 99 : b.nr)) || (a._d.englisch - b._d.englisch) || (a.datei < b.datei ? -1 : a.datei > b.datei ? 1 : 0));
+      f.berichte = f.straenge.flatMap(s => s.berichte);
+      f.deutsch = f.berichte.filter(b => !b._d.englisch);
+      f.ohne = f.deutsch.length > 0 && f.deutsch.every(b => b._d.ohne);
+      const da = new Set(); for (const b of f.deutsch) for (const t of b._d.teile) if (t.p.length) da.add(t.k);
+      f.klassen = f.ohne ? [] : KLASSEN.map(k => k.id).filter(id => da.has(id));
+      // „Was war“: Anfang von Veranlassung/Aufgabenstellung der ersten Mitteilung (erster Strang), sonst der erste Textblock
+      const erster = f.deutsch[0]; f.wasWar = { text: '', art: '', bericht: '', strang: '' };
+      if (erster) {
+        const d = erster._d, mitText = t => t.p.some(x => x.length >= 25 && !x.includes(' · '));
+        const v = d.teile.find(t => t.k === 'veranlassung' && mitText(t)), t = v || d.teile.find(mitText) || d.teile.find(x => x.p.length);
+        if (t) f.wasWar = { text: anfang(t.p), art: v ? (/veranlassung/i.test(t.h) || !/aufgabenstellung/i.test(t.h) ? 'Veranlassung' : 'Aufgabenstellung') : 'erster Textblock', bericht: d.name, strang: d.strang.name };
+      }
+      // Rangfolge: ohne Veranlassung/Aufgabenstellung im ganzen Fall zählt ersatzweise der „Was war“-Text
+      f.verErsatz = f.deutsch.some(b => b._d.kl.veranlassung) ? '' : klein(f.wasWar.text);
+      // Untersucht: Probenzahlen (jede einmal), dann die Parameter, die in keiner Probenzahl stehen
+      const zahlen = [], gesehen = new Set(), pq = {};
+      for (const b of f.deutsch) {
+        for (const t of b._d.tags) { const key = t.n + '|' + t.art + '|' + t.ids.join(','); if (gesehen.has(key)) continue; gesehen.add(key); zahlen.push(Object.assign({ b }, t)); }
+        for (const id in b._d.params) if (!pq[id]) pq[id] = Object.assign({ b }, b._d.params[id]);
+      }
+      const gedeckt = new Set(zahlen.flatMap(t => t.ids));
+      f.params = {}; for (const id in pq) f.params[id] = true;
+      f.tags = [...zahlen, ...PARAMETER.filter(P => pq[P.id] && !gedeckt.has(P.id)).map(P => ({ ids: [P.id], namen: [pq[P.id].name], ai: pq[P.id].ai, pi: pq[P.id].pi, b: pq[P.id].b }))];
+      aus.push(f);
+    }
+    return aus.sort(neuerFall);
+  }
+  /** Schildchen-Text: „12 Wischproben · Chlorid, Sulfat“ / „PAK“; aus einer späteren Mitteilung mit deren Namen */
+  function tagText(t, f) {
+    const kopf = t.n ? t.n + ' ' + t.art : '', spaeter = t.n && f && f.deutsch.length > 1 && t.b !== f.deutsch[0];
+    return kopf + (kopf && t.namen.length ? ' · ' : '') + t.namen.join(', ') + (spaeter ? ' (' + berichtBeschriftung(f, t.b) + ')' : '');
+  }
+  /** „1. Mitteilung“ – bei mehreren Strängen „Altbau · 1. Mitteilung“ */
+  function berichtBeschriftung(f, b) { const d = ableiten(b); return (f.straenge.length > 1 && d.strang.name ? d.strang.name + ' · ' : '') + d.name; }
+  /** Textblöcke eines Reiters: je Mitteilung die Abschnitte der Klasse (k = 'alles': der ganze Text) → [{ b, h, p, ai }] */
+  function bloecke(f, k) {
+    const aus = [];
+    for (const b of f.deutsch) for (const t of b._d.teile) if ((k === 'alles' || t.k === k) && (t.p.length || t.h)) aus.push({ b, h: t.h, p: t.p, ai: t.ai });
+    return aus;
+  }
+  /** In welchen Klassen des Falls kommt eines der Wörter (klein) im Text vor? Überschriften zählen nicht. */
+  function fundorte(f, woerter) {
+    const s = new Set();
+    for (const b of f.deutsch) { const kl = b._d.kl; for (const k in kl) if (!s.has(k)) for (const w of woerter) if (kl[k].includes(w)) { s.add(k); break; } }
+    return s;
+  }
+  /** Fälle suchen. opt: { thema: [Wörter] (eines muss vorkommen), woerter: [freie Wörter] (jedes muss vorkommen), jahr, parameter: [ids] (alle) }
+      → { treffer: [{ f, rang, nurAS, orte }], begriffe } – Reihenfolge: Fälle nur mit Fund im Arbeitsschutz zuletzt, sonst zuerst die mit
+      den meisten Begriffen in Veranlassung/Aufgabenstellung, dann neueste zuerst. Ohne Begriffe: neueste zuerst. */
+  function sucheFaelle(faelle, opt) {
+    opt = opt || {};
+    const begriffe = [];
+    if (opt.thema && opt.thema.length) begriffe.push(opt.thema.map(klein).filter(Boolean));
+    for (const w of opt.woerter || []) if (klein(w)) begriffe.push([klein(w)]);
+    const par = opt.parameter || [], treffer = [];
+    for (const f of faelle) {
+      if (opt.jahr && f.jahr !== +opt.jahr) continue;
+      if (par.some(id => !f.params[id])) continue;
+      let rang = 0, ok = true, ausserAS = !begriffe.length; const orte = new Set();
+      for (const g of begriffe) {
+        const o = fundorte(f, g); if (!o.size) { ok = false; break; }
+        if (o.has('veranlassung') || (f.verErsatz && g.some(w => f.verErsatz.includes(w)))) rang++;
+        for (const k of o) { orte.add(k); if (k !== 'arbeitsschutz') ausserAS = true; }
+      }
+      if (ok) treffer.push({ f, rang, nurAS: !ausserAS, orte });
+    }
+    treffer.sort((a, b) => (a.nurAS - b.nurAS) || (b.rang - a.rang) || neuerFall(a.f, b.f));
+    return { treffer, begriffe: begriffe.length };
+  }
+  /** Zahl der Fälle je Thema (alle Jahre, ohne Filter) */
+  function zaehleFaelle(faelle, woerter) {
+    const w = woerter.map(klein).filter(Boolean); if (!w.length) return 0;
+    let n = 0; for (const f of faelle) if (fundorte(f, w).size) n++;
+    return n;
   }
 
   /* ---------- Gemeinsame Dateien in _LexiKit: vor jedem Schreiben neu lesen und zusammenführen ----------
@@ -617,15 +884,37 @@ code{font-size:.95em}
     ['Schimmel', ['Schimmelpilz', 'KBE']],
     ['Fäkalkeime', ['E. coli', 'Escherichia coli', 'coliforme', 'Enterokokken']],
   ];
+  /** Zweite Gruppe „Art des Falls“ (ab 0.2.0). „Waren“ allein fehlt mit Absicht – es träfe das Verb „waren“. */
+  const ERSTE_FAELLE = [
+    ['Photovoltaik', ['PV-Anlage', 'Solarmodul', 'Wechselrichter']],
+    ['Lithium-Akku', ['Lithium', 'Li-Ion', 'Batteriespeicher']],
+    ['Tiefgarage', ['Parkhaus', 'Parkdeck']],
+    ['Warenvorräte', ['Warenbestand', 'Lagerware', 'Handelsware']],
+    ['Kühlhaus', ['Kühlraum', 'Kühlzelle', 'Tiefkühl']],
+    ['Technische Einrichtung', ['Betriebseinrichtung', 'Schaltschrank', 'Schaltanlage', 'Maschinensteuerung']],
+  ];
+  const GRUPPEN = [{ id: 'thema', name: 'Themen' }, { id: 'fall', name: 'Art des Falls' }];
+  const gruppeVon = t => t.gruppe === 'fall' ? 'fall' : 'thema';
   const themaId = name => 't-' + klein(name).normalize('NFC').replace(/[^a-z0-9äöüß]+/g, '-').replace(/^-|-$/g, '');
   function ersteThemen(jetzt) {
-    return { format: FORMAT_THEMEN, version: VERSION, themen: ERSTE_THEMEN.map(([name, w]) => ({ id: themaId(name), name, woerter: w, geaendert: jetzt })) };
+    return { format: FORMAT_THEMEN, version: THEMEN_VERSION, themen: [
+      ...ERSTE_THEMEN.map(([name, w]) => ({ id: themaId(name), name, woerter: w, geaendert: jetzt, gruppe: 'thema' })),
+      ...ERSTE_FAELLE.map(([name, w]) => ({ id: themaId(name), name, woerter: w, geaendert: jetzt, gruppe: 'fall' }))] };
+  }
+  /** Themenliste der Fassung 1 (LexiKit 0.1.0) → Fassung 2: alle Themen bleiben, wie sie sind (Gruppe „Themen“); dazu kommen die
+      sechs „Art des Falls“, soweit es ihre id noch nicht gibt (auch nicht als gelöscht). Ihr „geaendert“ bleibt leer, damit zwei PCs,
+      die gleichzeitig anheben, dasselbe schreiben. Eine Liste der Fassung 2 kommt unverändert zurück. */
+  function themenHeben(disk) {
+    if ((disk.version || 1) >= THEMEN_VERSION) return disk;
+    const themen = disk.themen.map(t => Object.assign({}, t));
+    for (const [name, w] of ERSTE_FAELLE) { const id = themaId(name); if (!themen.some(t => t.id === id)) themen.push({ id, name, woerter: w, geaendert: '', gruppe: 'fall' }); }
+    return { format: FORMAT_THEMEN, version: THEMEN_VERSION, themen };
   }
   function themenLesen(text) {
     if (text == null || text === '') return null;
     let j; try { j = JSON.parse(text); } catch (e) { return { kaputt: 'keine lesbare JSON-Datei' }; }
     if (!j || j.format !== FORMAT_THEMEN || !Array.isArray(j.themen)) return { kaputt: 'fremdes Format' };
-    if (j.version > VERSION) return { kaputt: 'neuere LexiKit-Fassung', neuer: true };
+    if (j.version > THEMEN_VERSION) return { kaputt: 'neuere LexiKit-Fassung', neuer: true };
     return j;
   }
   /** Suchwörter eines Themas: der Name und die Nebenwörter */
@@ -633,11 +922,13 @@ code{font-size:.95em}
   /** Eine Änderung einspielen. aend = { id, name, woerter, geloescht?, geaendert, basis } – basis = „geaendert“ des Themas, als
       das Formular aufging (neu: ''). Hat ein anderer PC das Thema seitdem geändert → { konflikt: Thema auf der Platte }. */
   function themaEinspielen(disk, aend) {
-    const out = { format: FORMAT_THEMEN, version: VERSION, themen: disk.themen.map(t => Object.assign({}, t)) };
+    disk = themenHeben(disk);   // wer schreibt, schreibt Fassung 2
+    const out = { format: FORMAT_THEMEN, version: THEMEN_VERSION, themen: disk.themen.map(t => Object.assign({}, t)) };
     const i = out.themen.findIndex(t => t.id === aend.id), d = i >= 0 ? out.themen[i] : null;
     if (d && (d.geaendert || '') !== (aend.basis || '')) return { konflikt: d };
-    const neu = aend.geloescht ? { id: aend.id, name: aend.name, woerter: [], geaendert: aend.geaendert, geloescht: true }
-      : { id: aend.id, name: sauber(aend.name), woerter: (aend.woerter || []).map(sauber).filter(Boolean), geaendert: aend.geaendert };
+    const gruppe = aend.gruppe ? gruppeVon(aend) : d ? gruppeVon(d) : 'thema';
+    const neu = aend.geloescht ? { id: aend.id, name: aend.name, woerter: [], geaendert: aend.geaendert, gruppe, geloescht: true }
+      : { id: aend.id, name: sauber(aend.name), woerter: (aend.woerter || []).map(sauber).filter(Boolean), geaendert: aend.geaendert, gruppe };
     if (i >= 0) out.themen[i] = neu; else out.themen.push(neu);
     return { themen: out };
   }
@@ -649,16 +940,18 @@ code{font-size:.95em}
   }
 
   g.LexiKern = { VERSION, zipEintrag, absaetze, bericht, docxLesen, sauber, istBerichtName, mitteilungNr, projektOrdner, berichtSchluessel, auswaehlen,
-    woerterAus, suche, zaehle, markiere, ausschnitt, neuer, indexName, leererIndex, indexLesen, indexMergen,
-    THEMEN_DATEI, ERSTE_THEMEN, ersteThemen, themenLesen, themaWoerter, themaEinspielen, neueThemaId, themaId };
+    woerterAus, markiere, ausschnitt, indexName, leererIndex, indexLesen, indexMergen,
+    KLASSEN, klassenName, klasseVon, saetze, PARAMETER, untersuchtImSatz, strangVon, ableiten, faelleBauen, tagText, berichtBeschriftung, bloecke, sucheFaelle, zaehleFaelle,
+    THEMEN_VERSION, THEMEN_DATEI, ERSTE_THEMEN, ERSTE_FAELLE, GRUPPEN, gruppeVon, ersteThemen, themenHeben, themenLesen, themaWoerter, themaEinspielen, neueThemaId, themaId };
 })(typeof globalThis !== 'undefined' ? globalThis : this);
 /* ===== Ende LEXIKIT-KERN ===== */
 </script>
 <script id="lexikit-app">
 /* LexiKit – Oberfläche. Liest das Archiv, hält den Index im Speicher, schreibt nur nach _LexiKit (Funktion schreibe). */
 'use strict';
-const APP_VERSION = '0.1.0';
+const APP_VERSION = '0.2.0';
 const AENDERUNGEN = [
+  ['0.2.0', '13.11.2026', 'Fälle statt Textstellen: Ein Treffer ist jetzt ein Projektordner mit allen Mitteilungen – mit „Was war“, „Untersucht“ (Probenzahl und Parameter, ein Klick zeigt die Stelle), Verlauf und Reitern für Veranlassung, Probenahme, Befund, Schlussfolgerungen, Sanierungsmaßnahmen und Arbeitsschutz. Thema und eigene Wörter lassen sich verbinden; Fälle mit Fund in der Veranlassung stehen oben. Neue Filter „Untersucht auf“, zweite Themengruppe „Art des Falls“. Der Index bleibt, wie er ist – neu eingelesen wird nichts.'],
   ['0.1.0', '13.11.2026', 'Erste Fassung: Word-Mitteilungen aller Projektordner einlesen (nur Text, ohne Fotos, ohne Berichtskopf), Abschnitte nach den Überschriften, gemeinsamer Index und Themenliste in „_LexiKit“, Suche nach Themen und eigenen Wörtern, Jahr-Filter, Treffer mit markierten Wörtern, neueste zuerst.'],
 ];
 const K = globalThis.LexiKern;
@@ -687,8 +980,10 @@ const S = {
   berichte: new Map(), liste: null,           // Pfad → Index-Eintrag; liste = Werte (ohne unlesbare), neu gebaut bei Änderung
   aend: {},                                   // Jahr → { neu: { Pfad: Eintrag }, weg: [{ pfad, am }] } – noch nicht geschrieben
   kaputt: {},                                 // Jahr → Grund (Datei war nicht lesbar)
+  faelle: null, paramDa: {},                  // Fälle = aus liste abgeleitet (neu gebaut bei Änderung); paramDa: erkannte Parameter
   themen: null, themenFehler: '', zaehler: {},
-  wahl: { thema: null, q: '', jahr: '' }, zeigeN: 40, offen: new Set(),
+  wahl: { thema: null, q: '', jahr: '', parameter: [] }, zeigeN: 20, treffer: [],
+  offen: new Map(), mehrTags: new Set(),      // offene Fälle: Projektordner → { tab, beleg }
   form: null,                                 // offenes Themenformular { id|null, basis }
   ansicht: 'zugang', meldungen: [],
 };
@@ -816,28 +1111,46 @@ async function themenLaden(beimStart) {
       catch (e) { S.themen = erst; meldung('warn', 'Die Themenliste ließ sich nicht anlegen: ' + esc(e.message || e.name), 'themen'); }
     } else S.themen = S.themen || erst;
     S.themenFehler = '';
-  } else { S.themen = t; S.themenFehler = ''; meldung('', '', 'themen'); }
+  } else {
+    // Liste aus LexiKit 0.1.0 (Fassung 1): einmal auf Fassung 2 heben (Gruppe „Art des Falls“ dazu) – vor dem Schreiben neu lesen
+    let liste2 = K.themenHeben(t);
+    if ((t.version || 1) < K.THEMEN_VERSION && S.schreiben && beimStart) {
+      try {
+        const nochmal = K.themenLesen(await leseText(K.THEMEN_DATEI));
+        if (nochmal && !nochmal.kaputt) { liste2 = K.themenHeben(nochmal); if ((nochmal.version || 1) < K.THEMEN_VERSION) await schreibe(K.THEMEN_DATEI, JSON.stringify(liste2, null, 1)); }
+      } catch (e) { meldung('warn', 'Die Themenliste ließ sich nicht um „Art des Falls“ ergänzen: ' + esc(e.message || e.name), 'themen-heben'); }
+    }
+    S.themen = liste2; S.themenFehler = ''; meldung('', '', 'themen');
+  }
   zaehlerNeu();
 }
 
 /* ---------- Index im Speicher ---------- */
-let zaehlTimer = 0, zaehlLauf = 0;
-function geaendert() { S.liste = null; zaehlerNeu(); }   // neue Einträge sind neue Objekte – ihr Kleinschreib-Cache entsteht beim ersten Suchen
+let zaehlTimer = 0, zaehlLauf = 0, zaehlAktiv = false, zaehlOffen = false;
+function geaendert() { S.liste = null; S.faelle = null; zaehlerNeu(); }   // neue Einträge sind neue Objekte – abgeleitet wird je Eintrag einmal
 function liste() { return S.liste || (S.liste = [...S.berichte.values()].filter(b => !b.fehler && b.abschnitte)); }
+/** Die Fälle – aus dem Index im Speicher gebaut, nie gespeichert */
+function faelle() {
+  if (!S.faelle) { S.faelle = K.faelleBauen(liste()); const da = {}; for (const f of S.faelle) for (const id in f.params) da[id] = true; S.paramDa = da; }
+  return S.faelle;
+}
 const aktiveThemen = () => (S.themen ? S.themen.themen.filter(t => !t.geloescht) : []);
 function zaehlerNeu() {
-  if (L.aktiv && zaehlTimer) return;   // beim Einlesen höchstens alle 3 s neu zählen, nicht immer weiter verschieben
+  // beim Einlesen höchstens alle 3 s neu zählen und eine laufende Zählung zu Ende bringen (sonst stünde dort die ganze Zeit „…“)
+  if (L.aktiv && (zaehlTimer || zaehlAktiv)) { zaehlOffen = true; return; }
   clearTimeout(zaehlTimer);
   const lauf = ++zaehlLauf;
   zaehlTimer = setTimeout(() => {
-    zaehlTimer = 0;
+    zaehlTimer = 0; zaehlAktiv = true; zaehlOffen = false;
     // je Thema ein eigener Schritt, damit die Seite bedienbar bleibt
-    const l = liste(), themen = aktiveThemen(), neu = {}; let i = 0;
-    if (S.ansicht === 'suche') { renderJahre(); renderTreffer(); }
+    const l = faelle(), themen = aktiveThemen(), neu = {}; let i = 0;
+    if (S.ansicht === 'suche') { renderChips(); renderJahre(); renderTreffer(); }
+    standZeigen();
     const schritt = () => {
       if (lauf !== zaehlLauf) return;   // inzwischen neu angestoßen
-      if (i < themen.length) { const t = themen[i++]; neu[t.id] = K.zaehle(l, K.themaWoerter(t)); setTimeout(schritt, 0); return; }
-      S.zaehler = neu; if (S.ansicht === 'suche') renderThemen();
+      if (i < themen.length) { const t = themen[i++]; neu[t.id] = K.zaehleFaelle(l, K.themaWoerter(t)); setTimeout(schritt, 0); return; }
+      S.zaehler = neu; zaehlAktiv = false; if (S.ansicht === 'suche') renderThemen();
+      if (zaehlOffen) zaehlerNeu();
     };
     schritt();
   }, L.aktiv ? 3000 : 50);
@@ -921,7 +1234,7 @@ async function einlesen(opt) {
       let dateien;
       try { dateien = await dateienIn(p.h, [], 0); } catch (e) { L.fehler.push(p.name + ' – Ordner nicht lesbar: ' + (e.message || e.name)); L.fertig++; continue; }
       const wahl = K.auswaehlen(dateien, p.name), pfade = new Set();
-      let ganz = true;
+      let ganz = true, anders = false;
       for (const d of wahl) {
         if (L.stop || veraltet()) { ganz = false; break; }
         const pfad = [p.name, ...d.teile].join('/'); pfade.add(pfad);
@@ -929,15 +1242,16 @@ async function einlesen(opt) {
         if (!opt.alle && alt && !alt.fehler && alt.stempel && alt.stempel.groesse === d.groesse && alt.stempel.geaendert === d.geaendert) continue;
         const e = await leseBericht(p, d, pfad);
         if (veraltet()) { ganz = false; break; }   // Archiv inzwischen gewechselt
-        merke(e); L.gelesen++; if (!alt) L.neu++;
+        merke(e); L.gelesen++; if (!alt) L.neu++; anders = true;
         zeigeLauf();
       }
       // nur nach vollständig gesehenem Projekt: was nicht mehr ausgewählt ist (gelöscht, ersetzt), fällt heraus
       if (veraltet()) break;
-      if (ganz) for (const [pfad, b] of S.berichte) if (b.projekt === p.name && !pfade.has(pfad)) weg(pfad);
+      if (ganz) for (const [pfad, b] of S.berichte) if (b.projekt === p.name && !pfade.has(pfad)) { weg(pfad); anders = true; }
       L.fertig++;
       if (Date.now() - zuletzt > 90000 && !veraltet()) { await speichern(); zuletzt = Date.now(); }
-      geaendert(); zeigeLauf();
+      if (anders) geaendert();   // nur dann Fälle und Zähler neu – die Prüfung beim Start ändert meist nichts
+      zeigeLauf();
     }
     // Projektordner, die es nicht mehr gibt (umbenannt, verschoben) – nur nach ganzem Durchlauf
     if (!L.stop && !veraltet()) for (const [pfad, b] of S.berichte) if (!gesehen.has(b.projekt)) weg(pfad);
@@ -981,28 +1295,38 @@ function standZeigen() {
   const b = $('stand'), n = liste().length;
   b.classList.remove('warn', 'lauf');
   if (L.aktiv) { b.classList.add('lauf'); b.textContent = !L.projekte ? 'Sucht Projektordner …' : (L.erst || L.art === 'alle') ? `Liest ein: ${zahl(L.gelesen)} Berichte` + (L.jahr ? ' · ' + L.jahr : '') : `Prüft auf neue Berichte … ${zahl(L.fertig)} von ${zahl(L.projekte)}`; }
-  else if (!S.schreiben) { b.classList.add('warn'); b.textContent = `${zahl(n)} Berichte · nur in dieser Sitzung`; }
-  else b.textContent = `${zahl(n)} Berichte · aktuell`;
+  else {
+    const nF = S.faelle ? S.faelle.length : null, vorn = (nF == null ? '' : (nF === 1 ? '1 Fall' : zahl(nF) + ' Fälle') + ' · ') + zahl(n) + ' Berichte';   // Fälle erst, wenn sie gebaut sind
+    if (!S.schreiben) { b.classList.add('warn'); b.textContent = vorn + ' · nur in dieser Sitzung'; } else b.textContent = vorn + ' · aktuell';
+  }
   b.title = 'Einlesen ansehen';
 }
 
-/* ---------- Suche ---------- */
-function aktuelleWoerter() {
-  if (S.wahl.q.trim().length >= 2) return { woerter: K.woerterAus(S.wahl.q), modus: 'und' };
-  const t = aktiveThemen().find(x => x.id === S.wahl.thema);
-  return t ? { woerter: K.themaWoerter(t), modus: 'oder', thema: t } : { woerter: [], modus: 'oder' };
+/* ---------- Suche: Fälle ---------- */
+/** Was gerade gesucht wird: Thema (eines seiner Wörter) und eigene Wörter (jedes) – beides zusammen geht */
+function aktuelleSuche() {
+  const thema = aktiveThemen().find(x => x.id === S.wahl.thema) || null;
+  const woerter = S.wahl.q.trim().length >= 2 ? K.woerterAus(S.wahl.q) : [], themaW = thema ? K.themaWoerter(thema) : [];
+  return { thema, themaW, woerter, marken: [...themaW, ...woerter], aktiv: !!(thema || woerter.length || S.wahl.parameter.length) };
 }
-const stellen = n => n === undefined || (n === 0 && L.aktiv) ? '…' : n === 0 ? 'nichts' : n === 1 ? '1 Stelle' : zahl(n) + ' Stellen';
+// „…“ statt „kein Fall“ nur, solange wirklich eingelesen wird – nicht bei der Prüfung auf neue Berichte nach jedem Start
+const faelleText = n => n === undefined || (n === 0 && L.aktiv && L.art !== 'pruefen') ? '…' : n === 0 ? 'kein Fall' : n === 1 ? '1 Fall' : zahl(n) + ' Fälle';
 function renderThemen() {
-  const eigen = S.wahl.q.trim().length >= 2;
-  $('themen').innerHTML = aktiveThemen().map(t => `<button class="thema" type="button" data-thema="${esc(t.id)}" aria-pressed="${!eigen && t.id === S.wahl.thema}"><span>${esc(t.name)}</span><small>${stellen(S.zaehler[t.id])}</small></button>`).join('')
-    || '<div class="hinweis">Noch keine Themen.</div>';
+  const knopf = t => `<button class="thema" type="button" data-thema="${esc(t.id)}" aria-pressed="${t.id === S.wahl.thema}"><span>${esc(t.name)}</span><small>${faelleText(S.zaehler[t.id])}</small></button>`;
+  for (const [id, gruppe] of [['themen', 'thema'], ['themenFall', 'fall']])
+    $(id).innerHTML = aktiveThemen().filter(t => K.gruppeVon(t) === gruppe).map(knopf).join('') || '<div class="hinweis">Noch keine Themen.</div>';
   $('btnNeuesThema').hidden = !!S.form;
 }
 function renderJahre() {
-  const jahre = [...new Set(liste().map(b => b.jahr))].sort((a, b) => b - a);
+  const jahre = [...new Set(faelle().map(f => f.jahr))].sort((a, b) => b - a);
   if (S.wahl.jahr && !jahre.includes(+S.wahl.jahr)) jahre.unshift(+S.wahl.jahr);
-  $('jahre').innerHTML = '<span class="leise" style="font-size:14px;margin-right:4px">Jahr</span>' + ['', ...jahre].map(j => `<button class="jahr" type="button" data-jahr="${j}" aria-pressed="${String(j) === String(S.wahl.jahr)}">${j || 'Alle'}</button>`).join('');
+  $('jahre').innerHTML = '<span class="filtername">Jahr</span>' + ['', ...jahre].map(j => `<button class="jahr" type="button" data-jahr="${j}" aria-pressed="${String(j) === String(S.wahl.jahr)}">${j || 'Alle'}</button>`).join('');
+}
+/** Filter „Untersucht auf“: die Parameter des Wörterbuchs, die in mindestens einem Fall erkannt wurden */
+function renderChips() {
+  faelle();
+  const da = K.PARAMETER.filter(P => S.paramDa[P.id] || S.wahl.parameter.includes(P.id));
+  $('chips').innerHTML = '<span class="filtername">Untersucht auf</span>' + (da.map(P => `<button class="jahr" type="button" data-param="${esc(P.id)}" aria-pressed="${S.wahl.parameter.includes(P.id)}">${esc(P.name)}</button>`).join('') || '<span class="leise" style="font-size:15px">' + (L.aktiv ? '…' : 'noch nichts erkannt') + '</span>');
 }
 function markiertHtml(text, woerter) { return K.markiere(text, woerter).map(t => t.hit ? `<mark>${esc(t.t)}</mark>` : esc(t.t)).join(''); }
 /** Pfad auf dem PC aus der Einstellung (der Browser kennt ihn nicht) */
@@ -1014,48 +1338,68 @@ function fileUrl(win) {
   return 'file:///' + t.split('/').map((s, i) => i === 0 && /^[A-Za-z]:$/.test(s) ? s : encodeURIComponent(s)).join('/');
 }
 const wordLink = rel => 'ms-word:ofv|u|' + fileUrl(winPfad(rel));
+const WORD_ICON = '<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h8l4 4v14H6z"></path><path d="M14 3v4h4"></path></svg>';
 function renderTreffer() {
-  const { woerter, modus, thema } = aktuelleWoerter();
-  const box = $('treffer');
-  $('woerterZeile').innerHTML = woerter.length ? 'Sucht nach: ' + woerter.map(esc).join(', ') + (thema && !S.form ? ` · <button class="linkknopf" type="button" data-aktion="thema-bearbeiten">Thema bearbeiten</button>` : '') : '';
-  if (!woerter.length) {
-    $('ergebnisZeile').textContent = liste().length ? 'Wähle ein Thema oder tippe ein Wort.' : 'Noch keine Berichte eingelesen.';
+  const a = aktuelleSuche(), box = $('treffer');
+  const teile = []; if (a.thema) teile.push('Thema ' + esc(a.thema.name)); if (a.woerter.length) teile.push('„' + esc(S.wahl.q.trim()) + '“');
+  $('woerterZeile').innerHTML = teile.join(' + ') + (a.thema && !S.form ? ` · <button class="linkknopf" type="button" data-aktion="thema-bearbeiten">Thema bearbeiten</button>` : '');
+  if (!a.aktiv) {
+    S.treffer = [];
+    $('ergebnisZeile').textContent = liste().length ? 'Wähle ein Thema, beschreibe den Fall oder wähle unter „Untersucht auf“.' : 'Noch keine Berichte eingelesen.';
     box.innerHTML = ''; $('btnMehrTreffer').hidden = true; return;
   }
-  const r = K.suche(liste(), woerter, { modus, jahr: S.wahl.jahr });
-  const nT = r.treffer.length, nB = r.berichte;
-  if (thema && !S.wahl.jahr && S.zaehler[thema.id] !== nT) {   // Zahl am gewählten Thema immer wie die Treffer
-    S.zaehler[thema.id] = nT; const k = document.querySelector(`[data-thema="${CSS.escape(thema.id)}"] small`); if (k) k.textContent = stellen(nT);
-  }
-  $('ergebnisZeile').textContent = nT === 0 ? 'Keine Textstelle gefunden' : `${zahl(nT)} ${nT === 1 ? 'Textstelle' : 'Textstellen'} in ${zahl(nB)} ${nB === 1 ? 'Bericht' : 'Berichten'} · neueste zuerst`;
-  if (!nT) {
-    box.innerHTML = `<div class="leer">Dazu steht in den eingelesenen Berichten nichts${S.wahl.jahr ? ' aus ' + esc(S.wahl.jahr) : ''}.${L.aktiv ? ' Das Einlesen läuft noch – später noch einmal schauen.' : ''}${modus === 'und' && woerter.length > 1 ? ' Gesucht wird nach Textstellen, in denen alle Wörter vorkommen.' : ''}</div>`;
+  const r = K.sucheFaelle(faelle(), { thema: a.themaW, woerter: a.woerter, jahr: S.wahl.jahr, parameter: S.wahl.parameter });
+  S.treffer = r.treffer;
+  const n = r.treffer.length;
+  $('ergebnisZeile').textContent = n === 0 ? 'Kein Fall gefunden' : `${n === 1 ? '1 Fall' : zahl(n) + ' Fälle'} · ${r.begriffe ? 'ähnlichste zuerst' : 'neueste zuerst'}`;
+  if (!n) {
+    box.innerHTML = `<div class="leer">Dazu gibt es in den eingelesenen Berichten keinen Fall${S.wahl.jahr ? ' aus ' + esc(S.wahl.jahr) : ''}.${L.aktiv ? ' Das Einlesen läuft noch – später noch einmal schauen.' : ''}${a.woerter.length > 1 || (a.thema && a.woerter.length) ? ' Jedes Wort muss im Fall vorkommen – mit weniger Wörtern findet sich mehr.' : ''}${S.wahl.parameter.length ? ' Der Filter „Untersucht auf“ ist gesetzt.' : ''}</div>`;
     $('btnMehrTreffer').hidden = true; return;
   }
-  box.innerHTML = r.treffer.slice(0, S.zeigeN).map(t => karte(t, woerter)).join('');
-  const rest = nT - S.zeigeN;
-  $('btnMehrTreffer').hidden = rest <= 0; $('btnMehrTreffer').textContent = `Weitere ${zahl(Math.min(40, rest))} zeigen (noch ${zahl(rest)})`;
+  box.innerHTML = r.treffer.slice(0, S.zeigeN).map(t => fallKarte(t, a.marken)).join('');
+  const rest = n - S.zeigeN;
+  $('btnMehrTreffer').hidden = rest <= 0; $('btnMehrTreffer').textContent = `Weitere ${zahl(Math.min(20, rest))} zeigen (noch ${zahl(rest)})`;
 }
-function karte(t, woerter) {
-  const b = t.b, a = b.abschnitte[t.ai], schl = b.pfad + '#' + t.ai + '#' + t.pi, offen = S.offen.has(schl);
-  const name = b.datei.replace(/\.docx$/i, '').trim();
-  const meta = [b.jahr, name, b.form].filter(Boolean).map(esc).join(' · ');
-  let text;
-  if (offen) text = a.p.map((p, i) => `<p${i === t.pi ? ' class="fund"' : ''}>${markiertHtml(p, woerter)}</p>`).join('') || '<p class="leise">(Abschnitt ohne Text)</p>';
-  else text = t.pi >= 0 ? markiertHtml(K.ausschnitt(a.p[t.pi], woerter), woerter) : '<span class="leise">(Abschnitt ohne Text)</span>';
-  const ganz = a.p.length > 1 || (t.pi >= 0 && K.ausschnitt(a.p[t.pi], woerter) !== a.p[t.pi]);
-  return `<article class="treffer" data-schl="${esc(schl)}">
-    <div class="t-kopf"><b>${esc(b.projekt)}</b><span>${meta}</span></div>
-    ${a.h ? `<div class="t-abschnitt">${markiertHtml(a.h, woerter)}</div>` : ''}
-    <div class="t-text">${text}</div>
-    <div class="t-knoepfe">
-      <a class="sp-knopf sp-knopf-app" href="${esc(wordLink(b.pfad))}" data-word="${esc(b.pfad)}"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h8l4 4v14H6z"></path><path d="M14 3v4h4"></path></svg><span>Bericht in Word öffnen</span></a>
-      ${ganz || offen ? `<button class="sp-knopf" type="button" data-abschnitt="${esc(schl)}">${offen ? 'Weniger zeigen' : 'Ganzen Abschnitt zeigen'}</button>` : ''}
-      <button class="sp-knopf" type="button" data-ordner="${esc(b.projekt)}">Projektordner</button>
-    </div>
+/** Verlauf: je Strang (Gebäude) die Mitteilungen mit Berichtsform; englische Fassungen stehen nur hier */
+function verlaufHtml(f) {
+  return f.straenge.map(s => (f.straenge.length > 1 ? `<b>${esc(s.name || 'Ohne Gebäude')}:</b> ` : '')
+    + s.berichte.map(b => esc(K.ableiten(b).name) + (b._d.englisch ? ' · englische Fassung' : b.form ? ' · ' + esc(b.form) : '')).join(' → ')).join('<br>');
+}
+/** Reiter, der beim Öffnen gezeigt wird: der erste mit einem Fund, sonst der erste */
+function ersterReiter(tr) { const f = tr.f; return f.ohne ? 'alles' : f.klassen.find(k => tr.orte.has(k)) || f.klassen[0] || 'alles'; }
+function fallKarte(tr, marken) {
+  const f = tr.f, o = S.offen.get(f.projekt), nM = f.deutsch.length;
+  const was = f.wasWar.text ? markiertHtml(f.wasWar.text, marken) + (f.straenge.length > 1 ? `<div class="aus">aus: ${esc(K.berichtBeschriftung(f, f.deutsch[0]))}</div>` : '') : '<span class="leise">(kein Text)</span>';
+  const alle = S.mehrTags.has(f.projekt) || f.tags.length <= 8, sicht = alle ? f.tags : f.tags.slice(0, 8);
+  const unters = f.tags.length ? sicht.map((t, i) => `<button class="tag" type="button" data-beleg="${i}" title="Stelle im Bericht zeigen">${esc(K.tagText(t, f))}</button>`).join('')
+    + (alle ? '' : `<button class="tag mehr-tags" type="button" data-mehr-tags>+ ${f.tags.length - 8} weitere</button>`) : '<span class="leise">nichts erkannt</span>';
+  let unten;
+  if (o) {
+    const tab = f.ohne ? 'alles' : f.klassen.includes(o.tab) ? o.tab : f.klassen[0] || 'alles', bl = K.bloecke(f, tab), mehrere = new Set(bl.map(x => x.b.pfad)).size > 1;
+    const reiter = f.ohne ? '' : `<div class="tabs" role="tablist" aria-label="Abschnitte">${f.klassen.map(k => `<button class="tab" type="button" role="tab" data-tab="${k}" aria-selected="${k === tab}">${esc(K.klassenName(k))}${tr.orte.has(k) && marken.length ? '<span class="punkt" title="mit Fund"></span>' : ''}</button>`).join('')}</div>`;
+    const text = bl.map(x => `<div class="block"><div class="block-kopf"><span>${esc(K.berichtBeschriftung(f, x.b))}${x.h ? ' · ' + esc(x.h) : ''}</span>${mehrere ? `<a class="linkknopf" href="${esc(wordLink(x.b.pfad))}" data-word="${esc(x.b.pfad)}">in Word öffnen</a>` : ''}</div>`
+      + (x.p.map((p, pi) => `<p${o.beleg && o.beleg.pfad === x.b.pfad && o.beleg.ai === x.ai && o.beleg.pi === pi ? ' class="fund"' : ''}>${markiertHtml(p, marken)}</p>`).join('') || '<p class="leise">(Abschnitt ohne Text)</p>') + '</div>').join('')
+      || '<p class="leise">(kein Text)</p>';
+    const b0 = (bl[0] || {}).b || f.deutsch[0] || f.berichte[0];
+    unten = `<div class="gitter"><div class="lab">Verlauf</div><div>${verlaufHtml(f)}</div></div>${reiter}
+      <div class="txt"${f.ohne ? ' style="margin-top:18px"' : ' role="tabpanel"'}>${f.ohne ? '<div class="block-kopf">Bericht ohne Überschriften – ganzer Text</div>' : ''}${text}</div>
+      <div class="f-knoepfe">
+        <a class="sp-knopf sp-knopf-app" href="${esc(wordLink(b0.pfad))}" data-word="${esc(b0.pfad)}">${WORD_ICON}<span>Bericht in Word öffnen</span></a>
+        <button class="sp-knopf" type="button" data-kopieren>Abschnitt kopieren</button>
+        <button class="sp-knopf" type="button" data-ordner="${esc(f.projekt)}">Projektordner</button>
+        <button class="sp-knopf" type="button" data-zu>Fall schließen</button>
+      </div>`;
+  } else {
+    const ziel = f.klassen.includes('massnahmen') ? 'massnahmen' : f.klassen.includes('schluss') ? 'schluss' : '';
+    unten = `<div class="f-knoepfe"><button class="sp-knopf sp-knopf-app" type="button" data-oeffnen="">Fall öffnen</button>${ziel ? `<button class="sp-knopf" type="button" data-oeffnen="${ziel}">${ziel === 'massnahmen' ? 'Maßnahmen zeigen' : 'Schlussfolgerungen zeigen'}</button>` : ''}</div>`;
+  }
+  return `<article class="fall${o ? ' offen' : ''}" data-fall="${esc(f.projekt)}">
+    <div class="f-kopf"><h2>${esc(f.projekt)}</h2><span class="meta">${f.jahr} · ${nM === 1 ? '1 Mitteilung' : nM + ' Mitteilungen'}</span></div>
+    <div class="gitter"><div class="lab">Was war</div><div>${was}</div><div class="lab">Untersucht</div><div class="tags">${unters}</div></div>
+    ${unten}
   </article>`;
 }
-function renderAlles() { renderThemen(); renderJahre(); renderTreffer(); meldung(); standZeigen(); }
+function renderAlles() { renderThemen(); renderChips(); renderJahre(); renderTreffer(); meldung(); standZeigen(); }
 async function kopiere(text) {
   try { await navigator.clipboard.writeText(text); return true; }
   catch (e) {
@@ -1068,11 +1412,14 @@ function formOeffnen(thema) {
   S.form = { id: thema ? thema.id : null, basis: thema ? thema.geaendert || '' : '' };
   $('themaFormTitel').textContent = thema ? 'Thema bearbeiten' : 'Neues Thema';
   $('themaName').value = thema ? thema.name : ''; $('themaWoerter').value = thema ? (thema.woerter || []).join('\n') : '';
+  gruppeSetzen(thema ? K.gruppeVon(thema) : 'thema');
   $('btnThemaLoeschen').hidden = !thema; $('themaRueckfrage').hidden = true; $('themaFehler').textContent = '';
   $('themaStand').textContent = thema && thema.geaendert ? 'Zuletzt geändert am ' + datum(thema.geaendert) : '';
   $('themaForm').hidden = false; renderThemen(); renderTreffer(); formZahl();
   $('themaName').focus();
 }
+const gruppeSetzen = g => { for (const r of document.querySelectorAll('input[name="themaGruppe"]')) r.checked = r.value === g; };
+const gruppeGewaehlt = () => (document.querySelector('input[name="themaGruppe"]:checked') || { value: 'thema' }).value;
 function formZu() { S.form = null; $('themaForm').hidden = true; renderThemen(); renderTreffer(); }
 let formTimer = 0;
 function formZahl() {
@@ -1080,8 +1427,7 @@ function formZahl() {
   formTimer = setTimeout(() => {
     const w = K.themaWoerter({ name: $('themaName').value, woerter: $('themaWoerter').value.split('\n') });
     if (!w.length) { $('themaZahl').textContent = ''; return; }
-    const r = K.suche(liste(), w, { modus: 'oder' });
-    $('themaZahl').textContent = `Findet jetzt: ${stellen(r.treffer.length)} in ${zahl(r.berichte)} ${r.berichte === 1 ? 'Bericht' : 'Berichten'}`;
+    $('themaZahl').textContent = 'Findet jetzt: ' + faelleText(K.zaehleFaelle(faelle(), w));
   }, 200);
 }
 async function themaSpeichern(loeschen) {
@@ -1094,21 +1440,22 @@ async function themaSpeichern(loeschen) {
     let disk = K.themenLesen(await leseText(K.THEMEN_DATEI));
     if (disk && disk.kaputt) { $('themaFehler').textContent = 'Die Themenliste ist nicht lesbar – LexiKit überschreibt sie nicht.'; return; }
     if (!disk) disk = S.themen || K.ersteThemen('');
+    disk = K.themenHeben(disk);
     const doppelt = disk.themen.find(t => !t.geloescht && t.id !== S.form.id && t.name.toLowerCase() === name.toLowerCase());
     if (!loeschen && doppelt) { $('themaFehler').textContent = `Ein Thema „${doppelt.name}“ gibt es schon.`; return; }
     const id = S.form.id || K.neueThemaId(disk, name);
-    const r = K.themaEinspielen(disk, { id, name, woerter, geloescht: !!loeschen, geaendert: jetztIso(), basis: S.form.basis });
+    const r = K.themaEinspielen(disk, { id, name, woerter, gruppe: gruppeGewaehlt(), geloescht: !!loeschen, geaendert: jetztIso(), basis: S.form.basis });
     if (r.konflikt) {
       S.themen = disk; zaehlerNeu();
       const k = r.konflikt;
       if (k.geloescht) { formZu(); toast('Dieses Thema wurde inzwischen an einem anderen PC gelöscht.'); return; }
-      S.form.basis = k.geaendert || ''; $('themaName').value = k.name; $('themaWoerter').value = (k.woerter || []).join('\n'); formZahl();
+      S.form.basis = k.geaendert || ''; $('themaName').value = k.name; $('themaWoerter').value = (k.woerter || []).join('\n'); gruppeSetzen(K.gruppeVon(k)); formZahl();
       $('themaFehler').textContent = 'Das Thema wurde inzwischen an einem anderen PC geändert. Oben steht jetzt der neue Stand – trag deine Änderung bitte noch einmal ein.';
       return;
     }
     await schreibe(K.THEMEN_DATEI, JSON.stringify(r.themen, null, 1));
     S.themen = r.themen;
-    S.wahl.thema = loeschen ? null : id; S.wahl.q = ''; $('q').value = '';
+    S.wahl.thema = loeschen ? null : id;
     formZu(); zaehlerNeu();
     toast(loeschen ? `Thema „${esc(name)}“ gelöscht.` : `Thema „${esc(name)}“ gespeichert – gilt für alle.`, 3500);
   } catch (e) { $('themaFehler').textContent = 'Speichern ging nicht: ' + (e.message || e.name); }
@@ -1128,7 +1475,7 @@ async function archivWaehlen() {
 }
 async function archivWechseln(h) {
   await laufStoppen();   // erst das Einlesen des alten Archivs beenden, dann den Stand leeren
-  S.archiv = h; S.lx = null; S.berichte.clear(); S.aend = {}; S.themen = null; S.meldungen = []; geaendert();
+  S.archiv = h; S.lx = null; S.berichte.clear(); S.aend = {}; S.themen = null; S.meldungen = []; S.offen.clear(); S.mehrTags.clear(); geaendert();
   await verbinden(true);
 }
 
@@ -1157,18 +1504,42 @@ function verdrahten() {
   $('btnPfadStandard').onclick = () => { $('pfadBasis').value = PFAD_STANDARD; };
   // Suche
   let qTimer = 0;
-  $('q').addEventListener('input', () => { clearTimeout(qTimer); qTimer = setTimeout(() => { S.wahl.q = $('q').value; S.zeigeN = 40; S.offen.clear(); renderThemen(); renderTreffer(); }, 250); });
-  $('q').addEventListener('keydown', e => { if (e.key === 'Escape') { $('q').value = ''; S.wahl.q = ''; renderThemen(); renderTreffer(); } });
-  $('themen').onclick = e => { const b = e.target.closest('[data-thema]'); if (!b) return; S.wahl.thema = b.dataset.thema; S.wahl.q = ''; $('q').value = ''; S.zeigeN = 40; S.offen.clear(); renderThemen(); renderTreffer(); };
-  $('jahre').onclick = e => { const b = e.target.closest('[data-jahr]'); if (!b) return; S.wahl.jahr = b.dataset.jahr; S.zeigeN = 40; renderJahre(); renderTreffer(); };
-  $('btnMehrTreffer').onclick = () => { S.zeigeN += 40; renderTreffer(); };
+  $('q').addEventListener('input', () => { clearTimeout(qTimer); qTimer = setTimeout(() => { S.wahl.q = $('q').value; S.zeigeN = 20; renderTreffer(); }, 250); });
+  $('q').addEventListener('keydown', e => { if (e.key === 'Escape') { $('q').value = ''; S.wahl.q = ''; renderTreffer(); } });
+  // Thema: antippen wählt, noch einmal antippen wählt ab; die eigenen Wörter bleiben stehen
+  const themaKlick = e => { const b = e.target.closest('[data-thema]'); if (!b) return; S.wahl.thema = S.wahl.thema === b.dataset.thema ? null : b.dataset.thema; S.zeigeN = 20; renderThemen(); renderTreffer(); const neu = document.querySelector(`[data-thema="${CSS.escape(b.dataset.thema)}"]`); if (neu) neu.focus(); };
+  $('themen').onclick = themaKlick; $('themenFall').onclick = themaKlick;
+  $('jahre').onclick = e => { const b = e.target.closest('[data-jahr]'); if (!b) return; S.wahl.jahr = b.dataset.jahr; S.zeigeN = 20; renderJahre(); renderTreffer(); };
+  $('chips').onclick = e => { const b = e.target.closest('[data-param]'); if (!b) return; const id = b.dataset.param, i = S.wahl.parameter.indexOf(id); if (i >= 0) S.wahl.parameter.splice(i, 1); else S.wahl.parameter.push(id); S.zeigeN = 20; renderChips(); renderTreffer(); const neu = document.querySelector(`[data-param="${CSS.escape(id)}"]`); if (neu) neu.focus(); };
+  $('btnMehrTreffer').onclick = () => { S.zeigeN += 20; renderTreffer(); };
   $('treffer').addEventListener('click', async e => {
-    const ab = e.target.closest('[data-abschnitt]');
-    if (ab) { const k = ab.dataset.abschnitt; S.offen.has(k) ? S.offen.delete(k) : S.offen.add(k); renderTreffer(); const neu = document.querySelector(`[data-abschnitt="${CSS.escape(k)}"]`); if (neu) neu.focus(); return; }
+    const karte = e.target.closest('[data-fall]'); if (!karte) return;
+    const projekt = karte.dataset.fall, tr = S.treffer.find(t => t.f.projekt === projekt); if (!tr) return;
+    const f = tr.f, neuZeigen = wahl => { renderTreffer(); const k = document.querySelector(`[data-fall="${CSS.escape(projekt)}"]`); const el = k && k.querySelector(wahl); if (el) el.focus({ preventScroll: true }); return k; };
     const or = e.target.closest('[data-ordner]');
     if (or) { const p = winPfad(or.dataset.ordner); const ok = await kopiere(p); toast(ok ? `Pfad kopiert – im Explorer oben in die Adresszeile einfügen (Strg+V):<br><code>${esc(p)}</code>` : `Pfad zum Kopieren:<br><code>${esc(p)}</code>`, 9000); return; }
     const wo = e.target.closest('[data-word]');
-    if (wo) { const p = winPfad(wo.dataset.word); await kopiere(p); toast(`Word wird geöffnet. Falls nicht: Der Pfad ist kopiert –<br><code>${esc(p)}</code>`, 9000); }
+    if (wo) { const p = winPfad(wo.dataset.word); await kopiere(p); toast(`Word wird geöffnet. Falls nicht: Der Pfad ist kopiert –<br><code>${esc(p)}</code>`, 9000); return; }
+    const auf = e.target.closest('[data-oeffnen]');
+    if (auf) { S.offen.set(projekt, { tab: auf.dataset.oeffnen || ersterReiter(tr), beleg: null }); neuZeigen('.tab[aria-selected="true"], [data-zu]'); return; }
+    if (e.target.closest('[data-zu]')) { S.offen.delete(projekt); neuZeigen('[data-oeffnen]'); return; }
+    const tab = e.target.closest('[data-tab]');
+    if (tab) { S.offen.set(projekt, { tab: tab.dataset.tab, beleg: null }); neuZeigen('.tab[aria-selected="true"]'); return; }
+    if (e.target.closest('[data-mehr-tags]')) { S.mehrTags.add(projekt); neuZeigen('.tag'); return; }
+    const be = e.target.closest('[data-beleg]');
+    if (be) {   // Schildchen „Untersucht“: Fall öffnen, Reiter der Stelle zeigen, Absatz hinterlegen
+      const t = f.tags[+be.dataset.beleg]; if (!t) return;
+      const teil = K.ableiten(t.b).teile.find(x => x.ai === t.ai);
+      S.offen.set(projekt, { tab: f.ohne ? 'alles' : teil ? teil.k : ersterReiter(tr), beleg: { pfad: t.b.pfad, ai: t.ai, pi: t.pi } });
+      const k = neuZeigen(`[data-beleg="${be.dataset.beleg}"]`), fund = k && k.querySelector('p.fund'); if (fund) fund.scrollIntoView({ block: 'center' });
+      return;
+    }
+    if (e.target.closest('[data-kopieren]')) {
+      const o = S.offen.get(projekt); if (!o) return;
+      const k = f.ohne ? 'alles' : f.klassen.includes(o.tab) ? o.tab : f.klassen[0] || 'alles';
+      const text = K.bloecke(f, k).map(x => K.berichtBeschriftung(f, x.b) + (x.h ? ' · ' + x.h : '') + '\n' + x.p.join('\n')).join('\n\n');
+      const ok = await kopiere(text); toast(ok ? `${f.ohne ? 'Text' : 'Abschnitt „' + esc(K.klassenName(k)) + '“'} kopiert (${zahl(text.length)} Zeichen).` : 'Kopieren ging nicht – bitte den Text markieren und mit Strg+C kopieren.', 4000);
+    }
   });
   document.addEventListener('click', e => {
     const a = e.target.closest('[data-aktion]'); if (!a) return;
