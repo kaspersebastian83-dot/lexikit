@@ -2,7 +2,8 @@
 // Geprüft: erstes Einlesen, Auswahl der Berichte, Dateien in _LexiKit, nichts in den Projektordnern geändert, Themenliste aus
 // LexiKit 0.1.0 wird gehoben, Fälle (Karte, Reiter, Verlauf, Stränge, Schildchen „Untersucht“ mit Fundstelle), Suche mit Thema
 // und eigenen Wörtern, Rangfolge, Filter, Themen anlegen/ändern/löschen mit einem „anderen PC“, Start mit vorhandenem Index
-// (nichts gelesen, nichts geschrieben), nur Neues nachlesen, Archivwechsel, Schreibprobe schlägt fehl.
+// (nichts gelesen, nichts geschrieben), nur Neues nachlesen, Archivwechsel, Schreibprobe schlägt fehl, Für ChatGPT kopieren,
+// ab 0.4.0 Praxisprofil, Unsere Absätze (Familien, Sortierung, Kopieren mit Platzhaltern, Markierungen, zweiter PC, Ähnlichkeit).
 // node tests/browser.cjs   (Playwright wird in CI installiert; lokal: NODE_PATH auf ein playwright, CHROME=Pfad zu Chrome optional)
 // LEXIKIT_BILDER=<Ordner> legt Bildschirmfotos ab.
 const assert = require('node:assert/strict'), http = require('node:http'), fs = require('node:fs'), path = require('node:path');
@@ -153,7 +154,8 @@ const b64 = x => (Buffer.isBuffer(x) ? x : Buffer.from(String(x))).toString('bas
     assert.equal(await k1.locator('.f-knoepfe [data-word]').getAttribute('href'), 'ms-word:ofv|u|file:///C:/Daten/Mosaik%20Archivordner/24.0412%20Musterlager%20Beispielheim%20Tst/Mitteilungen/1.%20Mitteilung.docx');
     await k1.locator('[data-ordner]').click();
     assert.equal(await page.evaluate(() => navigator.clipboard.readText()), 'C:\\Daten\\Mosaik Archivordner\\24.0412 Musterlager Beispielheim Tst');
-    await k1.locator('[data-kopieren]').click();
+    await k1.locator('[data-kopieren]').click();   // ab 0.4.0 liest es erst den Berichtskopf (Namen → Platzhalter)
+    for (let i = 0; i < 100 && (await page.evaluate(() => navigator.clipboard.readText())).startsWith('C:'); i++) await page.waitForTimeout(50);
     assert.equal(await page.evaluate(() => navigator.clipboard.readText()), '1. Mitteilung · 6. Sanierungsmaßnahmen\nDie mit Löschpulver beaufschlagten Oberflächen sind zunächst trocken abzusaugen. Eine feuchte Reinigung erfolgt erst danach.\nVor dem Rückbau ist die Dacheindeckung auf Asbest zu prüfen. Wir empfehlen Kontrollwischproben auf Chlorid.', 'Abschnitt kopieren: nur Zwischenablage');
     await bild('3-fall-offen');
     // Reiter Befund: beide Mitteilungen, Unterüberschrift bleibt im Befund
@@ -453,6 +455,222 @@ const b64 = x => (Buffer.isBuffer(x) ? x : Buffer.from(String(x))).toString('bas
         for (const v of ['Konrad', 'Probemann-Lindtal', 'Gerda', 'Hanna', 'Beispiel Versicherung AG', 'KV 9988776', '77-123 456/24', 'Musterweg 3']) assert.ok(!j.includes(v), k + ': ' + v);
       }
       await ctx2.close();
+    }
+
+    /* ---------- 9. „So machen wir es meist“ und „Unsere Absätze“ (ab 0.4.0) – eigenes Archiv mit fast gleichen Absätzen ---------- */
+    {
+      const { ABSATZ: AB, ABS_ORDNER: AO, archivAbsaetze } = require('./daten/berichte.cjs');
+      const ctx3 = await browser.newContext({ viewport: { width: 1320, height: 1000 } });
+      await ctx3.grantPermissions(['clipboard-read', 'clipboard-write'], { origin: new URL(url).origin });
+      await ctx3.addInitScript(initSkript);
+      await ctx3.addInitScript(() => { window.LEXIKIT_NACHPRUEF_MS = 30; });   // Nachprüfung nach dem Schreiben: im Test kurz
+      const p = await ctx3.newPage();
+      p.on('pageerror', e => fehler.push(e.message)); p.on('console', m => { if (m.type() === 'error') fehler.push(m.text()); });
+      p.on('dialog', d => { fehler.push('Browser-Dialog: ' + d.message()); d.dismiss(); });
+      const bild3 = async name => { if (BILDER) await p.screenshot({ path: path.join(BILDER, name + '.png'), fullPage: true }); };
+      await p.goto(url); await p.waitForSelector('#zugang:not([hidden])'); await p.evaluate(H);
+      for (const [pfad, inhalt] of Object.entries(archivAbsaetze())) await p.evaluate(([q, b]) => __schreib(q, b), [pfad, inhalt == null ? '' : b64(inhalt)]);
+      // Kopier-Zähler, wie andere PCs sie hinterlassen haben: K1 dreimal vor gut einem Monat, die Fassung A fünfmal vor drei Jahren
+      const tag = 864e5, vor = n => new Date(Date.now() - n * tag).toISOString(), w = x => K.absatzSchluessel(AB[x]);
+      const kopien0 = { format: 'lexikit-kopien', version: 1, kopien: [...[1, 2, 3].map(i => ({ id: 'alt-k1-' + i, w: w('K1'), am: vor(30 + i) })), ...[1, 2, 3, 4, 5].map(i => ({ id: 'alt-a-' + i, w: w('A1'), am: vor(3 * 365 + i) }))] };
+      await p.evaluate(b => __schreib('_LexiKit/lexikit-kopien.json', b), b64(JSON.stringify(kopien0)));
+      const dateien3 = async () => Object.fromEntries(Object.entries(await p.evaluate(() => __liste())).filter(([k]) => !k.startsWith('_LexiKit/')));
+      const vorher3 = await dateien3();
+      await p.reload(); await p.evaluate(H);
+      await p.waitForSelector('#einlesen:not([hidden])');
+      await p.waitForFunction(() => window.LexiKit && !window.LexiKit.L.aktiv && window.LexiKit.L.ende, null, { timeout: 30000 });
+      await p.click('#btnSchonSuchen');
+      await p.click('#themen [data-thema="t-löschpulver"]');
+      await p.waitForFunction(() => /^5 Fälle/.test(document.getElementById('ergebnisZeile').textContent));
+      // Praxisprofil
+      assert.equal(await p.textContent('#profilTitel'), 'Löschpulver – so machen wir es meist');
+      assert.match(await p.textContent('#profil .pr-kopf'), /aus 5 Fällen · 2022–2026/);
+      assert.deepEqual(await p.$$eval('#profil .pr-bl', x => x.map(e => e.textContent)), ['Chlorid', 'PAK', 'Sulfat · Ammonium · Phosphat']);
+      assert.deepEqual(await p.$$eval('#profil .pr-zahl', x => x.map(e => e.textContent)), ['5 von 5', '2 von 5', '1 von 5']);
+      assert.deepEqual(await p.$$eval('#profil .pr-fakt', x => x.map(e => e.textContent)), ['Wischproben je Fallmeist 8 bis 10', 'Berichtsform3 × Sanierungsvorschlag\n2 × Untersuchungsbericht', 'Mitteilungen je Fallmeist 1', 'Mit Abschnitt Sanierungsmaßnahmen5 von 5']);
+      // ein Klick auf einen Balken zeigt genau diese Fälle – derselbe Filter wie „Untersucht auf“; das Profil bleibt
+      await p.click('#profil [data-param="pak"]');
+      await p.waitForFunction(() => /^2 Fälle/.test(document.getElementById('ergebnisZeile').textContent));
+      assert.match(await p.textContent('#profil .pr-kopf'), /aus 5 Fällen/);
+      assert.equal(await p.getAttribute('#chips [data-param="pak"]', 'aria-pressed'), 'true');
+      assert.deepEqual(await p.$$eval('.fall h2', x => x.map(e => e.textContent.slice(0, 7))), ['26.0544', '23.0100']);
+      await p.click('#profil [data-param="pak"]');
+      await p.waitForFunction(() => /^5 Fälle/.test(document.getElementById('ergebnisZeile').textContent));
+      // Unsere Absätze: warten, bis verglichen ist
+      await p.waitForSelector('#absaetze .ab-zeile');
+      const tabs = () => p.$$eval('#absaetze .tab', x => x.map(e => e.textContent));
+      const zeilen = () => p.$$eval('#absaetze .ab-zeile', x => x.map(e => ({ n: e.querySelector('.ab-zahl').firstChild.textContent.trim(), t: e.querySelector('.ab-text').textContent, meta: e.querySelector('.ab-meta').textContent, alt: e.classList.contains('alt'), kopieren: !!e.querySelector('[data-fkopieren]') })));
+      const welche = z => z.map(x => Object.keys(AB).find(k => AB[k] === x.t) || x.t);
+      assert.deepEqual(await tabs(), ['Sanierungsmaßnahmen · 8', 'Schlussfolgerungen · 1', 'Arbeitsschutz · 1']);
+      assert.equal(await p.textContent('#absaetzeTitel'), 'Unsere Absätze zu Löschpulver');
+      let z = await zeilen();
+      // Oft verwendet: Kopien der letzten zwei Jahre; Gleichstand → Archiv, dann neuester
+      assert.deepEqual(welche(z), ['K1', 'T1', 'A1', 'ALT', 'N1'], 'Oft verwendet (die ersten fünf)');
+      assert.equal(z[0].n, '3 ×');
+      assert.match(z[1].meta, /^zuletzt verwendet 2026 · in 2 Fällen im Archiv · 2 Fassungen seit 2025 · Ähnliche Absätze zeigen$/, 'T1 und T2 sind eine Familie');
+      assert.equal(z[2].n, '0 ×', 'zwei Jahre: die fünf alten Kopien zählen nicht');
+      assert.match(z[2].meta, /^zuletzt verwendet 2025 · in 2 Fällen im Archiv · 1 Fassung/, 'andere Anschrift und Probennummern: dieselbe Fassung in zwei Fällen');
+      assert.equal(z[2].t, AB.A1, 'gezeigt wie geschrieben (neueste Stelle)');
+      await p.click('#absaetze [data-aballe]');
+      z = await zeilen();
+      assert.equal(z.length, 8);
+      for (const k of ['F1', 'K2', 'L1']) assert.ok(welche(z).includes(k), 'eigene Zeile: ' + k);
+      assert.ok(z.find(x => x.t === AB.N1), 'Absatz mit Name und Anschrift wird gezeigt, wie er im Bericht steht');
+      await p.click('#absaetze [data-sort="archiv"]');
+      assert.deepEqual(welche(await zeilen()).slice(0, 4), ['T1', 'A1', 'ALT', 'K1'], 'Oft im Archiv');
+      await p.click('#absaetze [data-sort="oft"]');
+      await bild3('11-so-machen-wir-es-meist');
+      // Kopieren: Platzhalter in der Zwischenablage, Liste zeigt den Text wie geschrieben, gezählt für genau diese Fassung
+      await p.evaluate(() => navigator.clipboard.writeText('VORHER'));
+      await p.click(`#absaetze [data-fkopieren="massnahmen|${w('N1')}"]`);
+      for (let i = 0; i < 100 && (await p.evaluate(() => navigator.clipboard.readText())) === 'VORHER'; i++) await p.waitForTimeout(50);
+      assert.equal(await p.evaluate(() => navigator.clipboard.readText()), 'Die Lagerhalle von Herrn [VN] am [Risikoort] ist vor der Wiederinbetriebnahme vollständig zu reinigen und abzunehmen.');
+      assert.match(await p.textContent('#toast'), /\[VN\], \[Risikoort\] eingesetzt/);
+      await p.waitForFunction(() => !window.LexiKit.S.abs.ausstehend.kopien.length);
+      z = await zeilen();
+      assert.deepEqual(welche(z).slice(0, 2), ['K1', 'N1'], 'eine Kopie: steht jetzt vor den Absätzen ohne Kopie');
+      assert.equal(z[1].n, '1 ×'); assert.equal(z[1].t, AB.N1);
+      const kop = JSON.parse(await p.evaluate(() => __lies('_LexiKit/lexikit-kopien.json')));
+      assert.equal(kop.kopien.length, 9, 'alte Kopien bleiben, eine neue dazu');
+      assert.equal(kop.kopien.filter(c => c.w === w('N1')).length, 1);
+      // Abschnitt kopieren (Fallkarte) ersetzt jetzt auch
+      await p.locator(`.fall[data-fall="${AO.p1}"] [data-oeffnen="massnahmen"]`).click();
+      await p.evaluate(() => navigator.clipboard.writeText('VORHER'));
+      await p.locator(`.fall[data-fall="${AO.p1}"] [data-kopieren]`).click();
+      for (let i = 0; i < 100 && (await p.evaluate(() => navigator.clipboard.readText())) === 'VORHER'; i++) await p.waitForTimeout(50);
+      const ab = await p.evaluate(() => navigator.clipboard.readText());
+      assert.ok(ab.startsWith('1. Mitteilung · 4. Sanierungsmaßnahmen\n') && ab.includes('Herrn [VN] am [Risikoort]') && !ab.includes('Fenneberg') && !ab.includes('Lagerweg'), 'Abschnitt kopieren: ' + ab);
+      await p.locator(`.fall[data-fall="${AO.p1}"] [data-zu]`).click();
+      // Familie: Fassungen nach Zeitraum, Unterschied markiert, aktuelle oben
+      await p.click(`#absaetze [data-familie="massnahmen|${w('T1')}"]`);
+      await p.waitForSelector('#absatz:not([hidden])');
+      assert.equal(await p.textContent('#absatzHaupt h1'), 'Ein Absatz, zwei Fassungen');
+      assert.match(await p.textContent('#absatzHaupt .pr-kopf'), /zusammen 2 Berichte in 2 Fällen/);
+      const fas = await p.$$eval('#absatzHaupt .fa-fassung', x => x.map(e => ({ jahr: e.querySelector('.fa-jahr').textContent, diff: [...e.querySelectorAll('.diff')].map(d => d.textContent), schild: [...e.querySelectorAll('.schild')].map(d => d.textContent) })));
+      assert.deepEqual(fas, [{ jahr: '20261 Fall', diff: ['Lager'], schild: ['aktuelle Fassung'] }, { jahr: '20251 Fall', diff: ['Werk'], schild: [] }]);
+      assert.equal(await p.textContent('#btnAbsatzZurueck'), 'Zurück zu Löschpulver');
+      await bild3('12-familie');
+      // Zweiter PC: setzt inzwischen „Vorbild“ auf K1 – LexiKit hat das noch nicht gelesen
+      const fremd = { id: 'fremd-1', w: w('K1'), art: 'vorbild', wer: 'Ben', warum: 'So ist es klar.', am: vor(0), beispiel: AB.K1, k: 'massnahmen' };
+      await p.evaluate(b => __schreib('_LexiKit/lexikit-markierungen.json', b), b64(JSON.stringify({ format: 'lexikit-markierungen', version: 1, marken: [fremd] })));
+      // „So nicht mehr“ auf ALT: Grund ist Pflicht
+      await p.click('#btnAbsatzZurueck'); await p.waitForSelector('#suche:not([hidden])');
+      await p.click(`#absaetze [data-familie="massnahmen|${w('ALT')}"]`);
+      await p.click(`#absatzHaupt [data-marke="nicht"]`);
+      await p.waitForSelector('#markForm');
+      assert.deepEqual(await p.$$eval('#mWer option', x => x.map(e => e.textContent)), ['– bitte wählen –', 'Dr. Ka', 'Ben'], 'nur aktive Personen aus der Mitarbeiterliste');
+      await p.click('#btnMarkeOk');
+      await p.waitForFunction(() => /Wer bist du/.test(document.getElementById('mFehler').textContent));
+      await p.selectOption('#mWer', 'Dr. Ka');
+      await p.click('#btnMarkeOk');
+      await p.waitForFunction(() => /warum \(Pflicht\)/.test(document.getElementById('mFehler').textContent));
+      await p.fill('#mWarum', 'Feuchtes Wischen verschmiert das Pulver.');
+      await p.selectOption('#mStatt', w('T1'));
+      await p.click('#btnMarkeOk');
+      await p.waitForFunction(() => !document.getElementById('markForm'));
+      let mk = JSON.parse(await p.evaluate(() => __lies('_LexiKit/lexikit-markierungen.json')));
+      assert.deepEqual(mk.marken.map(m => [m.id === 'fremd-1' ? 'fremd' : 'eigen', m.art, m.wer]), [['fremd', 'vorbild', 'Ben'], ['eigen', 'nicht', 'Dr. Ka']], 'zweiter PC: beide Markierungen in der Datei');
+      const eigen = mk.marken[1];
+      assert.equal(eigen.w, w('ALT')); assert.equal(eigen.warum, 'Feuchtes Wischen verschmiert das Pulver.'); assert.equal(eigen.statt, w('T1')); assert.equal(eigen.beispiel, AB.ALT);
+      assert.deepEqual(await p.$$eval('#absatzHaupt .fa-fassung .schild', x => x.map(e => e.textContent)), ['so nicht mehr']);
+      assert.match(await p.textContent('#absatzHaupt .ab-notiz'), /Dr\. Ka, \d\d\.\d\d\.\d{4}: Feuchtes Wischen verschmiert das Pulver\. · Stattdessen: „Die mit Löschpulver/);
+      assert.equal(await p.locator('#absatzHaupt [data-fkopieren]').count(), 0, '„so nicht mehr“: nicht zum Kopieren angeboten');
+      // In der Liste: ans Ende, grau, mit Grund – Vorbild des anderen PCs ist da
+      await p.click('#btnAbsatzZurueck'); await p.waitForSelector('#absaetze .ab-zeile');
+      z = await zeilen();
+      assert.deepEqual(welche(z).slice(-1), ['ALT']); assert.ok(z.at(-1).alt && !z.at(-1).kopieren);
+      assert.match(z.at(-1).meta, /^so nicht mehrzuletzt verwendet 2024 · in 2 Fällen im Archiv/);
+      assert.match(await p.textContent('#absaetze'), /Ans Ende gestellt · bleibt in Suche, Fall und Word sichtbar/);
+      assert.match(z[0].meta, /^Vorbild/, 'Vorbild vom anderen PC übernommen');
+      await bild3('13-so-nicht-mehr');
+      // „so nicht mehr“ bleibt in der Suche und im Fall
+      await p.fill('#q', 'klarem Wasser'); await p.waitForFunction(() => /^2 Fälle/.test(document.getElementById('ergebnisZeile').textContent));
+      await p.locator(`.fall[data-fall="${AO.p3}"] [data-oeffnen="massnahmen"]`).click();
+      assert.ok((await p.locator(`.fall[data-fall="${AO.p3}"] .txt`).textContent()).includes(AB.ALT), 'im Fall sichtbar');
+      await p.locator(`.fall[data-fall="${AO.p3}"] [data-zu]`).click();
+      await p.fill('#q', ''); await p.waitForFunction(() => /^5 Fälle/.test(document.getElementById('ergebnisZeile').textContent));
+      // Zurücknehmen braucht Name und Grund, die Markierung bleibt als Verlauf
+      await p.waitForSelector('#absaetze .ab-zeile');
+      await p.click(`#absaetze [data-familie="massnahmen|${w('ALT')}"]`);
+      await p.click('#absatzHaupt [data-marke="zurueck"]'); await p.waitForSelector('#markForm');
+      assert.equal(await p.inputValue('#mWer'), 'Dr. Ka', 'eigener Name vom letzten Mal vorgewählt');
+      await p.selectOption('#mWer', 'Ben');
+      await p.click('#btnMarkeOk');
+      await p.waitForFunction(() => /warum \(Pflicht\)/.test(document.getElementById('mFehler').textContent));
+      await p.fill('#mWarum', 'Für Glasflächen passt es doch.');
+      await p.click('#btnMarkeOk'); await p.waitForFunction(() => !document.getElementById('markForm'));
+      assert.match(await p.textContent('#absatzHaupt .fa-fassung'), /So nicht mehr – Dr\. Ka, [\d.]+: Feuchtes Wischen verschmiert das Pulver\.[\s\S]*zurückgenommen – Ben, [\d.]+: Für Glasflächen passt es doch\./);
+      assert.deepEqual(await p.$$eval('#absatzHaupt .fa-fassung .schild', x => x.map(e => e.textContent)), ['aktuelle Fassung'], 'nicht mehr markiert');
+      mk = JSON.parse(await p.evaluate(() => __lies('_LexiKit/lexikit-markierungen.json')));
+      assert.equal(mk.marken.length, 2); assert.equal(mk.marken[1].zurueck.wer, 'Ben'); assert.equal(mk.marken[1].warum, 'Feuchtes Wischen verschmiert das Pulver.', 'frühere Markierung bleibt');
+      // Mitarbeiterliste fehlt / ist unlesbar: Markieren geht nicht, mit Hinweis
+      await p.evaluate(() => __weg('_Spektron-Mitarbeiter.json'));
+      await p.click('#absatzHaupt [data-marke="vorbild"]'); await p.waitForSelector('#markForm');
+      assert.match(await p.textContent('#markForm'), /_Spektron-Mitarbeiter\.json fehlt im Archivordner\. Markieren geht erst, wenn sie da ist/);
+      assert.equal(await p.locator('#btnMarkeOk').count(), 0);
+      await p.click('#btnMarkeAbbrechen');
+      await p.evaluate(b => __schreib('_Spektron-Mitarbeiter.json', b), b64('{kaputt'));
+      await p.click('#absatzHaupt [data-marke="vorbild"]'); await p.waitForSelector('#markForm');
+      assert.match(await p.textContent('#markForm'), /_Spektron-Mitarbeiter\.json ist nicht lesbar/);
+      await p.click('#btnMarkeAbbrechen');
+      // Einstellung „Ähnlichkeit“: umstellen gilt fürs Büro; Zähler und Markierungen bleiben
+      await p.click('#btnAbsatzZurueck'); await p.waitForSelector('#absaetze .ab-zeile');
+      await p.click('#mehr summary'); await p.click('[data-mehr="aehnlichkeit"]');
+      await p.waitForSelector('#aehnlichkeitSeite:not([hidden])');
+      assert.deepEqual(await p.$$eval('#stufen [data-stufe]', x => x.map(e => [e.dataset.stufe, e.getAttribute('aria-pressed')])), [['streng', 'false'], ['normal', 'true'], ['locker', 'false']]);
+      await p.click('#stufen [data-stufe="locker"]');
+      await p.waitForFunction(() => window.LexiKit.S.abs.stufe === 'locker' && window.LexiKit.S.abs.E);
+      assert.equal(JSON.parse(await p.evaluate(() => __lies('_LexiKit/lexikit-einstellungen.json'))).aehnlichkeit, 'locker');
+      await p.click('#aehnlichkeitSeite [data-zurueck]'); await p.waitForSelector('#absaetze .ab-zeile');
+      z = await zeilen();
+      assert.equal(z.length, 7, 'L1 gehört bei „locker“ zur Familie von T1');
+      assert.match(z.find(x => x.t === AB.T1).meta, /in 3 Fällen im Archiv · 3 Fassungen seit 2023/);
+      assert.equal(z.find(x => x.t === AB.N1).n, '1 ×', 'Kopier-Zähler bleibt');
+      assert.match(z.find(x => x.t === AB.K1).meta, /^Vorbild/, 'Markierung bleibt');
+      await p.click('#mehr summary'); await p.click('[data-mehr="aehnlichkeit"]'); await p.click('#stufen [data-stufe="normal"]');
+      await p.waitForFunction(() => window.LexiKit.S.abs.stufe === 'normal' && window.LexiKit.S.abs.E);
+      await p.click('#aehnlichkeitSeite [data-zurueck]'); await p.waitForSelector('#absaetze .ab-zeile');
+      assert.equal((await zeilen()).length, 8);
+      // „Fälle zeigen“: genau die Fälle der Familie aus dem ganzen Archiv
+      await p.click(`#absaetze [data-fzeigen="massnahmen|${w('A1')}"]`);
+      await p.waitForSelector('#nurLeiste:not([hidden])');
+      assert.match(await p.textContent('#nurLeiste'), /^2 Fälle mit dem Absatz „Die Halle an der Musterstraße 5/);
+      assert.deepEqual(await p.$$eval('.fall h2', x => x.map(e => e.textContent.slice(0, 7))), ['25.0712', '24.0300']);
+      assert.ok(await p.locator('#profil').isHidden() && await p.locator('#absaetze').isHidden());
+      await p.click('#nurLeiste [data-aktion="nur-aus"]');
+      await p.waitForFunction(() => /^5 Fälle/.test(document.getElementById('ergebnisZeile').textContent));
+      // Neu laden: alles aus den Dateien in _LexiKit
+      await p.reload(); await p.evaluate(H); await p.waitForSelector('#suche:not([hidden])');
+      await p.waitForFunction(() => window.LexiKit && !window.LexiKit.L.aktiv && window.LexiKit.L.ende, null, { timeout: 30000 });
+      await p.click('#themen [data-thema="t-löschpulver"]'); await p.waitForSelector('#absaetze .ab-zeile');
+      z = await zeilen();
+      assert.deepEqual(welche(z).slice(0, 2), ['K1', 'N1']); assert.match(z[0].meta, /^Vorbild/);
+      // Nur in _LexiKit geschrieben; Projektordner unverändert; Index Fassung 1 ohne Kopfwerte
+      assert.deepEqual(await dateien3(), Object.assign({}, vorher3, { '_Spektron-Mitarbeiter.json': (await dateien3())['_Spektron-Mitarbeiter.json'] }), 'Projektordner unverändert');
+      const lx3 = Object.keys(await p.evaluate(() => __liste())).filter(k => k.startsWith('_LexiKit/')).sort();
+      assert.deepEqual(lx3, ['_LexiKit/lexikit-einstellungen.json', '_LexiKit/lexikit-index-2022.json', '_LexiKit/lexikit-index-2023.json', '_LexiKit/lexikit-index-2024.json', '_LexiKit/lexikit-index-2025.json', '_LexiKit/lexikit-index-2026.json', '_LexiKit/lexikit-kopien.json', '_LexiKit/lexikit-markierungen.json', '_LexiKit/lexikit-themen.json']);
+      for (const k of lx3.filter(k => /index/.test(k))) { const j = await p.evaluate(q => __lies(q), k); assert.equal(JSON.parse(j).version, 1); for (const v of ['Tobias', 'Probe Versicherung', '55-1234567', 'Gisela', '"_d"']) assert.ok(!j.includes(v), k + ': ' + v); }
+      // Archiv wechseln, während ein Kopier-Zähler noch geschrieben wird (Codex-Hinweis PR #4): er landet im alten _LexiKit, nicht im neuen
+      await p.evaluate(async ([pr, b]) => {
+        const a2 = await (await navigator.storage.getDirectory()).getDirectoryHandle('Archiv3', { create: true });
+        await a2.getDirectoryHandle('_LexiKit', { create: true });
+        const d = await (await a2.getDirectoryHandle(pr, { create: true })).getDirectoryHandle('Mitteilungen', { create: true });
+        const wr = await (await d.getFileHandle('1. Mitteilung.docx', { create: true })).createWritable(); await wr.write(Uint8Array.from(atob(b), c => c.charCodeAt(0))); await wr.close();
+      }, ['21.0002 Drittarchiv Musterort Tst', b64(require('./daten/berichte.cjs').docx(require('./daten/berichte.cjs').BERICHTE.ohne, 0, 'dritt'))]);
+      await p.evaluate(() => { window.LEXIKIT_NACHPRUEF_MS = 1500; });   // Nachprüfung läuft noch, wenn gewechselt wird
+      const vorWechsel = JSON.parse(await p.evaluate(() => __lies('_LexiKit/lexikit-kopien.json'))).kopien.length;
+      await p.evaluate(() => navigator.clipboard.writeText('VORHER'));
+      await p.click(`#absaetze [data-fkopieren="massnahmen|${w('T1')}"]`);
+      await p.waitForFunction(() => window.LexiKit.S.abs.ausstehend.kopien.length > 0);
+      await p.evaluate(async () => { const a3 = await (await navigator.storage.getDirectory()).getDirectoryHandle('Archiv3'); await LexiKit.archivWechseln(a3); });
+      await p.waitForFunction(() => window.LexiKit && !window.LexiKit.L.aktiv && window.LexiKit.L.ende, null, { timeout: 30000 });
+      await p.waitForTimeout(4000);   // die Nachprüfung (1,5 s) und ein möglicher zweiter Versuch sind vorbei
+      const alt = JSON.parse(await p.evaluate(() => __lies('_LexiKit/lexikit-kopien.json'))).kopien;
+      assert.equal(alt.length, vorWechsel + 1, 'Kopie im alten Archiv gezählt'); assert.equal(alt.at(-1).w, w('T1'));
+      const neuLx = await p.evaluate(async () => { const d = await (await (await navigator.storage.getDirectory()).getDirectoryHandle('Archiv3')).getDirectoryHandle('_LexiKit'); const n = []; for await (const [k] of d.entries()) n.push(k); return n.sort(); });
+      assert.deepEqual(neuLx, ['lexikit-index-2021.json', 'lexikit-themen.json'], 'neues _LexiKit ohne Kopien und Markierungen');
+      assert.deepEqual(await p.evaluate(() => [LexiKit.S.abs.kopien.length, LexiKit.S.abs.ausstehend.kopien.length]), [0, 0], 'neuer Stand bleibt leer');
+      await ctx3.close();
     }
 
     assert.deepEqual(fehler, [], 'keine Fehler in der Konsole');

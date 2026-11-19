@@ -1,6 +1,6 @@
 // LexiKit-Kern ohne Browser: Word lesen (nur Text, Fotos nie), Abschnitte, Berichtskopf weg, Berichte auswählen,
 // Fälle (Abschnittsklassen, Stränge, „Was war“, „Untersucht“), Suche und Rangfolge, Markierung, Zusammenführen der gemeinsamen
-// Dateien (Index Fassung 1 unverändert, Themenliste Fassung 2). node tests/kern.cjs
+// Dateien (Index Fassung 1 unverändert, Themenliste Fassung 2), ab 0.4.0 Absätze, Familien, Zähler, Markierungen. node tests/kern.cjs
 const assert = require('node:assert/strict'), zlib = require('node:zlib');
 const K = require('./kern-laden.cjs');
 const { docx, BERICHTE } = require('./daten/berichte.cjs');
@@ -466,6 +466,166 @@ let n = 0; const test = async (name, f) => { await f(); n++; console.log('ok', n
     }
     assert.equal(lecks, 0, `${lecks} Kopfwerte in ${faelle} erzeugten Fällen nicht ersetzt`);
     console.log(`  ${faelle} erzeugte Fälle, 0 Lecks, ${spot} Kopfwörter als Stelle markiert statt ersetzt`);
+  });
+
+  /* ---------- ab 0.4.0: „So machen wir es meist“ und „Unsere Absätze“ ---------- */
+  const D = require('./daten/berichte.cjs'), AB = D.ABSATZ;
+  const absFaelle = async () => {
+    const berichte = [];
+    for (const [k, o] of Object.entries(D.ABS_ORDNER)) {
+      const buf = D.docx(D.ABS_BERICHTE[k]), b = await K.docxLesen(async (a, e) => new Uint8Array(buf.subarray(a, e)), buf.length, inflate), p = K.projektOrdner(o);
+      berichte.push({ pfad: o + '/Mitteilungen/1. Mitteilung.docx', projekt: o, datei: '1. Mitteilung.docx', jahr: p.jahr, pnr: p.nr, nr: 1, form: b.form, abschnitte: b.abschnitte });
+    }
+    return K.faelleBauen(berichte);
+  };
+  const name = F => Object.keys(AB).find(k => AB[k] === F.neu.p);
+  const fam = E => E.familien.filter(f => f.k === 'massnahmen').map(f => f.mitglieder.map(name).join('+')).sort();
+  await test('Fassung: Zahlen, Proben-/Labornummern, Straße + Nummer, PLZ + Ort, Groß/Klein, Satzzeichen werden angeglichen', async () => {
+    const w = t => K.absatzWoerter(t).join(' ');
+    assert.equal(w('Probe 22W09435-001 an der Musterstraße 12 a in 52999 Probehausen: 14 µg/cm² Chlorid, W1, W2.'), 'probe # an der #adr in #ort # µgcm chlorid #');
+    assert.equal(K.absatzSchluessel(AB.A1), K.absatzSchluessel(AB.A2), 'andere Anschrift und Probennummern → dieselbe Fassung');
+    assert.equal(K.absatzSchluessel('Die  Oberflächen, sind ZU reinigen!'), K.absatzSchluessel('die Oberflächen sind zu reinigen.'));
+    assert.notEqual(K.absatzSchluessel(AB.T1), K.absatzSchluessel(AB.T2));
+    assert.ok(!K.absatzWoerter('Bei Herrn Fenneberg').includes('#'), 'Namen ohne Muster bleiben (kein Kopfwert beim Vergleich)');
+  });
+  await test('Ähnlichkeit = gleiche Wörter in derselben Reihenfolge; Kippwörter trennen nur, wenn sie der einzige Unterschied sind', async () => {
+    const w = K.absatzWoerter;
+    assert.ok(K.aehnlichkeit(w(AB.T1), w(AB.T2)) > 0.95);
+    const l = K.aehnlichkeit(w(AB.T1), w(AB.L1)); assert.ok(l > 0.75 && l < 0.85, 'L1 liegt zwischen locker und normal: ' + l);
+    assert.ok(K.nurKippwoerter(w(AB.T1), w(AB.F1)), 'trocken → feucht');
+    assert.ok(K.nurKippwoerter(w(AB.K1), w(AB.K2)), 'nicht');
+    assert.ok(K.nurKippwoerter(w('Die Proben sind vor der Reinigung und nach dem Trocknen zu nehmen.'), w('Die Proben sind nach der Reinigung und vor dem Trocknen zu nehmen.')), 'vor/nach vertauscht');
+    assert.ok(!K.nurKippwoerter(w(AB.T1), w(AB.T2)));
+    assert.ok(!K.nurKippwoerter(w('Die Flächen sind trocken abzusaugen.'), w('Die Flächen sind feucht abzuwischen.')), 'Kippwort und mehr → darf zusammen');
+  });
+  await test('Familien je Einstellung; Zahlen/Anschriften gleich, Kippwörter getrennt, keine Kette über eine dritte Fassung', async () => {
+    const A = K.absaetzeBauen(await absFaelle());
+    assert.ok(!A.liste.some(F => F.neu.p === 'Kurz.'), 'unter fünf Wörtern nicht in der Liste');
+    assert.equal(A.von.get('massnahmen|' + K.absatzSchluessel(AB.A1)).faelle.size, 2);
+    const normal = ['A1', 'ALT', 'F1', 'K1', 'K2', 'L1', 'N1', 'T1+T2'];
+    assert.deepEqual(fam(K.familienBauen(A, K.AEHNLICHKEIT.normal)), normal);
+    assert.deepEqual(fam(K.familienBauen(A, K.AEHNLICHKEIT.streng)), normal);
+    assert.deepEqual(fam(K.familienBauen(A, K.AEHNLICHKEIT.locker)), ['A1', 'ALT', 'F1', 'K1', 'K2', 'N1', 'T1+T2+L1']);
+    // F1 (feucht) ist L1 ähnlich, aber nie mit T1 in einer Familie
+    const E = K.familienBauen(A, 0.5);
+    assert.notEqual(E.von.get('massnahmen|' + K.absatzSchluessel(AB.F1)), E.von.get('massnahmen|' + K.absatzSchluessel(AB.T1)));
+    const En = K.familienBauen(A, K.AEHNLICHKEIT.normal), t = En.von.get('massnahmen|' + K.absatzSchluessel(AB.T1));
+    const ae = K.aehnlicheFamilien(En, t, K.lockerer('normal')).map(x => name(x.fam.leit));
+    assert.deepEqual(ae, ['F1', 'L1'], '„Ähnliche Absätze“ eine Stufe lockerer');
+    assert.equal(K.lockerer('locker'), 0.6);
+    // in Schritten gebaut = in einem Zug gebaut
+    const b = K.familienBauer(A, 0.85); let runden = 0; while (!b.weiter(0)) runden++;
+    assert.deepEqual(fam(b.ergebnis), normal);
+  });
+  await test('Sortierung: Oft verwendet (zwei Jahre, Gleichstand → Archiv) und Oft im Archiv; Zähler je Fassung, Summe je Familie', async () => {
+    const F = await absFaelle(), A = K.absaetzeBauen(F), E = K.familienBauen(A, 0.85), alle = new Set(F.map(f => f.projekt));
+    const jetzt = '2026-11-19T12:00:00.000Z', s = x => K.absatzSchluessel(AB[x]);
+    const kopien = [{ id: 1, w: s('K1'), am: '2026-10-01T00:00:00Z' }, { id: 2, w: s('K1'), am: '2025-01-01T00:00:00Z' },
+      { id: 3, w: s('A1'), am: '2024-11-18T00:00:00Z' }, { id: 4, w: s('A1'), am: '2023-05-01T00:00:00Z' },   // knapp über zwei Jahre: zählt nicht mehr
+      { id: 5, w: s('T2'), am: '2026-11-01T00:00:00Z' }, { id: 6, w: s('T1'), am: '2026-11-02T00:00:00Z' }];
+    const st = K.standBauen(kopien, [], jetzt, w => A.schluessel.has(w));
+    assert.equal(K.vorZweiJahren(jetzt), '2024-11-19T12:00:00.000Z');
+    assert.deepEqual([st.get(s('K1')).k2, st.get(s('A1')).k2, st.get(s('A1')).alle], [2, 0, 2]);
+    const r = K.absatzZeilen(E, 'massnahmen', alle, st, 'oft');
+    assert.deepEqual(r.zeilen.map(z => name(z.rep) + ':' + z.k2), ['T1:2', 'K1:2', 'A1:0', 'ALT:0', 'N1:0', 'K2:0', 'F1:0', 'L1:0'], 'T1+T2 zusammen 2 Kopien; bei 2:2 entscheidet das Archiv (2 Fälle vor 1)');
+    assert.deepEqual(K.absatzZeilen(E, 'massnahmen', alle, st, 'archiv').zeilen.map(z => name(z.rep)).slice(0, 4), ['T1', 'A1', 'ALT', 'K1']);
+    // ohne Kopien (erster Tag): Archiv entscheidet
+    assert.deepEqual(K.absatzZeilen(E, 'massnahmen', alle, new Map(), 'oft').zeilen.map(z => name(z.rep)).slice(0, 3), ['T1', 'A1', 'ALT']);
+    const a1 = r.zeilen.find(z => name(z.rep) === 'A1'); assert.equal(a1.jahr, 2025, 'zuletzt verwendet: Jahr des neuesten Falls (oder der neuesten Kopie)');
+    // nur Familien aus den passenden Fällen, gezählt im ganzen Archiv
+    const nurP2 = K.absatzZeilen(E, 'massnahmen', new Set([D.ABS_ORDNER.p2]), st, 'oft');
+    assert.deepEqual(nurP2.zeilen.map(z => name(z.rep) + ':' + z.faelle.size), ['T1:2', 'A1:2', 'K2:1']);
+  });
+  await test('Markierungen: Grund Pflicht, nur Leute aus der Liste; „so nicht mehr“ ans Ende, Vorbild vorn; Zurücknehmen mit Verlauf', async () => {
+    const F = await absFaelle(), A = K.absaetzeBauen(F), E = K.familienBauen(A, 0.85), alle = new Set(F.map(f => f.projekt)), s = x => K.absatzSchluessel(AB[x]);
+    const ma = K.mitarbeiterLesen(JSON.stringify(D.MITARBEITER));
+    assert.deepEqual(ma.personen.map(p => p.kuerzel), ['Dr. Ka', 'Ben'], 'nur aktive');
+    assert.equal(K.mitarbeiterLesen(null), null); assert.ok(K.mitarbeiterLesen('{kaputt').kaputt); assert.ok(K.mitarbeiterLesen('{"format":"spektron-mitarbeiter"}').kaputt);
+    assert.match(K.markeNeu({ w: s('ALT'), art: 'nicht', wer: 'Dr. Ka', warum: ' ' }, ma.personen, 'x').fehler, /Pflicht/);
+    assert.match(K.markeNeu({ w: s('ALT'), art: 'nicht', wer: 'Alt', warum: 'Weil.' }, ma.personen, 'x').fehler, /Wer bist du/);
+    assert.match(K.markeNeu({ w: s('ALT'), art: 'nicht', wer: 'Dr. Ka', warum: 'Weil so.' }, null, 'x').fehler, /Mitarbeiterliste fehlt/);
+    const m1 = K.markeNeu({ w: s('ALT'), art: 'nicht', wer: 'Dr. Ka', warum: 'Verschmiert das Pulver.', statt: s('T1'), beispiel: AB.ALT, k: 'massnahmen' }, ma.personen, '2026-11-19T10:00:00Z').marke;
+    const m2 = K.markeNeu({ w: s('T2'), art: 'vorbild', wer: 'Ben', warum: 'So übernehmen.', beispiel: AB.T2 }, ma.personen, '2026-11-19T10:01:00Z').marke;
+    let st = K.standBauen([], [m1, m2], '2026-11-19T12:00:00Z', w => A.schluessel.has(w));
+    let r = K.absatzZeilen(E, 'massnahmen', alle, st, 'oft');
+    assert.equal(name(r.zeilen[0].rep), 'T2', 'Vorbild steht für die Familie');
+    assert.deepEqual(r.ende.map(z => name(z.rep)), ['ALT']); assert.ok(!r.zeilen.some(z => name(z.rep) === 'ALT'));
+    assert.deepEqual(K.familieFassungen(E.von.get('massnahmen|' + s('T1')), st).map(x => [name(x.F), x.aktuell]), [['T1', true], ['T2', false]], 'aktuelle (neueste) oben, auch wenn die andere Vorbild ist');
+    // Zurücknehmen: braucht Name und Grund; die Markierung bleibt als Verlauf
+    assert.match(K.markeZurueck(m1, { wer: 'Ben', warum: '' }, ma.personen, 'y').fehler, /Pflicht/);
+    const z1 = K.markeZurueck(m1, { wer: 'Ben', warum: 'Für Glas passt es.' }, ma.personen, '2026-11-20T08:00:00Z').marke;
+    st = K.standBauen([], [z1, m2], '2026-11-20T12:00:00Z', w => A.schluessel.has(w));
+    assert.equal(st.get(s('ALT')).aktiv, null); assert.equal(st.get(s('ALT')).marken.length, 1);
+    r = K.absatzZeilen(E, 'massnahmen', alle, st, 'oft'); assert.equal(r.ende.length, 0);
+    // Markierung, deren Schlüssel nicht mehr passt, findet über ihr Beispiel zurück
+    st = K.standBauen([], [Object.assign({}, m1, { w: 'falsch' })], '2026-11-19T00:00:00Z', w => A.schluessel.has(w));
+    assert.ok(st.get(s('ALT')).aktiv);
+    // Einstellung umstellen: gezählt wird je Fassung → nichts geht verloren
+    const kop = [{ id: 'a', w: s('L1'), am: '2026-11-01T00:00:00Z' }, { id: 'b', w: s('T1'), am: '2026-11-01T00:00:00Z' }];
+    const st2 = K.standBauen(kop, [m2], '2026-11-19T00:00:00Z', w => A.schluessel.has(w));
+    const zl = K.absatzZeilen(K.familienBauen(A, 0.75), 'massnahmen', alle, st2, 'oft').zeilen.find(z => z.fam.mitglieder.length === 3);
+    assert.equal(zl.k2, 2); assert.equal(name(zl.rep), 'T2');
+    const zn = K.absatzZeilen(K.familienBauen(A, 0.85), 'massnahmen', alle, st2, 'oft').zeilen;
+    assert.deepEqual([zn.find(z => name(z.rep) === 'T2').k2, zn.find(z => name(z.rep) === 'L1').k2], [1, 1]);
+  });
+  await test('Gemeinsame Dateien: zwei PCs schreiben gleichzeitig – nichts geht verloren; unlesbare Datei wird nie überschrieben', async () => {
+    const platte = {}; const io = { lesen: async n => platte[n] ?? null, schreiben: async (n, t) => { platte[n] = t; }, warten: async () => {} };
+    const m = (id, extra) => Object.assign({ id, w: 'f1', art: 'nicht', wer: 'Ben', warum: 'Grund.', am: '2026-11-19T10:00:00Z' }, extra);
+    // PC B schreibt seine Markierung zwischen Schreiben und Nachprüfen von PC A mit einem alten Stand (A ist überschrieben)
+    let einmal = true;
+    const zwischen = async () => { if (!einmal) return; einmal = false; platte['lexikit-markierungen.json'] = JSON.stringify({ format: 'lexikit-markierungen', version: 1, marken: [m('b')] }); };
+    const nach = await K.gemeinsamSchreiben(io, 'marken', [m('a')], { zwischen });
+    assert.deepEqual(nach.marken.map(x => x.id).sort(), ['a', 'b'], 'A hat neu gelesen, vereinigt und noch einmal geschrieben');
+    // Zurücknehmen geht nie verloren, auch wenn der andere PC die Markierung ohne Vermerk zurückschreibt
+    await K.gemeinsamSchreiben(io, 'marken', [m('a', { zurueck: { wer: 'Ben', warum: 'Doch.', am: 'x' } })], { zwischen: async v => { if (!v) platte['lexikit-markierungen.json'] = JSON.stringify({ format: 'lexikit-markierungen', version: 1, marken: [m('a'), m('b')] }); } });
+    assert.ok(JSON.parse(platte['lexikit-markierungen.json']).marken.find(x => x.id === 'a').zurueck);
+    // Kopien: beide Zähler bleiben
+    await K.gemeinsamSchreiben(io, 'kopien', [{ id: 'k1', w: 'f1', am: '1' }]);
+    await K.gemeinsamSchreiben(io, 'kopien', [{ id: 'k2', w: 'f1', am: '2' }], { zwischen: async v => { if (!v) platte['lexikit-kopien.json'] = JSON.stringify({ format: 'lexikit-kopien', version: 1, kopien: [{ id: 'k1', w: 'f1', am: '1' }, { id: 'k3', w: 'f2', am: '3' }] }); } });
+    assert.deepEqual(JSON.parse(platte['lexikit-kopien.json']).kopien.map(x => x.id).sort(), ['k1', 'k2', 'k3']);
+    // Einstellung: die jüngere gilt
+    await K.gemeinsamSchreiben(io, 'einstellung', { aehnlichkeit: 'locker', geaendert: '2026-11-19T10:00:00Z' });
+    await K.gemeinsamSchreiben(io, 'einstellung', { aehnlichkeit: 'streng', geaendert: '2026-11-19T09:00:00Z' });
+    assert.equal(JSON.parse(platte['lexikit-einstellungen.json']).aehnlichkeit, 'locker', 'ältere Änderung überschreibt die jüngere nicht');
+    // unlesbar / neuere Fassung: Fehler, Datei unverändert
+    platte['lexikit-markierungen.json'] = '{kaputt';
+    await assert.rejects(K.gemeinsamSchreiben(io, 'marken', [m('c')]), /nicht lesbar/); assert.equal(platte['lexikit-markierungen.json'], '{kaputt');
+    platte['lexikit-kopien.json'] = JSON.stringify({ format: 'lexikit-kopien', version: 9, kopien: [] });
+    await assert.rejects(K.gemeinsamSchreiben(io, 'kopien', [{ id: 'k9' }]), /neueren LexiKit-Fassung/);
+    // ein PC, der dauernd dazwischenfunkt: Fehler statt stiller Verlust
+    await assert.rejects(K.gemeinsamSchreiben(io, 'einstellung', { aehnlichkeit: 'normal', geaendert: '2027' }, { zwischen: async () => { platte['lexikit-einstellungen.json'] = JSON.stringify({ format: 'lexikit-einstellungen', version: 1, aehnlichkeit: 'locker', geaendert: '2026' }); } }), /nicht sicher schreiben/);
+  });
+  await test('Kopieren: Platzhalter aus dem frisch gelesenen Kopf und dem Projektordner; ohne Kopf nur der Ordner', async () => {
+    const buf = D.docx(D.ABS_BERICHTE.p1), b = await K.docxLesen(async (a, e) => new Uint8Array(buf.subarray(a, e)), buf.length, inflate, { kopf: true });
+    let r = K.absatzErsetzen(AB.N1, b.kopf, D.ABS_ORDNER.p1, K.fachwoerter(K.ersteThemen('').themen));
+    assert.equal(r.t, 'Die Lagerhalle von Herrn [VN] am [Risikoort] ist vor der Wiederinbetriebnahme vollständig zu reinigen und abzunehmen.');
+    assert.deepEqual(r.platzhalter, ['[VN]', '[Risikoort]']);
+    assert.equal(K.absatzErsetzen(AB.T1, b.kopf, D.ABS_ORDNER.p1, []).t, AB.T1, 'ohne Namen bleibt der Text');
+    r = K.absatzErsetzen('Im Musterlager Monheim lag Ruß bei Herrn Fenneberg.', null, D.ABS_ORDNER.p1, []);
+    assert.equal(r.t, 'Im [Projekt] lag Ruß bei Herrn Fenneberg.', 'ohne Kopf: nur die Wörter des Projektordners');
+    assert.equal(JSON.stringify(b).includes('Tobias') && !JSON.stringify(Object.assign({}, b, { kopf: undefined })).includes('Tobias'), true, 'Kopfwerte nur mit opt.kopf');
+  });
+  await test('Praxisprofil: Untersucht auf, Proben je Fall, Berichtsform, Mitteilungen, mit Maßnahmen', async () => {
+    const P = K.profilBauen(await absFaelle());
+    assert.deepEqual([P.n, P.von, P.bis], [5, 2022, 2026]);
+    assert.deepEqual(P.params.map(x => x.name + ' ' + x.n), ['Chlorid 5', 'PAK 2', 'Sulfat · Ammonium · Phosphat 1']);
+    assert.deepEqual(P.proben, [{ art: 'Wischproben', von: 8, bis: 10, faelle: 5 }]);
+    assert.deepEqual(P.formen, [{ form: 'Sanierungsvorschlag', n: 3 }, { form: 'Untersuchungsbericht', n: 2 }]);
+    assert.deepEqual([P.mitteilungen, P.mitMassnahmen], [1, 5]);
+    assert.equal(K.profilBauen([]).n, 0);
+  });
+  await test('„Ähnliche Absätze“: ein Fall mit zwei Fassungen zählt einmal (Codex-Hinweis PR #4)', async () => {
+    const F = (id, ids, faelle) => ({ id, k: 'massnahmen', ids: Int32Array.from(ids), sid: Int32Array.from(ids).sort(), faelle: new Set(faelle), neu: { f: { jahr: 2026, pnr: 1 } } });
+    const a = F('a', [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], ['p1']), b1 = F('b1', [1, 2, 3, 4, 5, 6, 7, 8, 11, 12], ['p2']), b2 = F('b2', [1, 2, 3, 4, 5, 6, 7, 8, 11, 13], ['p2', 'p3']);
+    const E = { familien: [{ k: 'massnahmen', leit: a, mitglieder: [a] }, { k: 'massnahmen', leit: b1, mitglieder: [b1, b2] }] };
+    const r = K.aehnlicheFamilien(E, E.familien[0], 0.6);
+    assert.equal(r.length, 1); assert.equal(r[0].faelle, 2, 'p2 steht in beiden Fassungen – zusammen 2 Fälle, nicht 3');
+  });
+  await test('Unterschiede innerhalb einer Familie markieren', async () => {
+    const d = K.wortUnterschiede(AB.T1, AB.T2);
+    assert.deepEqual(d.filter(x => x.anders).map(x => x.t), ['Lager']);
+    assert.equal(d.map(x => x.t).join(''), AB.T1, 'Text bleibt vollständig');
+    assert.deepEqual(K.wortUnterschiede('Die Flächen sind trocken abzusaugen und anschließend feucht zu reinigen.', 'Die Flächen sind zunächst trocken abzusaugen.').filter(x => x.anders).map(x => x.t), ['und anschließend feucht zu reinigen.']);
   });
   console.log(`\nKern: ${n} Prüfungen bestanden`);
 })().catch(e => { console.error(e); process.exit(1); });

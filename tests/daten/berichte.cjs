@@ -288,4 +288,52 @@ function archivKopie() {
   };
 }
 
-module.exports = { docx, zip, documentXml, BERICHTE, archiv, KOPIE, KOPIE_ORDNER, KOPIE_ORDNER_OPFS, archivKopie };
+/* ---------- ab 0.4.0: „Unsere Absätze“ – erfundene Fälle mit fast gleichen Absätzen ----------
+   T1/T2: ein Wort anders (eine Familie, zwei Fassungen) · F1: wie T1, nur „trocken“ → „feucht“ (Kippwort, eigene Familie)
+   K1/K2: nur „nicht“ anders (getrennt) · A1/A2: andere Anschrift und Probennummern (dieselbe Fassung) · L1: rund 80 % wie T1
+   (erst bei „locker“ in derselben Familie) · N1: Name und Anschrift aus dem Berichtskopf im Absatz · ALT: wird „so nicht mehr“ */
+const ABSATZ = {
+  T1: 'Die mit Löschpulver beaufschlagten Oberflächen im Lager sind zunächst trocken abzusaugen. Eine feuchte Reinigung der Regale und Böden erfolgt erst danach durch einen Fachbetrieb.',
+  T2: 'Die mit Löschpulver beaufschlagten Oberflächen im Werk sind zunächst trocken abzusaugen. Eine feuchte Reinigung der Regale und Böden erfolgt erst danach durch einen Fachbetrieb.',
+  F1: 'Die mit Löschpulver beaufschlagten Oberflächen im Lager sind zunächst feucht abzusaugen. Eine feuchte Reinigung der Regale und Böden erfolgt erst danach durch einen Fachbetrieb.',
+  L1: 'Die mit Löschpulver beaufschlagten Oberflächen im Lager und im angrenzenden Büro sind zunächst sehr gründlich trocken abzusaugen. Eine feuchte Reinigung der Regale und Böden erfolgt erst danach durch einen Fachbetrieb.',
+  K1: 'Nach Abschluss der Reinigung ist eine Kontrolle durch Wischproben an den zuvor beprobten Stellen erforderlich.',
+  K2: 'Nach Abschluss der Reinigung ist eine Kontrolle durch Wischproben an den zuvor beprobten Stellen nicht erforderlich.',
+  A1: 'Die Halle an der Musterstraße 5 in 40999 Musterheim ist nach der Reinigung durch Kontrollwischproben 25W00001-001 bis -006 freizumessen.',
+  A2: 'Die Halle an der Beispielweg 17 in 41000 Probedorf ist nach der Reinigung durch Kontrollwischproben 24W12345-001 bis -009 freizumessen.',
+  N1: 'Die Lagerhalle von Herrn Fenneberg am Lagerweg 12 ist vor der Wiederinbetriebnahme vollständig zu reinigen und abzunehmen.',
+  ALT: 'Die betroffenen Oberflächen sind feucht abzuwischen und anschließend mit klarem Wasser nachzuwischen.',
+  S1: 'Die Chloridwerte liegen oberhalb der korrosionschemisch relevanten Größenordnung, eine Reinigung ist erforderlich.',
+  AS1: 'Bei den Reinigungsarbeiten sind Schutzhandschuhe und Atemschutz der Klasse FFP2 zu tragen.',
+};
+const absatzBericht = (kopf, form, teile) => [...BRIEFKOPF, { t: form, stil: 'Titel', b: true }, { t: '(1. Mitteilung)' }, ...kopf, ...teile];
+const ABS_KOPF = [{ t: 'Projektnummer:\t26.0544' }, { t: 'VN:\tTobias Fenneberg' }, { t: 'Risiko:\tLagerweg 12' }, { t: '\t40999 Musterheim' }, { t: 'Versicherer:\tProbe Versicherung AG' }, { t: 'Schaden-Nr.:\t55-1234567' }];
+const ABS_KOPF2 = [{ t: 'Projektnummer:\t99.0001' }, { t: 'VN:\tGisela Erfunden' }, { t: 'Risiko:\tMusterplatz 1' }, { t: '\t00000 Nirgendwo' }];
+const u = t => ({ t, u: true });
+const ABS_BERICHTE = {
+  p1: absatzBericht(ABS_KOPF, 'Sanierungsvorschlag', [u('1. Veranlassung'), 'In der Lagerhalle brannte ein Gabelstapler; es wurden mehrere Pulverlöscher eingesetzt.',
+    u('2. Probenahme'), 'Es wurden 12 Wischproben entnommen und auf Chlorid, Sulfat und Phosphat untersucht.', 'Zusätzlich wurden 4 Wischproben auf PAK untersucht.',
+    u('3. Schlussfolgerungen'), ABSATZ.S1, u('4. Sanierungsmaßnahmen'), ABSATZ.T1, ABSATZ.N1, ABSATZ.K1, 'Kurz.', u('5. Arbeitsschutz'), ABSATZ.AS1]),
+  p2: absatzBericht(ABS_KOPF2, 'Sanierungsvorschlag', [u('1. Veranlassung'), 'Im Werk wurde ein Pulverlöscher gegen einen Schwelbrand eingesetzt.',
+    u('2. Probenahme'), 'Es wurden 8 Wischproben entnommen und auf Chlorid untersucht.', u('3. Sanierungsmaßnahmen'), ABSATZ.T2, ABSATZ.K2, ABSATZ.A1]),
+  p3: absatzBericht(ABS_KOPF2, 'Untersuchungsbericht', [u('1. Veranlassung'), 'Nach einem Brand in der Halle wurde mit Löschpulver gelöscht.',
+    u('2. Probenahme'), 'Es wurden 6 Wischproben entnommen und auf Chlorid untersucht.', u('3. Sanierungsmaßnahmen'), ABSATZ.A2, ABSATZ.ALT]),
+  p4: absatzBericht(ABS_KOPF2, 'Sanierungsvorschlag', [u('1. Veranlassung'), 'Im Keller wurde ABC-Pulver aus einem Feuerlöscher versprüht.',
+    u('2. Probenahme'), 'Es wurden 10 Wischproben entnommen und auf Chlorid und PAK untersucht.', u('3. Sanierungsmaßnahmen'), ABSATZ.F1, ABSATZ.L1]),
+  p5: absatzBericht(ABS_KOPF2, 'Untersuchungsbericht', [u('1. Veranlassung'), 'Im Depot wurde nach dem Brand Löschpulver gefunden.',
+    u('2. Probenahme'), 'Es wurden 9 Wischproben entnommen und auf Chlorid untersucht.', u('3. Sanierungsmaßnahmen'), ABSATZ.ALT]),
+};
+// ASCII-Ordnernamen (OPFS im Test)
+const ABS_ORDNER = { p1: '26.0544 Musterlager Monheim Tst', p2: '25.0712 Musterwerk Probestadt Tst', p3: '24.0300 Musterhalle Probedorf Tst', p4: '23.0100 Musterkeller Teststadt Tst', p5: '22.00200 Musterdepot Altdorf Tst' };
+const MITARBEITER = { format: 'spektron-mitarbeiter', version: 1, personen: [
+  { ordnerKuerzel: 'Dr. Ka', appKuerzel: 'Ka', name: 'Erfundene Person', aktiv: true }, { ordnerKuerzel: 'Ben', appKuerzel: 'Ben', name: 'Zweite Person', aktiv: true },
+  { ordnerKuerzel: 'Alt', appKuerzel: 'Alt', name: 'Ehemalige Person', aktiv: false }] };
+function archivAbsaetze() {
+  const aus = {};
+  for (const [k, o] of Object.entries(ABS_ORDNER)) aus[o + '/Mitteilungen/1. Mitteilung.docx'] = docx(ABS_BERICHTE[k], 0, k);
+  aus['_Spektron-Mitarbeiter.json'] = JSON.stringify(MITARBEITER);
+  aus['_LexiKit/'] = null;
+  return aus;
+}
+
+module.exports = { docx, zip, documentXml, BERICHTE, archiv, KOPIE, KOPIE_ORDNER, KOPIE_ORDNER_OPFS, archivKopie, ABSATZ, ABS_BERICHTE, ABS_ORDNER, MITARBEITER, archivAbsaetze };

@@ -1,6 +1,6 @@
 // Messung bei Archivgröße – NICHT in CI (dauert einige Minuten). Erfundenes Archiv im privaten Dateisystem des Browsers (OPFS):
 // 3.158 Projektordner, 4.663 Berichte mit je rund 6.000 Zeichen erfundenem Text (zusammen etwa 27 MB, wie im echten Archiv gezählt).
-// Gemessen wird der Start von LexiKit mit vorhandenem Index: Index laden, Fälle bauen, Themen zählen – und einzelne Suchen.
+// Gemessen wird der Start von LexiKit mit vorhandenem Index: Index laden, Fälle bauen, Themen zählen, ab 0.4.0 Absätze vergleichen – und einzelne Suchen.
 //   NODE_PATH=<playwright> CHROME=<chrome> node tests/zeit-archivgroesse.cjs
 // Die Zahlen gelten für den Rechner, auf dem die Messung läuft; das erste Einlesen aus dem OPFS sagt nichts über das Netzlaufwerk.
 const http = require('node:http'), fs = require('node:fs'), path = require('node:path');
@@ -31,6 +31,13 @@ const SATZ = [
   () => `Die Entsorgung der anfallenden Abfälle erfolgt getrennt nach Abfallschlüssel über einen zugelassenen Entsorgungsweg.`,
 ];
 const absatz = n => Array.from({ length: n }, () => aus(SATZ)()).join(' ');
+// ab 0.4.0: Maßnahmen-Absätze wie im Büro – aus einem Vorrat wiederkehrender Absätze, mal ein Wort anders, Zahlen immer anders
+const VORRAT = Array.from({ length: 120 }, () => absatz(1 + Math.floor(zufall() * 3)));
+function massnahme() {
+  let t = aus(VORRAT).replace(/\d+/g, () => String(1 + Math.floor(zufall() * 400)));
+  if (zufall() < 0.3) { const w = t.split(' '); w[Math.floor(zufall() * w.length)] = aus([...ORT, ...FLAECHE]).split(' ')[0]; t = w.join(' '); }
+  return t;
+}
 function bericht(nr) {
   const n = 4 + Math.floor(zufall() * 20), ort = aus(ORT);
   const t = [{ t: nr === 1 ? 'Sanierungsvorschlag' : 'Untersuchungsbericht', stil: 'Titel' }, { t: `(${nr}. Mitteilung)` }, 'Projektnummer:\t99.0000', 'VN:\tErika Beispielperson',
@@ -39,7 +46,7 @@ function bericht(nr) {
     { t: '3. Ortsbesichtigung', u: true }, absatz(4),
     { t: '4. Probenahme', u: true }, `Zur Messung der Chloridbelastungen wurden ${n} Wischproben entnommen.`, `Zur Messung der PAK-Belastungen wurden ${n + 2} Wischproben entnommen, die auf die 16 Einzelkomponenten analysiert wurden.`, absatz(2),
     { t: '5. Befund', u: true }, absatz(8), absatz(7), { tabelle: [['Probe', 'Chlorid', 'PAK'], ['W1', '12', '310'], ['W2', '4', '95']] },
-    { t: '6. Sanierungsmaßnahmen', u: true }, absatz(8), absatz(7),
+    { t: '6. Sanierungsmaßnahmen', u: true }, ...Array.from({ length: 3 + Math.floor(zufall() * 5) }, massnahme), absatz(3),
     { t: '7. Arbeitsschutzmaßnahmen', u: true }, 'Bei Arbeiten an Bauteilen mit Asbestverdacht sind die Vorgaben der TRGS 519 einzuhalten. ' + absatz(4)];
   return docx(t, 0, 'z' + saat);
 }
@@ -90,18 +97,23 @@ function archiv() {
     const indexBytes = await page.evaluate(async () => { const d = await (await (await navigator.storage.getDirectory()).getDirectoryHandle('Archiv')).getDirectoryHandle('_LexiKit'); let n = 0; for await (const [, h] of d.entries()) n += (await h.getFile()).size; return n; });
     console.log(`Im Index: ${(zeichen / 1e6).toFixed(1)} Mio. Zeichen Text, Dateien in _LexiKit zusammen ${(indexBytes / 1e6).toFixed(1)} MB`);
 
+    if (process.env.VERLAUF) {   // Fehlersuche: Fortschritt der Hintergrund-Prüfung je Sekunde
+      t0 = Date.now(); await page.reload();
+      for (let i = 0; i < 60; i++) { await page.waitForTimeout(1000); const x = await page.evaluate(() => window.LexiKit ? [LexiKit.L.fertig, LexiKit.L.aktiv, !!LexiKit.S.abs.E, LexiKit.S.abs.gen, Math.round(performance.memory ? performance.memory.usedJSHeapSize / 1e6 : 0)] : null); console.log(((Date.now() - t0) / 1000).toFixed(0) + ' s', JSON.stringify(x)); if (x && !x[1] && x[2]) break; }
+    }
     // Start mit vorhandenem Index – fünfmal
     const laeufe = [];
     for (let i = 0; i < 5; i++) {
       t0 = Date.now(); await page.reload();
       await page.waitForFunction(() => !document.getElementById('suche').hidden && document.querySelector('#chips [data-param]'), null, { polling: 'raf' }); const tSuche = Date.now() - t0;   // Index geladen, Fälle gebaut, Suche und Filter sichtbar
       await page.waitForFunction(() => { const k = [...document.querySelectorAll('.thema small')]; return k.length >= 15 && k.every(e => e.textContent !== '…'); }, null, { polling: 'raf' }); const tZahlen = Date.now() - t0;   // alle Themen gezählt
+      await page.waitForFunction(() => window.LexiKit.S.abs.E, null, { polling: 'raf' }); const tAbsaetze = Date.now() - t0;   // ab 0.4.0: Absätze verglichen, „Unsere Absätze“ benutzbar
       await fertig(); const tPruefung = Date.now() - t0;   // Hintergrund: Archiv auf neue Berichte durchgesehen (wie 0.1.0)
-      laeufe.push({ tSuche, tZahlen, tPruefung });
+      laeufe.push({ tSuche, tZahlen, tAbsaetze, tPruefung });
     }
     const med = k => laeufe.map(l => l[k]).sort((a, b) => a - b)[2], s = ms => (ms / 1000).toFixed(2) + ' s';
-    console.log(`Start mit vorhandenem Index (Median aus 5): Suche mit Fällen benutzbar ${s(med('tSuche'))} · alle Themen gezählt ${s(med('tZahlen'))} · Hintergrund-Prüfung auf neue Berichte fertig ${s(med('tPruefung'))}`);
-    console.log('  einzeln: ' + laeufe.map(l => `${s(l.tSuche)}/${s(l.tZahlen)}/${s(l.tPruefung)}`).join('  '));
+    console.log(`Start mit vorhandenem Index (Median aus 5): Suche mit Fällen benutzbar ${s(med('tSuche'))} · alle Themen gezählt ${s(med('tZahlen'))} · Absätze verglichen ${s(med('tAbsaetze'))} · Hintergrund-Prüfung auf neue Berichte fertig ${s(med('tPruefung'))}`);
+    console.log('  einzeln: ' + laeufe.map(l => `${s(l.tSuche)}/${s(l.tZahlen)}/${s(l.tAbsaetze)}/${s(l.tPruefung)}`).join('  '));
     // Einzelschritte im Kern (ohne Oberfläche)
     const einzeln = await page.evaluate(() => {
       const K = LexiKern, liste = [...LexiKit.S.berichte.values()], z = f => { const a = performance.now(); const r = f(); return [Math.round(performance.now() - a), r]; };
@@ -111,9 +123,14 @@ function archiv() {
       const [tZahl] = z(() => themen.map(t => K.zaehleFaelle(faelle, K.themaWoerter(t))));
       const [tSuche, r] = z(() => K.sucheFaelle(faelle, { thema: ['Löschpulver', 'ABC-Pulver', 'Pulverlöscher'], woerter: ['Lagerhalle', 'Schaltschrank'] }));
       const [tFilter, r2] = z(() => K.sucheFaelle(faelle, { parameter: ['chlorid', 'pak'], jahr: 2025 }));
-      return { faelle: faelle.length, berichte: liste.length, tBau, tBau2, tZahl, themen: themen.length, tSuche, treffer: r.treffer.length, tFilter, treffer2: r2.treffer.length };
+      const [tA, A] = z(() => K.absaetzeBauen(faelle)), absaetze = A.liste.reduce((s, F) => s + F.vork.length, 0);
+      const fam = {}; for (const st of K.AEHNLICHKEIT_STUFEN) { const [t, E] = z(() => K.familienBauen(A, K.AEHNLICHKEIT[st])); fam[st] = [t, E.familien.length]; }
+      const E = K.familienBauen(A, 0.85), [tZeilen, zl] = z(() => K.absatzZeilen(E, 'massnahmen', new Set(r.treffer.map(t => t.f.projekt)), new Map(), 'oft'));
+      return { faelle: faelle.length, berichte: liste.length, tBau, tBau2, tZahl, themen: themen.length, tSuche, treffer: r.treffer.length, tFilter, treffer2: r2.treffer.length,
+        tA, absaetze, fassungen: A.liste.length, fam, tZeilen, zeilen: zl.zeilen.length };
     });
     console.log(`Kern: ${einzeln.faelle} Fälle aus ${einzeln.berichte} Berichten bauen ${einzeln.tBau} ms (erneut, schon abgeleitet: ${einzeln.tBau2} ms) · ${einzeln.themen} Themen zählen ${einzeln.tZahl} ms · Suche Thema + 2 Wörter ${einzeln.tSuche} ms (${einzeln.treffer} Fälle) · nur Filter ${einzeln.tFilter} ms (${einzeln.treffer2} Fälle)`);
+    console.log(`Absätze: ${einzeln.absaetze} Absätze → ${einzeln.fassungen} Fassungen in ${einzeln.tA} ms · Familien ${Object.entries(einzeln.fam).map(([k, [t, n]]) => `${k} ${n} in ${t} ms`).join(', ')} · Liste für die Suche ${einzeln.tZeilen} ms (${einzeln.zeilen} Zeilen)`);
     if (fehler.length) console.log('Fehler in der Seite:', fehler);
   } finally { await browser.close(); server.close(); }
 })().catch(e => { console.error(e); process.exit(1); });
