@@ -220,6 +220,61 @@ mark.sus-ok{background:#eef1f3;color:inherit;border-radius:4px;padding:0 3px}
 .kstelle .linkknopf{font-size:15px;font-weight:700;color:#3d3200}
 .kfuss{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px}
 .sp-haupt:disabled{background:#9aa8b2;cursor:not-allowed}
+/* „So machen wir es meist“ und „Unsere Absätze“ (Mock-up „LexiKit – So machen wir es meist“) */
+.pr-karte{background:var(--sp-panel);border:2px solid var(--sp-app-dunkel);border-radius:14px;padding:22px 24px;font-size:17px;line-height:1.5}
+.ab-karte{background:var(--sp-panel);border:1px solid var(--sp-line);border-radius:14px;padding:22px 24px;font-size:17px;line-height:1.5}
+.pr-kopf{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:6px 16px}
+.pr-kopf h2{margin:0;font-size:22px;font-weight:700;overflow-wrap:anywhere}
+.pr-zwei{display:grid;grid-template-columns:1.25fr 1fr;gap:32px;margin-top:18px}
+.pr-balken{display:grid;grid-template-columns:minmax(140px,230px) 1fr 92px;gap:6px 14px;align-items:center;margin-top:10px}
+.pr-bl{min-height:44px;padding:4px 0;border:0;background:none;text-align:left;font-weight:600;font-size:16px;color:var(--sp-text);text-decoration:underline;text-decoration-color:var(--sp-line2);text-underline-offset:4px}
+.pr-bl:hover{text-decoration-color:var(--sp-app)}
+.pr-bl[aria-pressed="true"]{color:#1f524e;text-decoration-color:var(--sp-app-dunkel);text-decoration-thickness:3px}
+.pr-spur{height:14px;background:#e3efed;border-radius:7px;overflow:hidden}
+.pr-spur div{height:14px;background:var(--sp-app-dunkel);border-radius:7px}
+.pr-zahl{font-size:15px;text-align:right;font-weight:600;white-space:nowrap}
+.pr-fakt{display:flex;justify-content:space-between;gap:16px;padding:10px 0;border-bottom:1px solid #eef1f3}
+.pr-fakt:last-child{border-bottom:0}
+.pr-fakt strong{text-align:right;white-space:pre-line}
+.pr-notiz{background:#f7f8f9;border-radius:10px;padding:12px 16px;font-size:15px;margin-top:18px}
+.ab-sort{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.ab-zeile{display:grid;grid-template-columns:86px minmax(0,1fr) auto;gap:18px;align-items:start;padding:16px 0;border-bottom:1px solid #eef1f3}
+.ab-zeile:last-child{border-bottom:0;padding-bottom:0}
+.ab-zahl{white-space:nowrap;font-size:26px;font-weight:800;color:var(--sp-app-dunkel);line-height:1.1}
+.ab-zahl small{display:block;font-size:13px;font-weight:600;color:var(--sp-muted)}
+.ab-zeile.alt,.ab-zeile.alt .ab-zahl{color:var(--sp-muted)}
+.ab-text{overflow-wrap:anywhere}
+.ab-meta{color:var(--sp-muted);font-size:15px;margin-top:6px}
+.ab-meta .linkknopf{font-size:15px}
+.ab-knoepfe{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.ab-knoepfe .sp-knopf{height:44px;font-size:15px;font-weight:600}
+.ab-notiz{font-size:15px;color:var(--sp-text);margin-top:6px}
+.ab-notiz.alt{color:var(--sp-muted)}
+.schild{display:inline-block;border-radius:6px;padding:2px 8px;font-size:13px;font-weight:700;white-space:nowrap;margin-right:6px}
+.schild.nicht{background:#fbeed0;color:#4a3800}
+.schild.vorbild{background:#f6dc7a;color:#3d3200}
+.schild.jetzt{background:#e3efed;color:#1f524e}
+.diff{background:#e3efed;border-radius:4px;padding:0 3px}
+@media(max-width:800px){.pr-zwei{grid-template-columns:1fr}.pr-balken{grid-template-columns:1fr 70px}.pr-spur{display:none}.ab-zeile{grid-template-columns:1fr}}
+/* Familienansicht (Mock-up „Unsere Absätze – ein Absatz und seine Fassungen“) */
+.fa-spalten{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:28px;align-items:start}
+.fa-fassung{display:grid;grid-template-columns:150px minmax(0,1fr);gap:20px;padding:18px 0;border-bottom:1px solid #eef1f3}
+.fa-fassung:last-child{border-bottom:0}
+.fa-jahr{font-weight:800;font-size:18px}.fa-jahr small{display:block;font-weight:600;font-size:14px;color:var(--sp-muted)}
+.fa-fassung.alt,.fa-fassung.alt .fa-jahr{color:var(--sp-muted)}
+.fa-text{margin:8px 0 12px;overflow-wrap:anywhere}
+.fa-fassung.aktuell .fa-text{font-size:19px}
+.fa-fall{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #eef1f3;font-size:15px}
+.fa-fall:last-child{border-bottom:0}
+.fa-schritt{display:grid;grid-template-columns:30px 1fr;gap:10px;margin-top:12px;font-size:15px}
+.fa-punkt{width:26px;height:26px;border-radius:13px;background:var(--sp-app-dunkel);color:#fff;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center}
+.fa-stufen{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:10px}
+.fa-stufen > span{flex-basis:100%}
+.fa-stufen .sp-knopf{height:44px;font-size:15px}
+.fa-stufen .sp-knopf[aria-pressed="true"]{border-color:var(--sp-app-dunkel);background:var(--sp-app-dunkel);color:#fff;font-weight:700}
+.formular select{font:inherit;font-size:16px;min-height:46px;padding:6px 12px;border:1.5px solid var(--sp-line2);border-radius:10px;background:#fff;color:var(--sp-text)}
+.formular .hinweis{font-weight:400}
+@media(max-width:900px){.fa-spalten{grid-template-columns:minmax(0,1fr)}.fa-fassung{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -237,6 +292,7 @@ mark.sus-ok{background:#eef1f3;color:inherit;border-radius:4px;padding:0 3px}
         <button type="button" role="menuitem" data-mehr="pruefen">Neue Berichte suchen</button>
         <button type="button" role="menuitem" data-mehr="einlesen">Einlesen ansehen</button>
         <button type="button" role="menuitem" data-mehr="alle">Alle Berichte neu einlesen</button>
+        <button type="button" role="menuitem" data-mehr="aehnlichkeit">Ähnlichkeit der Absätze …</button>
         <button type="button" role="menuitem" data-mehr="einstellungen">Einstellungen …</button>
         <button type="button" role="menuitem" data-mehr="ueber">Über LexiKit</button>
       </div>
@@ -254,7 +310,7 @@ mark.sus-ok{background:#eef1f3;color:inherit;border-radius:4px;padding:0 3px}
       <button id="btnWaehlen" class="sp-knopf" type="button">Archivordner wählen …</button>
       <button id="btnNochmal" class="sp-knopf" type="button" hidden>Noch einmal prüfen</button>
     </div>
-    <p class="hinweis">LexiKit liest die Projektordner nur. Schreiben darf es ausschließlich in den Ordner <code>_LexiKit</code> im Archivordner (Index und Themenliste).</p>
+    <p class="hinweis">LexiKit liest die Projektordner nur. Schreiben darf es ausschließlich in den Ordner <code>_LexiKit</code> im Archivordner (Index, Themenliste, Kopier-Zähler, Markierungen, Einstellung).</p>
   </section>
 
   <!-- Erster Start / Einlesen -->
@@ -320,6 +376,9 @@ mark.sus-ok{background:#eef1f3;color:inherit;border-radius:4px;padding:0 3px}
           <div class="jahre" id="chips" role="group" aria-label="Untersucht auf"></div>
           <div class="jahre" id="jahre" role="group" aria-label="Jahr"></div>
         </div>
+        <section class="pr-karte" id="profil" hidden aria-labelledby="profilTitel"></section>
+        <section class="ab-karte" id="absaetze" hidden aria-labelledby="absaetzeTitel"></section>
+        <div class="meldung ok" id="nurLeiste" hidden></div>
         <div class="zeile"><div class="gross" id="ergebnisZeile" aria-live="polite"></div><div class="klein" id="woerterZeile"></div></div>
         <div id="treffer" style="display:flex;flex-direction:column;gap:16px"></div>
         <button id="btnMehrTreffer" class="sp-knopf" type="button" hidden></button>
@@ -360,6 +419,27 @@ mark.sus-ok{background:#eef1f3;color:inherit;border-radius:4px;padding:0 3px}
     </div>
   </section>
 
+  <!-- Unsere Absätze: ein Absatz und seine Fassungen (Mock-up „Unsere Absätze – ein Absatz und seine Fassungen“) -->
+  <section id="absatz" class="kopie" hidden>
+    <div class="kopie-kopf"><div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><button class="sp-knopf" type="button" id="btnAbsatzZurueck">Zurück</button><span class="leise" style="font-size:17px">Unsere Absätze</span></div><span class="stand" id="absatzPille"></span></div>
+    <div class="fa-spalten">
+      <div style="display:flex;flex-direction:column;gap:18px;min-width:0" id="absatzHaupt"></div>
+      <aside style="display:flex;flex-direction:column;gap:18px;min-width:0" id="absatzSeite"></aside>
+    </div>
+  </section>
+
+  <!-- Ähnlichkeit der Absätze: eine Einstellung fürs ganze Büro -->
+  <section id="aehnlichkeitSeite" class="einstellungen" hidden>
+    <h1>Ähnlichkeit der Absätze</h1>
+    <div class="karte" style="display:flex;flex-direction:column;gap:14px">
+      <div class="hinweis" style="font-size:15px">Wie ähnlich müssen zwei Absätze sein, damit sie unter „Unsere Absätze“ als ein Absatz mit mehreren Fassungen zählen? Gezählt wird, wie viele Wörter in derselben Reihenfolge gleich sind – Zahlen, Probennummern und Anschriften zählen dabei nicht. Wörter wie „nicht“, „vor/nach“ oder „trocken/feucht“ trennen immer.</div>
+      <div class="sp-wahl-kacheln" id="stufen" role="group" aria-label="Ähnlichkeit"></div>
+      <div class="hinweis" id="stufeStand" style="font-size:15px"></div>
+      <div class="hinweis" style="font-size:15px">Gilt fürs ganze Büro. Kopier-Zähler und Markierungen hängen an der genauen Fassung und bleiben beim Umstellen erhalten.</div>
+    </div>
+    <div><button class="sp-knopf" type="button" data-zurueck>← Zur Suche</button></div>
+  </section>
+
   <!-- Einstellungen -->
   <section id="einstellungen" class="einstellungen" hidden>
     <h1>Einstellungen</h1>
@@ -383,11 +463,13 @@ mark.sus-ok{background:#eef1f3;color:inherit;border-radius:4px;padding:0 3px}
     <div class="karte" style="display:flex;flex-direction:column;gap:10px;font-size:15px;line-height:1.55">
       <div>Fälle aus den fertigen Word-Berichten des Büros finden – ohne KI, ohne Netz, nur Wortsuche im Index. Ein Fall ist ein Projektordner mit allen Mitteilungen.</div>
       <ul>
-        <li>Liest nur in den Projektordnern. Schreibt nur in <code>_LexiKit</code> im Archivordner: <code>lexikit-themen.json</code> und <code>lexikit-index-&lt;Jahr&gt;.json</code>.</li>
+        <li>Liest nur in den Projektordnern (und die Mitarbeiterliste <code>_Spektron-Mitarbeiter.json</code> im Archivordner). Schreibt nur in <code>_LexiKit</code> im Archivordner: <code>lexikit-themen.json</code>, <code>lexikit-index-&lt;Jahr&gt;.json</code>, <code>lexikit-kopien.json</code>, <code>lexikit-markierungen.json</code> und <code>lexikit-einstellungen.json</code>.</li>
         <li>Mehrere PCs nutzen dieselben Dateien: Vor jedem Schreiben liest LexiKit die Datei neu und führt die Änderungen zusammen.</li>
         <li>Der Index enthält Berichtstext und ist so vertraulich wie die Berichte. Er bleibt in <code>_LexiKit</code>.</li>
         <li>Der Berichtskopf (Projektnummer, Schaden vom, VN, Risiko, Versicherer, Schaden-Nr.; auch Auftraggeber, Schadenort, Bestell-/Auftrags-Nr.) kommt nicht in den Index und wird nicht gezeigt.</li>
         <li>Die Fälle (Abschnitte nach Art, „Was war“, „Untersucht“) baut LexiKit bei jedem Start aus dem Index – der Index selbst ist derselbe wie in 0.1.0, neu eingelesen wird dafür nichts.</li>
+        <li>„So machen wir es meist“ und „Unsere Absätze“ zählt LexiKit bei jedem Start aus dem Index. Gespeichert werden nur, wie oft eine Fassung kopiert wurde, die Markierungen „Vorbild“ und „So nicht mehr“ (mit Name, Datum und Grund) und die Einstellung „Ähnlichkeit“. Eine Markierung versteckt nichts: Der Absatz bleibt in Suche, Fall und Word.</li>
+        <li>„Kopieren“ eines Absatzes und „Abschnitt kopieren“ lesen den Berichtskopf frisch und ersetzen Namen und Adressen daraus durch Platzhalter wie [VN] und [Risikoort]. Namen, die nicht im Kopf stehen (Mieter, Nachbar), bleiben stehen.</li>
         <li>„Für ChatGPT kopieren“ sendet nichts: Der Text kommt nach der Vorschau in die Zwischenablage, eingefügt wird er von Hand. Veranlassung, Aufgabenstellung und Ortstermin/Probenahme werden nie kopiert. Den Berichtskopf liest LexiKit dafür frisch aus dem Bericht und ersetzt seine Namen und Adressen durch Platzhalter – gespeichert wird er nicht.</li>
       </ul>
       <b>Änderungen</b>
@@ -1341,19 +1423,393 @@ mark.sus-ok{background:#eef1f3;color:inherit;border-radius:4px;padding:0 3px}
     return id;
   }
 
+  /* ---------- „So machen wir es meist“ und „Unsere Absätze“ (ab 0.4.0) ----------
+     Alles hier wird beim Start im Speicher aus dem Index gebaut (Fassung 1 bleibt, keine Kopfwerte). Gespeichert werden in _LexiKit nur
+     Kopier-Zähler, Markierungen und die Einstellung „Ähnlichkeit“ – je genaue Fassung, damit beim Umstellen nichts verloren geht.
+     - Fassung: ein Absatz nach dem Angleichen (Groß/Klein, Leerraum, Satzzeichen, Zahlen und Proben-/Labornummern, Straße + Hausnummer,
+       PLZ + Ort). Werte aus dem Berichtskopf werden dafür nicht benutzt – sie stehen nicht im Index.
+     - Familie: fast gleiche Fassungen. Ähnlichkeit = Anteil der Wörter, die in derselben Reihenfolge stehen (längste gemeinsame
+       Wortfolge geteilt durch die Wortzahl des längeren Absatzes – Entscheidung Basti 19.11.2026 statt Dreiwortfolgen).
+       Unterscheiden sich zwei Fassungen nur in Kippwörtern („nicht“, „vor/nach“, „trocken/feucht“ …), bleiben sie getrennt.
+       Eine Familie bildet sich um eine Leitfassung (die mit den meisten Fällen): jede andere muss ihr selbst ähnlich genug sein – so
+       verbinden sich „trocken“ und „feucht“ nie über eine dritte Fassung. */
+  const ABSATZ_KLASSEN = ['massnahmen', 'schluss', 'arbeitsschutz'];
+  const AEHNLICHKEIT = { streng: 0.90, normal: 0.85, locker: 0.75 };
+  const AEHNLICHKEIT_STUFEN = ['streng', 'normal', 'locker'];
+  /** „Ähnliche Absätze zeigen“: eine Stufe lockerer als die Einstellung, unter „locker“ 60 % */
+  const lockerer = stufe => { const i = AEHNLICHKEIT_STUFEN.indexOf(stufe); return i >= 0 && i < 2 ? AEHNLICHKEIT[AEHNLICHKEIT_STUFEN[i + 1]] : 0.60; };
+  /** Kippwörter (erste Liste, das Büro korrigiert sie): sind sie der einzige Unterschied, bleiben zwei Absätze getrennt */
+  const KIPPWOERTER = new Set(('nicht kein keine keinen keinem keiner keines vor nach trocken trockene trockenen trockenem trockener trockenes '
+    + 'feucht feuchte feuchten feuchtem feuchter feuchtes mindestens höchstens').split(' '));
+  const MIN_WOERTER = 5;   // kürzere Absätze („Siehe Anlage 3.“) kommen nicht in die Liste
+  const RE_STRASSE = new RegExp(STELLEN.find(s => s[0] === 'strasse')[1].source, 'gu'), RE_PLZ = new RegExp(STELLEN.find(s => s[0] === 'plz')[1].source, 'gu');
+  /** Wort → Vergleichsform: klein, ohne Satzzeichen/Bindestriche; mit Ziffer → „#“ (Zahlen, Proben- und Labornummern) */
+  const vergleichsWort = t => /\d/.test(t) ? '#' : t.toLowerCase().replace(/[^\p{L}]+/gu, '');
+  /** Absatz → angeglichene Wörter */
+  function absatzWoerter(p) {
+    const s = String(p).normalize('NFC').replace(RE_STRASSE, ' \u0001a ').replace(RE_PLZ, ' \u0001o ');
+    const aus = [];
+    for (const roh of s.split(/\s+/)) {
+      if (!roh) continue;
+      const w = roh === '\u0001a' ? '#adr' : roh === '\u0001o' ? '#ort' : vergleichsWort(roh);
+      if (!w || (w[0] === '#' && aus[aus.length - 1] === w)) continue;   // „12 – 15“, „W1, W2“ → eine Nummer
+      aus.push(w);
+    }
+    return aus;
+  }
+  /** kurzer Schlüssel einer Fassung (cyrb53, 53 Bit) */
+  function hash53(str) {
+    let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+    for (let i = 0; i < str.length; i++) { const c = str.charCodeAt(i); h1 = Math.imul(h1 ^ c, 2654435761); h2 = Math.imul(h2 ^ c, 1597334677); }
+    h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+    h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+    return 4294967296 * (2097151 & h2) + (h1 >>> 0);
+  }
+  const fassungSchluessel = woerter => 'f' + hash53(woerter.join(' ')).toString(36);
+  const absatzSchluessel = p => fassungSchluessel(absatzWoerter(p));
+
+  /** Länge der längsten gemeinsamen Wortfolge (Wörter als Zahlen oder Texte) */
+  function lcsLaenge(a, b) {
+    if (a.length < b.length) { const x = a; a = b; b = x; }
+    const d = new Uint16Array(b.length + 1);
+    for (let i = 0; i < a.length; i++) {
+      let vor = 0; const x = a[i];
+      for (let j = 1; j <= b.length; j++) { const t = d[j]; d[j] = x === b[j - 1] ? vor + 1 : (d[j] > d[j - 1] ? d[j] : d[j - 1]); vor = t; }
+    }
+    return d[b.length];
+  }
+  /** Gemeinsame Wörter zweier sortierter Wortlisten (mit Wiederholungen) – obere Grenze der gemeinsamen Wortfolge, schnell */
+  function ueberlapp(a, b) {
+    let i = 0, j = 0, n = 0;
+    while (i < a.length && j < b.length) { if (a[i] === b[j]) { n++; i++; j++; } else if (a[i] < b[j]) i++; else j++; }
+    return n;
+  }
+  /** Ähnlichkeit zweier angeglichener Absätze: gemeinsame Wortfolge / Wortzahl des längeren */
+  const aehnlichkeit = (a, b) => (!a.length || !b.length) ? 0 : lcsLaenge(a, b) / Math.max(a.length, b.length);
+  /** Abgleich Wort für Wort → für jedes Wort von a und b, ob es zur gemeinsamen Folge gehört */
+  function abgleich(a, b) {
+    const n = a.length, m = b.length, d = new Uint16Array((n + 1) * (m + 1)), W = m + 1;
+    for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) d[i * W + j] = a[i] === b[j] ? d[(i + 1) * W + j + 1] + 1 : Math.max(d[(i + 1) * W + j], d[i * W + j + 1]);
+    const inA = new Array(n).fill(false), inB = new Array(m).fill(false);
+    for (let i = 0, j = 0; i < n && j < m;) {
+      if (a[i] === b[j]) { inA[i] = inB[j] = true; i++; j++; } else if (d[(i + 1) * W + j] >= d[i * W + j + 1]) i++; else j++;
+    }
+    return { inA, inB };
+  }
+  /** Unterscheiden sich a und b nur in Kippwörtern? (Wörter als Texte) */
+  function nurKippwoerter(a, b) {
+    const { inA, inB } = abgleich(a, b), anders = [...a.filter((x, i) => !inA[i]), ...b.filter((x, i) => !inB[i])];
+    return anders.length > 0 && anders.every(x => KIPPWOERTER.has(x));
+  }
+  /** Für die Anzeige: Text in Wörter (mit Leerraum) zerlegt, je Wort „anders“, wenn es nicht in der Vergleichsfassung steht → [{ t, anders }] */
+  function wortUnterschiede(text, gegen) {
+    const teile = String(text).split(/(\s+)/), wi = [];   // gerade Stellen: Wörter, ungerade: Leerraum
+    teile.forEach((x, i) => { if (i % 2 === 0 && x) wi.push(i); });
+    const a = wi.map(i => vergleichsWort(teile[i]));
+    const inA = gegen ? abgleich(a, String(gegen).split(/\s+/).filter(Boolean).map(vergleichsWort)).inA : a.map(() => true);
+    const anders = new Set(); wi.forEach((ti, j) => { if (!inA[j] && a[j] !== '') anders.add(ti); });
+    const aus = [];
+    teile.forEach((x, i) => {
+      if (!x) return;
+      const an = i % 2 ? anders.has(i - 1) && anders.has(i + 1) : anders.has(i);   // Leerraum zwischen zwei geänderten Wörtern gehört dazu
+      const l = aus[aus.length - 1]; if (l && l.anders === an) l.t += x; else aus.push({ t: x, anders: an });
+    });
+    return aus;
+  }
+
+  /** Alle Absätze der drei Abschnittsklassen aus den Fällen → Fassungen je Klasse.
+      → { liste: [Fassung], von: Map('klasse|schluessel' → Fassung), schluessel: Set } – Fassung = { id, k, schluessel, woerter, ids,
+        vork: [{ f, b, ai, pi, h, p }], faelle: Set(Projekt), berichte: Set(Pfad), jahrVon, jahrBis, neu (neuestes Vorkommen) } */
+  function absaetzeBauen(faelle) { const b = absaetzeBauer(faelle); b.weiter(); return b.ergebnis; }
+  /** wie absaetzeBauen, in Schritten: b.weiter(ms) → fertig?; b.ergebnis */
+  function absaetzeBauer(faelle) {
+    const von = new Map(), liste = [], wortId = new Map(), schluessel = new Set();
+    const id = w => { let i = wortId.get(w); if (i === undefined) wortId.set(w, i = wortId.size); return i; };
+    const neuer = (x, y) => (x.f.jahr - y.f.jahr) || (x.f.pnr - y.f.pnr) || ((x.b.nr || 0) - (y.b.nr || 0));
+    function fall(f) { for (const b of f.deutsch) {
+      const d = ableiten(b); if (d.ohne) continue;
+      for (const t of d.teile) {
+        if (!ABSATZ_KLASSEN.includes(t.k) || t.vor) continue;
+        t.p.forEach((p, pi) => {
+          if (p.includes(' · ')) return;   // Tabellenzeile
+          const woerter = absatzWoerter(p);
+          if (woerter.filter(w => w[0] !== '#').length < MIN_WOERTER) return;
+          const s = fassungSchluessel(woerter), key = t.k + '|' + s;
+          let F = von.get(key);
+          if (!F) { F = { id: key, k: t.k, schluessel: s, woerter, ids: Int32Array.from(woerter, id), vork: [], faelle: new Set(), berichte: new Set(), jahrVon: f.jahr, jahrBis: f.jahr, neu: null }; von.set(key, F); liste.push(F); schluessel.add(s); }
+          const v = { f, b, ai: t.ai, pi, h: t.h, p };
+          F.vork.push(v); F.faelle.add(f.projekt); F.berichte.add(b.pfad);
+          if (f.jahr < F.jahrVon) F.jahrVon = f.jahr; if (f.jahr > F.jahrBis) F.jahrBis = f.jahr;
+          if (!F.neu || neuer(v, F.neu) > 0) F.neu = v;
+        });
+      }
+    } }
+    // zum Schluss: Wie oft kommt ein Wort in den Fassungen vor? (seltene Wörter zuerst vergleichen)
+    function abschluss() {
+      const df = new Uint32Array(wortId.size);
+      for (const F of liste) { F.u = [...new Set(F.ids)]; for (const x of F.u) df[x]++; }
+      for (const F of liste) { F.u.sort((a, b) => df[a] - df[b] || a - b); F.sid = Int32Array.from(F.ids).sort(); }
+      return { liste, von, schluessel, df };
+    }
+    let i = 0, ergebnis = null;
+    return {
+      weiter(ms) { const bis = Date.now() + (ms == null ? 1e12 : ms); while (i < faelle.length) { fall(faelle[i++]); if ((i & 15) === 0 && Date.now() > bis) return false; } if (!ergebnis) ergebnis = abschluss(); return true; },
+      get ergebnis() { return ergebnis; },
+    };
+  }
+  const fassungReihe = (x, y) => (y.faelle.size - x.faelle.size) || (y.neu.f.jahr - x.neu.f.jahr) || (y.neu.f.pnr - x.neu.f.pnr) || (x.id < y.id ? -1 : x.id > y.id ? 1 : 0);
+  /** Familien bilden – in Schritten, damit die Seite bedienbar bleibt: b = familienBauer(A, schwelle); while (!b.weiter(ms)) …; b.ergebnis
+      → { familien: [{ id, k, leit: Fassung, mitglieder: [Fassung] }], von: Map(Fassung.id → Familie), index } */
+  function familienBauer(A, schwelle) {
+    const reihe = A.liste.slice().sort((x, y) => (x.k < y.k ? -1 : x.k > y.k ? 1 : 0) || fassungReihe(x, y));
+    const familien = [], von = new Map(), index = new Map();   // index: Klasse → Map(Wort-Id → [Familien-Nr.])
+    let i = 0, stempel = new Uint32Array(1024), lauf = 0;
+    const praefix = (F, t) => Math.min(F.u.length, Math.floor(F.ids.length * (1 - t)) + 1);
+    function kandidaten(F, t) {
+      const ix = index.get(F.k); if (!ix) return [];
+      // Ähnlich genug heißt: jedem der beiden fehlen höchstens (1 − t) seiner Wörter beim anderen. Dann steht das seltenste gemeinsame
+      // Wort bei beiden unter den k seltensten (k = Anteil + 1) – es reicht, die k seltensten von F gegen die der Leitfassungen zu halten
+      const k = praefix(F, t), aus = [];
+      if (++lauf === 0xffffffff) { stempel.fill(0); lauf = 1; }
+      for (let j = 0; j < k; j++) for (const n of ix.get(F.u[j]) || []) { if (n >= stempel.length) { const s = new Uint32Array(Math.max(n + 1, stempel.length * 2)); s.set(stempel); stempel = s; } if (stempel[n] !== lauf) { stempel[n] = lauf; aus.push(n); } }
+      return aus;
+    }
+    function schritt(F) {
+      let best = null, bestS = 0;
+      for (const n of kandidaten(F, schwelle)) {
+        const L = familien[n].leit, lmin = Math.min(L.ids.length, F.ids.length), lmax = Math.max(L.ids.length, F.ids.length);
+        if (lmin < schwelle * lmax) continue;            // so verschieden lang, dass es nicht reichen kann
+        if (best && lmin / lmax <= bestS) continue;       // kann die bisher beste nicht mehr übertreffen
+        const ov = ueberlapp(F.sid, L.sid) / lmax;        // so viele gleiche Wörter gibt es überhaupt (Reihenfolge egal)
+        if (ov < schwelle || (best && ov <= bestS)) continue;
+        const s = lcsLaenge(F.ids, L.ids) / lmax;
+        if (s >= schwelle && s > bestS && !nurKippwoerter(F.woerter, L.woerter)) { best = familien[n]; bestS = s; }
+      }
+      if (best) { best.mitglieder.push(F); von.set(F.id, best); return; }
+      const fam = { id: F.id, k: F.k, leit: F, mitglieder: [F], nr: familien.length };
+      familien.push(fam); von.set(F.id, fam);
+      let ix = index.get(F.k); if (!ix) index.set(F.k, ix = new Map());
+      for (let j = 0, k = praefix(F, schwelle); j < k; j++) { const w = F.u[j]; let l = ix.get(w); if (!l) ix.set(w, l = []); l.push(fam.nr); }
+    }
+    const ergebnis = { familien, von, index, schwelle };
+    return {
+      weiter(ms) { const bis = Date.now() + (ms == null ? 1e12 : ms); while (i < reihe.length) { schritt(reihe[i++]); if ((i & 31) === 0 && Date.now() > bis) return false; } return true; },
+      get fertig() { return i >= reihe.length; }, get anteil() { return reihe.length ? i / reihe.length : 1; }, ergebnis,
+    };
+  }
+  /** Familien in einem Zug (Tests) */
+  function familienBauen(A, schwelle) { const b = familienBauer(A, schwelle); b.weiter(); return b.ergebnis; }
+  /** „Ähnliche Absätze zeigen“: andere Familien derselben Klasse, deren Leitfassung der dieser Familie zu mindestens t ähnlich ist */
+  function aehnlicheFamilien(E, fam, t) {
+    const F = fam.leit, aus = [];   // lockerer als beim Bilden: alle Familien der Klasse durchsehen (nur auf Klick, schnell vorgefiltert)
+    for (const g of E.familien) {
+      if (g === fam || g.k !== F.k) continue;
+      const L = g.leit, lmax = Math.max(F.ids.length, L.ids.length);
+      if (Math.min(F.ids.length, L.ids.length) < t * lmax || ueberlapp(F.sid, L.sid) < t * lmax) continue;
+      const s = lcsLaenge(F.ids, L.ids) / lmax;
+      if (s >= t) aus.push({ fam: g, s });
+    }
+    return aus.sort((x, y) => y.s - x.s || fassungReihe(x.fam.leit, y.fam.leit)).slice(0, 12);
+  }
+
+  /* ---------- Kopier-Zähler, Markierungen, Einstellung: Dateien in _LexiKit ----------
+     lexikit-kopien.json          { format, version, kopien: [{ id, w (Fassung), am }] }
+     lexikit-markierungen.json    { format, version, marken: [{ id, w, art: 'vorbild'|'nicht', wer, warum, statt?, am, beispiel, k,
+                                    zurueck?: { wer, warum, am } }] }
+     lexikit-einstellungen.json   { format, version, aehnlichkeit, geaendert, wer? }
+     Kopien und Markierungen werden nie gelöscht, nur ergänzt (Zurücknehmen = Vermerk an der Markierung). Vor jedem Schreiben neu lesen
+     und vereinigen, danach zurücklesen und prüfen, ob alles Eigene darin steht – sonst noch einmal (zweiter PC zur selben Zeit). */
+  const GEMEINSAM = {
+    kopien: { datei: 'lexikit-kopien.json', format: 'lexikit-kopien', feld: 'kopien' },
+    marken: { datei: 'lexikit-markierungen.json', format: 'lexikit-markierungen', feld: 'marken' },
+    einstellung: { datei: 'lexikit-einstellungen.json', format: 'lexikit-einstellungen', feld: null },
+  };
+  const GEMEINSAM_VERSION = 1;
+  /** Text → null (keine Datei) | { kaputt, neuer? } | Inhalt */
+  function gemeinsamLesen(art, text) {
+    const G = GEMEINSAM[art];
+    if (text == null || text === '') return null;
+    let j; try { j = JSON.parse(text); } catch (e) { return { kaputt: 'keine lesbare JSON-Datei' }; }
+    if (!j || j.format !== G.format || (G.feld && !Array.isArray(j[G.feld]))) return { kaputt: 'fremdes Format' };
+    if (j.version > GEMEINSAM_VERSION) return { kaputt: 'neuere LexiKit-Fassung', neuer: true };
+    return j;
+  }
+  const leerGemeinsam = art => { const G = GEMEINSAM[art]; const o = { format: G.format, version: GEMEINSAM_VERSION }; if (G.feld) o[G.feld] = []; else { o.aehnlichkeit = 'normal'; o.geaendert = ''; } return o; };
+  /** Platte + eigene Einträge → vereinigt. Kopien und Markierungen: nach id; ein Zurücknehmen geht nie verloren. Einstellung: die jüngere. */
+  function gemeinsamMergen(art, disk, neu) {
+    disk = disk || leerGemeinsam(art);
+    const G = GEMEINSAM[art];
+    if (!G.feld) { const d = disk.geaendert || '', n = (neu && neu.geaendert) || ''; return n > d ? Object.assign({}, disk, neu, { format: G.format, version: GEMEINSAM_VERSION }) : disk; }
+    const out = Object.assign({}, disk, { format: G.format, version: GEMEINSAM_VERSION }), nach = new Map();
+    const liste = (disk[G.feld] || []).map(x => Object.assign({}, x)); liste.forEach((x, i) => nach.set(x.id, i));
+    for (const x of neu || []) {
+      const i = nach.get(x.id);
+      if (i === undefined) { nach.set(x.id, liste.length); liste.push(Object.assign({}, x)); continue; }
+      if (x.zurueck && !liste[i].zurueck) liste[i].zurueck = x.zurueck;
+    }
+    out[G.feld] = liste;
+    return out;
+  }
+  /** Steht alles Eigene in der Datei? */
+  function gemeinsamEnthaelt(art, disk, neu) {
+    if (!disk) return false;
+    const G = GEMEINSAM[art];
+    if (!G.feld) return (disk.geaendert || '') >= ((neu && neu.geaendert) || '');
+    const nach = new Map((disk[G.feld] || []).map(x => [x.id, x]));
+    return (neu || []).every(x => { const d = nach.get(x.id); return d && (!x.zurueck || d.zurueck); });
+  }
+  /** Schreiben mit Nachprüfung. io = { lesen(datei) → Text|null, schreiben(datei, text), warten(ms) }. Eine unlesbare, fremde oder
+      neuere Datei wird nie überschrieben (Fehler). → der Stand der Platte nach dem Schreiben */
+  async function gemeinsamSchreiben(io, art, neu, opt) {
+    opt = opt || {}; const G = GEMEINSAM[art], versuche = opt.versuche || 4;
+    for (let v = 0; v < versuche; v++) {
+      const disk = gemeinsamLesen(art, await io.lesen(G.datei));
+      if (disk && disk.kaputt) throw new Error(`${G.datei} ${disk.neuer ? 'stammt aus einer neueren LexiKit-Fassung' : 'ist nicht lesbar (' + disk.kaputt + ')'} – LexiKit überschreibt sie nicht`);
+      if (gemeinsamEnthaelt(art, disk, neu)) return disk;
+      const out = gemeinsamMergen(art, disk, neu);
+      await io.schreiben(G.datei, JSON.stringify(out, null, G.feld ? 0 : 1));
+      if (opt.zwischen) await opt.zwischen(v);   // nur Tests: hier schreibt „ein anderer PC“
+      await io.warten(opt.warten == null ? 1500 : opt.warten);
+      const nach = gemeinsamLesen(art, await io.lesen(G.datei));
+      if (nach && !nach.kaputt && gemeinsamEnthaelt(art, nach, neu)) return nach;
+    }
+    throw new Error(`${G.datei}: Die eigenen Einträge ließen sich nach ${versuche} Versuchen nicht sicher schreiben – ein anderer PC schreibt gerade`);
+  }
+
+  /** Mitarbeiterliste (_Spektron-Mitarbeiter.json im Archivordner, gepflegt in der Projektzentrale) – LexiKit liest sie nur.
+      Text → null (fehlt) | { kaputt } | { personen: [{ kuerzel, name }] } (nur aktive) */
+  function mitarbeiterLesen(text) {
+    if (text == null) return null;
+    let o; try { o = JSON.parse(text); } catch (e) { return { kaputt: 'keine lesbare JSON-Datei' }; }
+    if (!o || o.format !== 'spektron-mitarbeiter' || !Array.isArray(o.personen)) return { kaputt: 'unbekanntes Format' };
+    const personen = o.personen.filter(p => p && typeof p.ordnerKuerzel === 'string' && p.ordnerKuerzel.trim() && p.aktiv !== false)
+      .map(p => ({ kuerzel: p.ordnerKuerzel.trim(), name: typeof p.name === 'string' ? p.name.trim() : '' }));
+    return personen.length ? { personen } : { kaputt: 'keine Personen in der Liste' };
+  }
+  const zufallsId = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+  /** Neue Markierung prüfen und anlegen. m = { w, art, wer, warum, statt?, beispiel, k }; personen aus mitarbeiterLesen */
+  function markeNeu(m, personen, jetzt) {
+    if (m.art !== 'vorbild' && m.art !== 'nicht') return { fehler: 'Unbekannte Markierung.' };
+    if (!personen || !personen.length) return { fehler: 'Die Mitarbeiterliste fehlt – Markieren geht erst, wenn sie da ist.' };
+    if (!personen.some(p => p.kuerzel === m.wer)) return { fehler: 'Bitte unter „Wer bist du?“ deinen Namen wählen.' };
+    const warum = sauber(m.warum || '');
+    if ((warum.match(/[\p{L}]/gu) || []).length < 3) return { fehler: 'Bitte kurz schreiben, warum (Pflicht).' };
+    const o = { id: zufallsId(), w: m.w, art: m.art, wer: m.wer, warum, am: jetzt, beispiel: String(m.beispiel || ''), k: m.k || '' };
+    if (m.statt && m.statt !== m.w) o.statt = m.statt;
+    return { marke: o };
+  }
+  /** Zurücknehmen: braucht ebenfalls Name und Grund; die Markierung bleibt als Verlauf stehen */
+  function markeZurueck(marke, z, personen, jetzt) {
+    if (!personen || !personen.length) return { fehler: 'Die Mitarbeiterliste fehlt – Zurücknehmen geht erst, wenn sie da ist.' };
+    if (!personen.some(p => p.kuerzel === z.wer)) return { fehler: 'Bitte unter „Wer bist du?“ deinen Namen wählen.' };
+    const warum = sauber(z.warum || '');
+    if ((warum.match(/[\p{L}]/gu) || []).length < 3) return { fehler: 'Bitte kurz schreiben, warum (Pflicht).' };
+    return { marke: Object.assign({}, marke, { zurueck: { wer: z.wer, warum, am: jetzt } }) };
+  }
+  /** Zwei Jahre zurück (gleicher Tag) */
+  const vorZweiJahren = jetzt => { const d = new Date(jetzt); d.setFullYear(d.getFullYear() - 2); return d.toISOString(); };
+  /** Kopien und Markierungen → je Fassung { k2 (Kopien der letzten zwei Jahre), alle, letzte, marken (alt → neu), aktiv }.
+      bekannt(schluessel) – gibt es die Fassung noch? Sonst wird eine Markierung über ihr gespeichertes Beispiel neu zugeordnet. */
+  function standBauen(kopien, marken, jetzt, bekannt) {
+    const grenze = vorZweiJahren(jetzt), st = new Map();
+    const von = w => { let s = st.get(w); if (!s) st.set(w, s = { k2: 0, alle: 0, letzte: '', marken: [], aktiv: null }); return s; };
+    for (const c of kopien || []) { const s = von(c.w); s.alle++; if (c.am >= grenze) s.k2++; if (c.am > s.letzte) s.letzte = c.am; }
+    for (const m of marken || []) {
+      let w = m.w; if (bekannt && !bekannt(w) && m.beispiel) { const neu = absatzSchluessel(m.beispiel); if (bekannt(neu)) w = neu; }
+      von(w).marken.push(m);
+    }
+    for (const s of st.values()) { s.marken.sort((a, b) => (a.am < b.am ? -1 : a.am > b.am ? 1 : 0)); for (const m of s.marken) if (!m.zurueck) s.aktiv = m; }
+    return st;
+  }
+  const LEER_STAND = { k2: 0, alle: 0, letzte: '', marken: [], aktiv: null };
+  const istNicht = s => !!(s && s.aktiv && s.aktiv.art === 'nicht');
+  const istVorbild = s => !!(s && s.aktiv && s.aktiv.art === 'vorbild');
+  /** Zeilen für „Unsere Absätze“ einer Klasse. projekte: Set der passenden Fälle. sortierung 'oft' (Oft verwendet: Kopien der letzten
+      zwei Jahre, bei Gleichstand das Archiv) | 'archiv' (Oft im Archiv). Eine Familie wird gezeigt, wenn eine ihrer Fassungen in einem
+      passenden Fall steht; gezählt wird im ganzen Archiv. „So nicht mehr“-Fassungen stehen als eigene Zeilen am Ende.
+      → { zeilen: [Zeile], ende: [Zeile] }, Zeile = { fam, rep, fassungen, faelle: Set, berichte: Set, k2, jahr, stand?, nicht } */
+  function absatzZeilen(E, k, projekte, stand, sortierung) {
+    const st = F => stand.get(F.schluessel) || LEER_STAND, zeilen = [], ende = [];
+    if (!E.nachProjekt) {   // einmal je Familienbildung: Projektordner → Familien
+      E.nachProjekt = new Map();
+      for (const fam of E.familien) for (const F of fam.mitglieder) for (const p of F.faelle) { let s = E.nachProjekt.get(p); if (!s) E.nachProjekt.set(p, s = new Set()); s.add(fam); }
+    }
+    const dabei = new Set(); for (const p of projekte) for (const fam of E.nachProjekt.get(p) || []) if (fam.k === k) dabei.add(fam);
+    for (const fam of [...dabei].sort((x, y) => x.nr - y.nr)) {
+      const rest = fam.mitglieder.filter(F => !istNicht(st(F))), nicht = fam.mitglieder.filter(F => istNicht(st(F)));
+      const zeile = (fs, rep, n) => {
+        const faelle = new Set(), berichte = new Set(); let k2 = 0, jahr = 0, letzte = '';
+        for (const F of fs) { for (const p of F.faelle) faelle.add(p); for (const b of F.berichte) berichte.add(b); const s = st(F); k2 += s.k2; if (s.letzte > letzte) letzte = s.letzte; if (F.jahrBis > jahr) jahr = F.jahrBis; }
+        if (letzte && +letzte.slice(0, 4) > jahr) jahr = +letzte.slice(0, 4);
+        return { fam, rep, fassungen: fam.mitglieder.length, faelle, berichte, k2, jahr, nicht: n, stand: st(rep) };
+      };
+      if (rest.length) {
+        const vorbilder = rest.filter(F => istVorbild(st(F))).sort((a, b) => (st(a).aktiv.am < st(b).aktiv.am ? 1 : -1));
+        const rep = vorbilder[0] || rest.slice().sort((a, b) => (b.neu.f.jahr - a.neu.f.jahr) || (b.neu.f.pnr - a.neu.f.pnr) || fassungReihe(a, b))[0];
+        zeilen.push(zeile(rest, rep, false));
+      }
+      for (const F of nicht) ende.push(zeile([F], F, true));
+    }
+    const nachArchiv = (a, b) => (b.faelle.size - a.faelle.size), nachKopien = (a, b) => (b.k2 - a.k2), neu = (a, b) => (b.jahr - a.jahr) || fassungReihe(a.rep, b.rep);
+    zeilen.sort(sortierung === 'archiv' ? (a, b) => nachArchiv(a, b) || nachKopien(a, b) || neu(a, b) : (a, b) => nachKopien(a, b) || nachArchiv(a, b) || neu(a, b));
+    ende.sort((a, b) => nachArchiv(a, b) || neu(a, b));
+    return { zeilen, ende };
+  }
+  /** Eine Familie mit ihren Fassungen: aktuelle (neueste) oben, „so nicht mehr“ am Ende → [{ F, von, bis, aktuell, stand }] */
+  function familieFassungen(fam, stand) {
+    const st = F => stand.get(F.schluessel) || LEER_STAND;
+    const reihe = fam.mitglieder.slice().sort((a, b) => (istNicht(st(a)) - istNicht(st(b))) || (b.neu.f.jahr - a.neu.f.jahr) || (b.neu.f.pnr - a.neu.f.pnr) || fassungReihe(a, b));
+    return reihe.map((F, i) => ({ F, von: F.jahrVon, bis: F.jahrBis, aktuell: i === 0 && !istNicht(st(F)), stand: st(F) }));
+  }
+
+  /** Beim Kopieren eines Absatzes (oder Abschnitts): Namen und Adressen aus dem frisch gelesenen Berichtskopf und die Wörter des
+      Projektordners durch Platzhalter ersetzen (wie 0.3.0). Kopfwörter, die Fachwörter sind („Schimmel“), bleiben stehen.
+      → { t, n, platzhalter: [Namen] } */
+  function absatzErsetzen(text, kopf, projekt, fach) {
+    const E = ersetzerBauen(kopf ? [kopf] : [], projekt ? [projekt] : [], fach);
+    const r = ersetzen(String(text), E);
+    return { t: r.t, n: r.n, platzhalter: [...new Set((r.t.match(PH_RE) || []))] };
+  }
+
+  /** „So machen wir es meist“: Zahlen aus den passenden Fällen (nur gezählt, nicht bewertet).
+      → { n, von, bis, params: [{ id, name, n }], proben: [{ art, von, bis, faelle }], formen: [{ form, n }], mitteilungen, mitMassnahmen } */
+  function profilBauen(faelle) {
+    const n = faelle.length, aus = { n, von: 0, bis: 0, params: [], proben: [], formen: [], mitteilungen: 0, mitMassnahmen: 0 };
+    if (!n) return aus;
+    aus.von = Math.min(...faelle.map(f => f.jahr)); aus.bis = Math.max(...faelle.map(f => f.jahr));
+    for (const P of PARAMETER) { const c = faelle.filter(f => f.params[P.id]).length; if (c) aus.params.push({ id: P.id, name: P.name, n: c }); }
+    aus.params.sort((a, b) => b.n - a.n || PARAMETER.findIndex(P => P.id === a.id) - PARAMETER.findIndex(P => P.id === b.id));
+    // Proben je Fall und Art (Summe der Probenzahlen eines Falls), „meist“ = mittlere Hälfte
+    const jeArt = new Map();
+    for (const f of faelle) { const s = new Map(); for (const t of f.tags) if (t.n) s.set(t.art, (s.get(t.art) || 0) + t.n); for (const [art, z] of s) { if (!jeArt.has(art)) jeArt.set(art, []); jeArt.get(art).push(z); } }
+    const viertel = (l, q) => l[Math.min(l.length - 1, Math.max(0, Math.round(q * (l.length - 1))))];
+    aus.proben = [...jeArt].map(([art, l]) => { l.sort((a, b) => a - b); return { art, von: l.length >= 4 ? viertel(l, 0.25) : l[0], bis: l.length >= 4 ? viertel(l, 0.75) : l[l.length - 1], faelle: l.length }; })
+      .sort((a, b) => b.faelle - a.faelle || (a.art < b.art ? -1 : 1));
+    const formen = new Map(); for (const f of faelle) for (const form of new Set(f.deutsch.map(b => b.form).filter(Boolean))) formen.set(form, (formen.get(form) || 0) + 1);
+    aus.formen = [...formen].map(([form, c]) => ({ form, n: c })).sort((a, b) => b.n - a.n || (a.form < b.form ? -1 : 1));
+    const nm = new Map(); for (const f of faelle) nm.set(f.deutsch.length, (nm.get(f.deutsch.length) || 0) + 1);
+    aus.mitteilungen = [...nm].sort((a, b) => b[1] - a[1] || a[0] - b[0])[0][0];
+    aus.mitMassnahmen = faelle.filter(f => f.klassen.includes('massnahmen')).length;
+    return aus;
+  }
+
   g.LexiKern = { VERSION, zipEintrag, absaetze, bericht, docxLesen, sauber, istBerichtName, mitteilungNr, projektOrdner, berichtSchluessel, auswaehlen,
     woerterAus, markiere, ausschnitt, indexName, leererIndex, indexLesen, indexMergen,
     KLASSEN, klassenName, klasseVon, saetze, PARAMETER, untersuchtImSatz, strangVon, ableiten, faelleBauen, tagText, berichtBeschriftung, bloecke, sucheFaelle, zaehleFaelle,
     KOPIER_KLASSEN, KOPIER_NAMEN, PROMPT, FRAGEN, kopfAus, ordnerWoerter, fachwoerter, ersetzerBauen, ersetzen, stellenIn, kopieBauen, untersuchtZeile, auszugLabel, mitteilungLabel, gebaeudeNr,
-    THEMEN_VERSION, THEMEN_DATEI, ERSTE_THEMEN, ERSTE_FAELLE, GRUPPEN, gruppeVon, ersteThemen, themenHeben, themenLesen, themaWoerter, themaEinspielen, neueThemaId, themaId };
+    THEMEN_VERSION, THEMEN_DATEI, ERSTE_THEMEN, ERSTE_FAELLE, GRUPPEN, gruppeVon, ersteThemen, themenHeben, themenLesen, themaWoerter, themaEinspielen, neueThemaId, themaId,
+    ABSATZ_KLASSEN, AEHNLICHKEIT, AEHNLICHKEIT_STUFEN, lockerer, KIPPWOERTER, absatzWoerter, absatzSchluessel, aehnlichkeit, nurKippwoerter, wortUnterschiede,
+    absaetzeBauen, absaetzeBauer, familienBauer, familienBauen, aehnlicheFamilien, GEMEINSAM, gemeinsamLesen, gemeinsamMergen, gemeinsamEnthaelt, gemeinsamSchreiben,
+    mitarbeiterLesen, neueId: zufallsId, markeNeu, markeZurueck, vorZweiJahren, standBauen, absatzZeilen, familieFassungen, absatzErsetzen, profilBauen };
 })(typeof globalThis !== 'undefined' ? globalThis : this);
 /* ===== Ende LEXIKIT-KERN ===== */
 </script>
 <script id="lexikit-app">
 /* LexiKit – Oberfläche. Liest das Archiv, hält den Index im Speicher, schreibt nur nach _LexiKit (Funktion schreibe). */
 'use strict';
-const APP_VERSION = '0.3.0';
+const APP_VERSION = '0.4.0';
 const AENDERUNGEN = [
+  ['0.4.0', '19.11.2026', '„So machen wir es meist“: Über den Fällen eines Themas oder einer Suche steht, worauf meist untersucht wurde (ein Klick zeigt genau diese Fälle), wie viele Proben, welche Berichtsform und wie viele Mitteilungen üblich sind. Darunter „Unsere Absätze“ aus Sanierungsmaßnahmen, Schlussfolgerungen und Arbeitsschutz – fast gleiche Absätze zählen als einer mit mehreren Fassungen, sortiert nach „Oft verwendet“ (Kopien der letzten zwei Jahre) oder „Oft im Archiv“. „Kopieren“ setzt für Namen und Adressen aus dem Berichtskopf Platzhalter ein, „Abschnitt kopieren“ jetzt auch. Markierungen „Vorbild“ und „So nicht mehr“ mit Name und Grund; nichts wird versteckt. Einstellung „Ähnlichkeit“ unter „Mehr“. Der Index bleibt, wie er ist.'],
   ['0.3.0', '13.11.2026', 'Für ChatGPT kopieren: bis zu drei Fälle auswählen (oder im offenen Fall) und in der Vorschau genau sehen, was in die Zwischenablage kommt – Prompt, Frage und Auszüge aus Befund, Schlussfolgerungen, Maßnahmen, Arbeitsschutz. Veranlassung, Aufgabenstellung und Ortstermin/Probenahme werden nie kopiert. Namen und Adressen aus dem Berichtskopf und dem Projektordner werden durch Platzhalter ersetzt; verdächtige Stellen müssen vor dem Kopieren entfernt oder bestätigt werden. LexiKit sendet nichts – der Text wird selbst in ChatGPT eingefügt.'],
   ['0.2.0', '13.11.2026', 'Fälle statt Textstellen: Ein Treffer ist jetzt ein Projektordner mit allen Mitteilungen – mit „Was war“, „Untersucht“ (Probenzahl und Parameter, ein Klick zeigt die Stelle), Verlauf und Reitern für Veranlassung, Probenahme, Befund, Schlussfolgerungen, Sanierungsmaßnahmen und Arbeitsschutz. Thema und eigene Wörter lassen sich verbinden; Fälle mit Fund in der Veranlassung stehen oben. Neue Filter „Untersucht auf“, zweite Themengruppe „Art des Falls“. Der Index bleibt, wie er ist – neu eingelesen wird nichts.'],
   ['0.1.0', '13.11.2026', 'Erste Fassung: Word-Mitteilungen aller Projektordner einlesen (nur Text, ohne Fotos, ohne Berichtskopf), Abschnitte nach den Überschriften, gemeinsamer Index und Themenliste in „_LexiKit“, Suche nach Themen und eigenen Wörtern, Jahr-Filter, Treffer mit markierten Wörtern, neueste zuerst.'],
@@ -1381,15 +1837,19 @@ const SUITE = {
 
 const S = {
   archiv: null, lx: null, schreiben: false, schreibGrund: '',
-  berichte: new Map(), liste: null,           // Pfad → Index-Eintrag; liste = Werte (ohne unlesbare), neu gebaut bei Änderung
+  berichte: new Map(), liste: null, indexStand: 0,   // indexStand: zählt jede echte Änderung im Index (für „Unsere Absätze“)
+            // Pfad → Index-Eintrag; liste = Werte (ohne unlesbare), neu gebaut bei Änderung
   aend: {},                                   // Jahr → { neu: { Pfad: Eintrag }, weg: [{ pfad, am }] } – noch nicht geschrieben
   kaputt: {},                                 // Jahr → Grund (Datei war nicht lesbar)
   faelle: null, paramDa: {},                  // Fälle = aus liste abgeleitet (neu gebaut bei Änderung); paramDa: erkannte Parameter
   themen: null, themenFehler: '', zaehler: {},
-  wahl: { thema: null, q: '', jahr: '', parameter: [] }, zeigeN: 20, treffer: [],
+  wahl: { thema: null, q: '', jahr: '', parameter: [], nur: null }, zeigeN: 20, treffer: [],   // nur: { projekte, text, klasse } – „Fälle zeigen“
   offen: new Map(), mehrTags: new Set(),      // offene Fälle: Projektordner → { tab, beleg }
   form: null,                                 // offenes Themenformular { id|null, basis }
   auswahl: [], kopie: null,                   // für ChatGPT ausgewählte Fälle (Projektordner, höchstens 3); offene Vorschau
+  // ab 0.4.0 „Unsere Absätze“: A = Fassungen, E = Familien (beide nur im Speicher); Kopien, Markierungen, Einstellung aus _LexiKit
+  abs: { A: null, E: null, quelle: null, gen: 0, anteil: 0, stufe: 'normal', einst: null, kopien: [], marken: [], stand: new Map(),
+    ausstehend: { kopien: [], marken: [] }, kaputt: {}, ma: null, maFehler: '', sort: 'oft', tab: 'massnahmen', alle: false, offen: null, form: null, kette: {} },
   ansicht: 'zugang', meldungen: [],
 };
 let archivGen = 0;   // je Verbindung zu einem Archivordner eine neue Nummer – ein Einlesen der alten Verbindung ändert nichts mehr
@@ -1398,11 +1858,13 @@ const L = { laeuft: null, aktiv: false, stop: false, art: '', projekte: 0, ferti
 /* ---------- Ansichten ---------- */
 function zeige(ansicht) {
   S.ansicht = ansicht;
-  for (const id of ['zugang', 'einlesen', 'suche', 'einstellungen', 'ueberLexi', 'kopieren']) $(id).hidden = id !== ansicht;
+  for (const id of ['zugang', 'einlesen', 'suche', 'einstellungen', 'ueberLexi', 'kopieren', 'absatz', 'aehnlichkeitSeite']) $(id).hidden = id !== ansicht;
   $('mehr').open = false;
   if (ansicht === 'suche') { renderAlles(); }
   if (ansicht === 'einlesen') zeigeLauf();
   if (ansicht === 'einstellungen') zeigeEinstellungen();
+  if (ansicht === 'aehnlichkeitSeite') renderStufen();
+  if (ansicht === 'absatz') renderFamilie();
   window.scrollTo(0, 0);
 }
 let toastZeit = 0;
@@ -1474,7 +1936,7 @@ async function leseText(name) {
 /** Die einzige Stelle, an der LexiKit schreibt – nur in _LexiKit, nur eigene Dateien */
 async function schreibe(name, text) {
   if (!S.schreiben || !S.lx) throw new Error('Schreiben in _LexiKit ist nicht erlaubt');
-  if (!/^lexikit-(themen|index-\d{4})\.json$/.test(name)) throw new Error('LexiKit schreibt nur seine eigenen Dateien');
+  if (!/^lexikit-(themen|index-\d{4}|kopien|markierungen|einstellungen)\.json$/.test(name)) throw new Error('LexiKit schreibt nur seine eigenen Dateien');
   const fh = await S.lx.getFileHandle(name, { create: true }), w = await fh.createWritable();
   try { await w.write(text); await w.close(); } catch (e) { try { await w.abort(); } catch (e2) { /* schon zu */ } throw e; }
 }
@@ -1483,10 +1945,11 @@ const ohneCache = (k, v) => k[0] === '_' ? undefined : v;
 /* ---------- Laden ---------- */
 async function laden() {
   await laufStoppen();   // ein Einlesen der vorigen Verbindung darf nichts mehr in den neuen Stand schreiben
-  // Themen
+  // Themen, Zähler und Markierungen der Absätze, Mitarbeiterliste
   await themenLaden(true);
+  await absatzDateienLaden(); await maLaden();
   // Index je Jahr
-  S.berichte.clear(); S.kaputt = {};
+  S.berichte.clear(); S.kaputt = {}; S.indexStand++;
   try {
     for await (const [name, h] of S.lx.entries()) {
       const m = /^lexikit-index-(\d{4})\.json$/.exec(name); if (!m || h.kind !== 'file') continue;
@@ -1555,14 +2018,17 @@ function zaehlerNeu() {
       if (lauf !== zaehlLauf) return;   // inzwischen neu angestoßen
       if (i < themen.length) { const t = themen[i++]; neu[t.id] = K.zaehleFaelle(l, K.themaWoerter(t)); setTimeout(schritt, 0); return; }
       S.zaehler = neu; zaehlAktiv = false; if (S.ansicht === 'suche') renderThemen();
+      // neue Fälle → Absätze neu vergleichen – erst nach den Themen; beim ersten oder vollständigen Einlesen erst am Ende
+      // nur bei echter Änderung im Index; während eines Einlesens nie neu anfangen – einzige Ausnahme: beim Start gibt es noch nichts
+      if (S.abs.quelle !== S.indexStand && l === S.faelle && (!L.aktiv || (L.art === 'pruefen' && S.abs.quelle == null))) { S.abs.quelle = S.indexStand; absaetzeNeu(false); }
       if (zaehlOffen) zaehlerNeu();
     };
     schritt();
   }, L.aktiv ? 3000 : 50);
 }
 function aendFuer(jahr) { return S.aend[jahr] || (S.aend[jahr] = { neu: {}, weg: [] }); }
-function merke(e) { S.berichte.set(e.pfad, e); const a = aendFuer(e.jahr); a.neu[e.pfad] = e; a.weg = a.weg.filter(w => w.pfad !== e.pfad); }
-function weg(pfad) { const b = S.berichte.get(pfad); if (!b) return; S.berichte.delete(pfad); const a = aendFuer(b.jahr); delete a.neu[pfad]; a.weg.push({ pfad, am: jetztIso() }); L.weg++; }
+function merke(e) { S.berichte.set(e.pfad, e); S.indexStand++; const a = aendFuer(e.jahr); a.neu[e.pfad] = e; a.weg = a.weg.filter(w => w.pfad !== e.pfad); }
+function weg(pfad) { const b = S.berichte.get(pfad); if (!b) return; S.berichte.delete(pfad); S.indexStand++; const a = aendFuer(b.jahr); delete a.neu[pfad]; a.weg.push({ pfad, am: jetztIso() }); L.weg++; }
 /** Offene Änderungen schreiben: je Jahr Datei neu lesen, zusammenführen, schreiben, dann den Stand der Platte übernehmen */
 async function speichern() {
   if (!S.schreiben) return;
@@ -1577,8 +2043,8 @@ async function speichern() {
       await schreibe(name, JSON.stringify(aus, ohneCache));
       S.aend[jahr] = { neu: {}, weg: [] }; delete S.kaputt[jahr]; meldung('', '', 'kaputt-' + jahr);
       // was andere PCs inzwischen gelesen oder entfernt haben, übernehmen
-      for (const [pfad, b] of S.berichte) if (b.jahr === jahr && !aus.berichte[pfad]) S.berichte.delete(pfad);
-      for (const [pfad, e] of Object.entries(aus.berichte)) { const alt = S.berichte.get(pfad); if (!alt || alt.gelesenAm !== e.gelesenAm) S.berichte.set(pfad, e); }
+      for (const [pfad, b] of S.berichte) if (b.jahr === jahr && !aus.berichte[pfad]) { S.berichte.delete(pfad); S.indexStand++; }
+      for (const [pfad, e] of Object.entries(aus.berichte)) { const alt = S.berichte.get(pfad); if (!alt || alt.gelesenAm !== e.gelesenAm) { S.berichte.set(pfad, e); S.indexStand++; } }
     } catch (e) {
       meldung('err', `Der Index für ${jahr} ließ sich nicht speichern (${esc(e.message || e.name)}). Er wird beim nächsten Mal noch einmal geschrieben.`, 'speichern');
     }
@@ -1748,13 +2214,28 @@ function renderTreffer() {
   const a = aktuelleSuche(), box = $('treffer');
   const teile = []; if (a.thema) teile.push('Thema ' + esc(a.thema.name)); if (a.woerter.length) teile.push('„' + esc(S.wahl.q.trim()) + '“');
   $('woerterZeile').innerHTML = teile.join(' + ') + (a.thema && !S.form ? ` · <button class="linkknopf" type="button" data-aktion="thema-bearbeiten">Thema bearbeiten</button>` : '');
+  $('nurLeiste').hidden = !S.wahl.nur;
+  if (S.wahl.nur) {   // „Fälle zeigen“ eines Absatzes: genau diese Fälle aus dem ganzen Archiv, neueste zuerst
+    const nur = new Set(S.wahl.nur.projekte), kl = S.wahl.nur.klasse;
+    S.treffer = faelle().filter(f => nur.has(f.projekt)).map(f => ({ f, rang: 0, nurAS: false, orte: new Set(kl ? [kl] : []) }));
+    const n = S.treffer.length;
+    $('nurLeiste').innerHTML = `<span>${esc(S.wahl.nur.titel)}</span><button class="sp-knopf" type="button" data-aktion="nur-aus">${S.wahl.nur.zurueck ? 'Zurück zum Absatz' : 'Filter aufheben'}</button>`;
+    $('ergebnisZeile').textContent = (n === 1 ? '1 Fall' : zahl(n) + ' Fälle') + ' · neueste zuerst';
+    $('profil').hidden = true; $('absaetze').hidden = true;
+    box.innerHTML = S.treffer.slice(0, S.zeigeN).map(t => fallKarte(t, [])).join('');
+    auswahlZeigen();
+    const rest = n - S.zeigeN; $('btnMehrTreffer').hidden = rest <= 0; $('btnMehrTreffer').textContent = `Weitere ${zahl(Math.min(20, rest))} zeigen (noch ${zahl(rest)})`;
+    return;
+  }
   if (!a.aktiv) {
+    $('profil').hidden = true; $('absaetze').hidden = true;
     S.treffer = [];
     $('ergebnisZeile').textContent = liste().length ? 'Wähle ein Thema, beschreibe den Fall oder wähle unter „Untersucht auf“.' : 'Noch keine Berichte eingelesen.';
     box.innerHTML = ''; $('btnMehrTreffer').hidden = true; return;
   }
   const r = K.sucheFaelle(faelle(), { thema: a.themaW, woerter: a.woerter, jahr: S.wahl.jahr, parameter: S.wahl.parameter });
   S.treffer = r.treffer;
+  renderProfil(a); renderAbsaetze();
   const n = r.treffer.length;
   $('ergebnisZeile').textContent = n === 0 ? 'Kein Fall gefunden' : `${n === 1 ? '1 Fall' : zahl(n) + ' Fälle'} · ${r.begriffe ? 'ähnlichste zuerst' : 'neueste zuerst'}`;
   if (!n) {
@@ -1973,6 +2454,331 @@ function kopieVerdrahten() {
   });
 }
 
+/* ---------- „So machen wir es meist“ und „Unsere Absätze“ (ab 0.4.0) ----------
+   Fassungen und Familien baut LexiKit im Speicher aus dem Index (Kern: absaetzeBauen, familienBauer). In _LexiKit stehen nur
+   Kopier-Zähler, Markierungen und die Einstellung – geschrieben mit K.gemeinsamSchreiben (neu lesen, vereinigen, schreiben,
+   zurücklesen und prüfen). Die Mitarbeiterliste liest LexiKit nur. */
+const MA_DATEI = '_Spektron-Mitarbeiter.json';
+const ZAHLWORT_F = ['', 'eine', 'zwei', 'drei', 'vier', 'fünf', 'sechs', 'sieben', 'acht', 'neun', 'zehn', 'elf', 'zwölf'];
+const faelleIn = n => n === 1 ? '1 Fall' : zahl(n) + ' Fällen';     // „in 27 Fällen“, „aus 1 Fall“
+const faelleN = n => n === 1 ? '1 Fall' : zahl(n) + ' Fälle';       // „27 Fälle zeigen“
+const kurz = (t, n) => { t = String(t); if (t.length <= n) return t; const x = t.slice(0, n), sp = x.lastIndexOf(' '); return (sp > n * 0.6 ? x.slice(0, sp) : x) + ' …'; };
+const nachpruefMs = () => (typeof window.LEXIKIT_NACHPRUEF_MS === 'number' ? window.LEXIKIT_NACHPRUEF_MS : 1500);
+const absIo = { lesen: name => leseText(name), schreiben: (name, text) => schreibe(name, text), warten: ms => new Promise(r => setTimeout(r, ms)) };
+const ABS_DATEI_TEXT = { kopien: 'Die Kopier-Zähler', marken: 'Die Markierungen', einstellung: 'Die Einstellung „Ähnlichkeit“' };
+
+async function absatzDateienLaden() {
+  for (const art of ['kopien', 'marken', 'einstellung']) {
+    const G = K.GEMEINSAM[art]; let j;
+    try { j = K.gemeinsamLesen(art, await leseText(G.datei)); } catch (e) { j = { kaputt: e.message || e.name }; }
+    if (j && j.kaputt) {
+      S.abs.kaputt[art] = j;
+      meldung(j.neuer ? 'err' : 'warn', `<code>${esc(G.datei)}</code> ${j.neuer ? 'stammt aus einer neueren LexiKit-Fassung – bitte LexiKit neu laden' : 'ist nicht lesbar (' + esc(j.kaputt) + ')'}. LexiKit überschreibt sie nicht – ${art === 'einstellung' ? 'es gilt „normal“' : 'bis sie wieder lesbar ist, wird darin nichts gespeichert'}.`, 'abs-' + art);
+      continue;
+    }
+    delete S.abs.kaputt[art]; meldung('', '', 'abs-' + art);
+    if (art === 'einstellung') { S.abs.einst = j; S.abs.stufe = j && K.AEHNLICHKEIT[j.aehnlichkeit] ? j.aehnlichkeit : 'normal'; }
+    else S.abs[art] = K.gemeinsamMergen(art, j, S.abs.ausstehend[art])[G.feld];
+  }
+  standNeu();
+}
+/** Mitarbeiterliste frisch lesen (nur lesen – gepflegt wird sie in der Projektzentrale) */
+async function maLaden() {
+  S.abs.ma = null; S.abs.maFehler = '';
+  if (!S.archiv) return;
+  try {
+    const r = K.mitarbeiterLesen(await (await (await S.archiv.getFileHandle(MA_DATEI)).getFile()).text());
+    if (r.kaputt) S.abs.maFehler = 'ist nicht lesbar (' + r.kaputt + ')'; else S.abs.ma = r;
+  } catch (e) { S.abs.maFehler = e && e.name === 'NotFoundError' ? 'fehlt im Archivordner' : 'ist nicht lesbar (' + (e.message || e.name) + ')'; }
+}
+function standNeu() { const A = S.abs.A; S.abs.stand = K.standBauen(S.abs.kopien, S.abs.marken, jetztIso(), A ? w => A.schluessel.has(w) : null); }
+/** Eigene Einträge schreiben (je Datei nacheinander). → true/false, wirft nie */
+function speichernAbs(art) {
+  const k = S.abs.kette;
+  return (k[art] = (k[art] || Promise.resolve(true)).then(async () => {
+    try {
+      if (!S.schreiben) throw new Error('LexiKit darf nicht in _LexiKit schreiben');
+      if (S.abs.kaputt[art]) throw new Error('die Datei ist nicht lesbar');
+      const neu = S.abs.ausstehend[art].slice(); if (!neu.length) return true;
+      const disk = await K.gemeinsamSchreiben(absIo, art, neu, { warten: nachpruefMs() });
+      S.abs.ausstehend[art] = S.abs.ausstehend[art].filter(x => !neu.includes(x));
+      S.abs[art] = K.gemeinsamMergen(art, disk, S.abs.ausstehend[art])[K.GEMEINSAM[art].feld];
+      meldung('', '', 'abs-speichern-' + art); standNeu(); absaetzeZeigen();
+      return true;
+    } catch (e) {
+      meldung('err', `${ABS_DATEI_TEXT[art]} ließen sich nicht speichern (${esc(e.message || e.name)}).${art === 'kopien' ? ' Gezählt wird in dieser Sitzung trotzdem; LexiKit versucht es beim nächsten Kopieren noch einmal.' : ''}`, 'abs-speichern-' + art);
+      return false;
+    }
+  }));
+}
+/** Fassungen und Familien neu bauen (nurFamilien: nur neu gruppieren, z. B. nach dem Umstellen der Ähnlichkeit) – in Schritten */
+function absaetzeNeu(nurFamilien) {
+  const gen = ++S.abs.gen, SCHEIBE = 20, LUFT = 10;   // je 20 ms rechnen, 10 ms Luft für Seite und Einlesen
+  S.abs.E = null; S.abs.anteil = 0;
+  const neuA = !nurFamilien || !S.abs.A, a = neuA ? K.absaetzeBauer(faelle()) : null;
+  let b = null, t0 = performance.now(), t1 = 0;
+  const schritt = () => {
+    if (gen !== S.abs.gen) return;
+    if (a && !b) {
+      if (!a.weiter(SCHEIBE)) { setTimeout(schritt, LUFT); return; }
+      S.abs.A = a.ergebnis; S.abs.zeitFassungen = Math.round(performance.now() - t0); standNeu();
+    }
+    if (!b) { b = K.familienBauer(S.abs.A, K.AEHNLICHKEIT[S.abs.stufe] || K.AEHNLICHKEIT.normal); t1 = performance.now(); if (!neuA) standNeu(); }
+    const fertig = b.weiter(SCHEIBE); S.abs.anteil = b.anteil;
+    if (!fertig) { if (S.ansicht === 'suche' && !$('absaetze').hidden) renderAbsaetze(); setTimeout(schritt, LUFT); return; }
+    S.abs.E = b.ergebnis; S.abs.zeitFamilien = Math.round(performance.now() - t1);
+    absaetzeZeigen();
+  };
+  setTimeout(schritt, 0);
+  absaetzeZeigen();
+}
+function absaetzeZeigen() { if (S.ansicht === 'suche') renderAbsaetze(); else if (S.ansicht === 'absatz') renderFamilie(); else if (S.ansicht === 'aehnlichkeitSeite') renderStufen(); }
+const suchTitel = a => [a.thema ? a.thema.name : '', a.woerter.length ? '„' + S.wahl.q.trim() + '“' : ''].filter(Boolean).join(' + ');
+
+/** Praxisprofil über den Fällen – gezählt aus den „Untersucht“-Schildchen und den Fällen; der Filter „Untersucht auf“ verändert es nicht */
+function renderProfil(a) {
+  const box = $('profil');
+  if (!(a.thema || a.woerter.length)) { box.hidden = true; return; }
+  const tr = S.wahl.parameter.length ? K.sucheFaelle(faelle(), { thema: a.themaW, woerter: a.woerter, jahr: S.wahl.jahr }).treffer : S.treffer;
+  const P = K.profilBauen(tr.map(t => t.f));
+  if (!P.n) { box.hidden = true; return; }
+  box.hidden = false;
+  const bal = P.params.slice(0, 8).map(x => `<button class="pr-bl" type="button" data-param="${esc(x.id)}" aria-pressed="${S.wahl.parameter.includes(x.id)}">${esc(x.name)}</button>`
+    + `<div class="pr-spur" aria-hidden="true"><div style="width:${Math.max(2, Math.round(100 * x.n / P.n))}%"></div></div><div class="pr-zahl">${zahl(x.n)} von ${zahl(P.n)}</div>`).join('');
+  const meist = (von, bis, n) => (n >= 4 ? 'meist ' : '') + (von === bis ? zahl(von) : `${zahl(von)} bis ${zahl(bis)}`);
+  const fakten = [
+    ...P.proben.slice(0, 2).map(x => [`${x.art} je Fall`, meist(x.von, x.bis, x.faelle)]),
+    P.formen.length ? ['Berichtsform', P.formen.slice(0, 2).map(x => `${zahl(x.n)} × ${x.form}`).join('\n')] : null,
+    ['Mitteilungen je Fall', (P.n >= 4 ? 'meist ' : '') + P.mitteilungen],
+    ['Mit Abschnitt Sanierungsmaßnahmen', `${zahl(P.mitMassnahmen)} von ${zahl(P.n)}`],
+  ].filter(Boolean);
+  box.innerHTML = `<div class="pr-kopf"><h2 id="profilTitel">${esc(suchTitel(a))} – so machen wir es meist</h2><span class="leise" style="font-size:15px">aus ${faelleIn(P.n)} · ${P.von === P.bis ? P.von : P.von + '–' + P.bis}</span></div>
+    <div class="pr-zwei">
+      <div><div class="lab">Untersucht auf</div>${bal ? `<div class="pr-balken">${bal}</div><div class="leise" style="font-size:15px;margin-top:8px">Ein Klick auf einen Parameter zeigt genau diese Fälle.</div>` : '<p class="leise" style="font-size:15px">In diesen Fällen wurde kein Parameter erkannt.</p>'}</div>
+      <div><div class="lab">Im Bericht</div><div style="margin-top:10px">${fakten.map(([l, w]) => `<div class="pr-fakt"><span>${esc(l)}</span><strong>${esc(w)}</strong></div>`).join('')}</div></div>
+    </div>
+    <div class="pr-notiz">Gezählt aus den Berichten, nicht bewertet. Häufig heißt nicht richtig – ältere Fälle können nach Regeln entstanden sein, die heute anders sind.</div>`;
+}
+
+/** Fassung zu einem Schlüssel (für „Stattdessen“) – erst in derselben Klasse */
+function fassungZu(schluessel, k) { const A = S.abs.A; if (!A) return null; return A.von.get(k + '|' + schluessel) || K.ABSATZ_KLASSEN.map(x => A.von.get(x + '|' + schluessel)).find(Boolean) || null; }
+function stattLink(statt, k) {
+  const F = fassungZu(statt, k);
+  return F ? `<button class="linkknopf" type="button" data-familie="${esc(F.id)}" style="font-size:15px">Stattdessen: „${esc(kurz(F.neu.p, 60))}“</button>` : '<span class="leise">Stattdessen: (dieser Absatz steht nicht mehr im Archiv)</span>';
+}
+const markName = art => art === 'nicht' ? 'So nicht mehr' : 'Vorbild';
+function markeVerlaufHtml(m, aktiv) {
+  return `<div class="ab-notiz${aktiv ? '' : ' alt'}">${aktiv ? '' : esc(markName(m.art)) + ' – '}<strong>${esc(m.wer)}, ${datum(m.am)}:</strong> ${esc(m.warum)}${m.statt ? ' · ' + stattLink(m.statt, m.k) : ''}`
+    + (m.zurueck ? `<br><span>zurückgenommen – <strong>${esc(m.zurueck.wer)}, ${datum(m.zurueck.am)}:</strong> ${esc(m.zurueck.warum)}</span>` : '') + '</div>';
+}
+const famVon = fam => Math.min(...fam.mitglieder.map(F => F.jahrVon));
+function absatzZeileHtml(z) {
+  const F = z.rep, m = z.stand.aktiv, id = esc(F.id), von = famVon(z.fam);
+  const fass = `<button class="linkknopf" type="button" data-familie="${id}">${z.fassungen === 1 ? '1 Fassung' : zahl(z.fassungen) + ' Fassungen'}${z.fassungen > 1 && von < z.jahr ? ' seit ' + von : ''}</button>`;
+  const schild = z.nicht ? '<span class="schild nicht">so nicht mehr</span>' : m && m.art === 'vorbild' ? '<span class="schild vorbild">Vorbild</span>' : '';
+  const meta = schild + [z.nicht ? `zuletzt verwendet ${z.jahr}` : `<strong>zuletzt verwendet ${z.jahr}</strong>`, `in ${faelleIn(z.faelle.size)} im Archiv`, fass,
+    z.nicht ? '' : `<button class="linkknopf" type="button" data-aehnliche="${id}">Ähnliche Absätze zeigen</button>`].filter(Boolean).join(' · ');
+  return `<div class="ab-zeile${z.nicht ? ' alt' : ''}" data-zeile="${id}">
+      <div class="ab-zahl">${zahl(z.k2)} ×<small>kopiert</small></div>
+      <div style="min-width:0"><div class="ab-text">${esc(F.neu.p)}</div><div class="ab-meta">${meta}</div>${m ? markeVerlaufHtml(m, true) : ''}</div>
+      <div class="ab-knoepfe">${z.nicht ? '' : `<button class="sp-knopf sp-knopf-app" type="button" data-fkopieren="${id}">Kopieren</button>`}<button class="sp-knopf" type="button" data-fzeigen="${id}">Fälle zeigen</button></div>
+    </div>`;
+}
+/** „Unsere Absätze“: Absätze der passenden Fälle, gezählt im ganzen Archiv */
+function renderAbsaetze() {
+  const box = $('absaetze'), a = aktuelleSuche();
+  if (S.wahl.nur || !(a.thema || a.woerter.length) || !S.treffer.length) { box.hidden = true; return; }
+  box.hidden = false;
+  const kopf = `<div class="pr-kopf"><h2 id="absaetzeTitel">Unsere Absätze zu ${esc(suchTitel(a))}</h2><div class="ab-sort"><span class="leise" style="font-size:15px">Sortieren</span>`
+    + [['oft', 'Oft verwendet'], ['archiv', 'Oft im Archiv']].map(([id, n]) => `<button class="jahr" type="button" data-sort="${id}" aria-pressed="${S.abs.sort === id}">${n}</button>`).join('') + '</div></div>'
+    + `<div class="ab-meta">${S.abs.sort === 'oft' ? 'Oft verwendet: wie oft der Absatz in den letzten zwei Jahren aus LexiKit kopiert wurde. Bei Gleichstand zählt das Archiv.' : 'Oft im Archiv: in wie vielen Fällen der Absatz im ganzen Archiv steht.'}</div>`;
+  if (!S.abs.E || S.abs.quelle !== S.indexStand) {
+    const spaeter = L.aktiv && S.abs.quelle !== S.indexStand && !S.abs.A;
+    if (spaeter || !S.abs.E) { box.innerHTML = kopf + `<p class="hinweis" style="margin:14px 0 0;font-size:15px">${spaeter ? 'Die Absätze werden verglichen, sobald das Einlesen fertig ist.' : `Die Absätze werden verglichen … ${Math.round(S.abs.anteil * 100)} %`}</p>`; return; }
+  }
+  const projekte = new Set(S.treffer.map(t => t.f.projekt));
+  const je = K.ABSATZ_KLASSEN.map(k => Object.assign({ k }, K.absatzZeilen(S.abs.E, k, projekte, S.abs.stand, S.abs.sort)));
+  S.abs.zeilenSicht = new Map(); for (const x of je) for (const z of [...x.zeilen, ...x.ende]) S.abs.zeilenSicht.set(z.rep.id, z);
+  const mit = je.filter(x => x.zeilen.length + x.ende.length);
+  if (!mit.length) { box.innerHTML = kopf + '<p class="hinweis" style="margin:14px 0 0;font-size:15px">In Sanierungsmaßnahmen, Schlussfolgerungen und Arbeitsschutz dieser Fälle steht kein Absatz mit mindestens fünf Wörtern.</p>'; return; }
+  const akt = mit.find(x => x.k === S.abs.tab) || mit[0]; S.abs.tab = akt.k;
+  const MAX = 5, sicht = S.abs.alle ? akt.zeilen : akt.zeilen.slice(0, MAX), gesamt = akt.zeilen.length + akt.ende.length;
+  box.innerHTML = kopf
+    + `<div class="tabs" role="tablist" aria-label="Abschnitte der Absätze" style="margin-top:12px">${mit.map(x => `<button class="tab" type="button" role="tab" data-abtab="${x.k}" aria-selected="${x.k === akt.k}">${esc(K.klassenName(x.k))} · ${zahl(x.zeilen.length + x.ende.length)}</button>`).join('')}</div>`
+    + `<div role="tabpanel">${sicht.map(absatzZeileHtml).join('')}`
+    + (akt.ende.length ? `<div class="lab" style="margin-top:18px">Ans Ende gestellt · bleibt in Suche, Fall und Word sichtbar</div>${akt.ende.map(absatzZeileHtml).join('')}` : '') + '</div>'
+    + (sicht.length < akt.zeilen.length ? `<div style="margin-top:14px"><button class="linkknopf" type="button" data-aballe style="font-size:16px">Alle ${zahl(gesamt)} Absätze zeigen</button></div>` : '');
+}
+
+/** Einen Absatz kopieren: genau die neueste Stelle dieser Fassung, wie geschrieben; Namen und Adressen aus dem frisch gelesenen
+    Berichtskopf und dem Projektordner durch Platzhalter ersetzt. Keine Vorschau, keine Sperre – der Text bleibt im Büro. */
+async function fassungKopieren(id) {
+  const F = S.abs.A && S.abs.A.von.get(id); if (!F) return;
+  const v = F.neu; let kopf = null;
+  try { kopf = (await berichtFrisch(v.b.pfad)).kopf; } catch (e) { kopf = null; }
+  const r = K.absatzErsetzen(v.p, kopf, v.b.projekt, K.fachwoerter(aktiveThemen()));
+  if (!(await kopiere(r.t))) { toast('Kopieren ging nicht – bitte den Text markieren und mit Strg+C kopieren.'); return; }
+  const ev = { id: K.neueId(), w: F.schluessel, am: jetztIso() };   // gezählt für genau diese Fassung
+  S.abs.kopien.push(ev); S.abs.ausstehend.kopien.push(ev); standNeu(); absaetzeZeigen();
+  speichernAbs('kopien');
+  toast(!kopf || !kopf.length ? `Kopiert. Der Berichtskopf ließ sich ${kopf ? 'nicht erkennen' : 'nicht lesen'} – nur Wörter des Projektordners wurden ersetzt. Bitte Namen und Adressen selbst prüfen.`
+    : r.n ? `Kopiert – ${esc(r.platzhalter.join(', '))} eingesetzt. Namen, die nicht im Berichtskopf stehen, bitte selbst prüfen.` : 'Kopiert. Im Absatz steht kein Name und keine Adresse aus dem Berichtskopf.', 6000);
+}
+function faelleZeigen(projekte, F, zurueck) {
+  S.wahl.nur = { projekte: [...projekte], klasse: F.k, titel: `${faelleN(projekte.size)} mit dem Absatz „${kurz(F.neu.p, 90)}“`, zurueck: zurueck ? Object.assign({}, zurueck) : null };
+  S.zeigeN = 20; S.abs.form = null; zeige('suche');
+}
+function fallOeffnen(x) {
+  const v = x.v;
+  S.wahl.nur = { projekte: [v.f.projekt], klasse: x.k, titel: `Fall ${v.f.kennung} · ${K.mitteilungLabel(v.b)}${v.h ? ' · ' + v.h : ''}`, zurueck: Object.assign({}, S.abs.offen) };
+  S.offen.set(v.f.projekt, { tab: x.k, beleg: { pfad: v.b.pfad, ai: v.ai, pi: v.pi } });
+  S.abs.form = null; zeige('suche');
+  const fund = document.querySelector('.fall p.fund'); if (fund) fund.scrollIntoView({ block: 'center' });
+}
+
+/** Ein Absatz und seine Fassungen */
+function fassungHtml(x, gegen) {
+  const F = x.F, s = x.stand, m = s.aktiv, nicht = !!(m && m.art === 'nicht'), id = esc(F.id);
+  const zeit = x.von === x.bis ? String(x.von) : x.von + '–' + x.bis;
+  const schilder = (x.aktuell ? '<span class="schild jetzt">aktuelle Fassung</span>' : '') + (m ? `<span class="schild ${nicht ? 'nicht' : 'vorbild'}">${nicht ? 'so nicht mehr' : 'Vorbild'}</span>` : '')
+    + `<span class="leise" style="font-size:15px">${nicht ? 'bleibt in Suche, Fall und Word sichtbar' : 'zuletzt ' + esc(F.neu.f.kennung)}</span>`;
+  const text = K.wortUnterschiede(F.neu.p, gegen).map(t => t.anders ? `<span class="diff">${esc(t.t)}</span>` : esc(t.t)).join('');
+  const knoepfe = (nicht ? '' : `<button class="sp-knopf${x.aktuell ? ' sp-knopf-app' : ''}" type="button" data-fkopieren="${id}">Kopieren</button>`)
+    + `<button class="sp-knopf" type="button" data-ffaelle="${id}">${faelleN(F.faelle.size)} zeigen</button>`
+    + (m ? `<button class="sp-knopf" type="button" data-marke="zurueck" data-fassung="${id}">Markierung zurücknehmen …</button>`
+      : `<button class="sp-knopf" type="button" data-marke="vorbild" data-fassung="${id}">Vorbild …</button><button class="sp-knopf" type="button" data-marke="nicht" data-fassung="${id}">So nicht mehr …</button>`);
+  return `<div class="fa-fassung${nicht ? ' alt' : ''}${x.aktuell ? ' aktuell' : ''}" data-fassung-zeile="${id}"><div class="fa-jahr">${zeit}<small>${faelleN(F.faelle.size)}</small></div>
+    <div style="min-width:0"><div class="ab-knoepfe">${schilder}</div>${s.marken.map(mk => markeVerlaufHtml(mk, mk === m)).join('')}<p class="fa-text">${text}</p><div class="ab-knoepfe">${knoepfe}</div></div></div>`;
+}
+function markFormHtml(fam) {
+  const f = S.abs.form, F = S.abs.A.von.get(f.id); if (!F) return '';
+  const x = K.familieFassungen(fam, S.abs.stand).find(y => y.F === F), zeit = x ? (x.von === x.bis ? String(x.von) : x.von + '–' + x.bis) : '';
+  const titel = f.art === 'zurueck' ? 'Markierung zurücknehmen' : markName(f.art), ma = S.abs.ma;
+  const kopf = `<b style="font-size:20px">${esc(titel)}</b><div class="hinweis" style="margin-top:-6px">Fassung ${esc(zeit)} · jeder darf ${f.art === 'zurueck' ? 'zurücknehmen' : 'markieren'}</div>`;
+  if (!ma) return `<form class="formular" id="markForm" autocomplete="off">${kopf}<div class="kwarn">Die Mitarbeiterliste <code>${MA_DATEI}</code> ${esc(S.abs.maFehler || 'fehlt')}. Markieren geht erst, wenn sie da ist – sie wird in der Projektzentrale gepflegt. Vorhandene Markierungen bleiben sichtbar.</div>
+    <div class="knoepfe"><button class="sp-knopf" type="button" id="btnMarkeAbbrechen">Abbrechen</button></div></form>`;
+  const ich = f.wer != null ? f.wer : (lokal.get('lexikit-ich') || lokal.get('spektron-ich') || '');
+  const hatIch = ma.personen.some(p => p.kuerzel === ich);
+  const wer = `<label>Wer bist du?<select id="mWer">${hatIch ? '' : '<option value="">– bitte wählen –</option>'}${ma.personen.map(p => `<option value="${esc(p.kuerzel)}"${p.kuerzel === ich ? ' selected' : ''}>${esc(p.kuerzel)}</option>`).join('')}</select></label>`;
+  let statt = '';
+  if (f.art === 'nicht') {
+    const st = F => S.abs.stand.get(F.schluessel);
+    const andere = fam.mitglieder.filter(G => G !== F && !(st(G) && st(G).aktiv && st(G).aktiv.art === 'nicht'));
+    const ausListe = [...(S.abs.zeilenSicht || new Map()).values()].filter(z => !z.nicht && z.fam !== fam && z.rep.k === F.k).slice(0, 20);
+    statt = `<label>Stattdessen <span class="hinweis">(wenn es etwas gibt)</span><select id="mStatt"><option value="">Nichts</option>`
+      + andere.map(G => `<option value="${esc(G.schluessel)}"${f.statt === G.schluessel ? ' selected' : ''}>Fassung ${G.jahrVon === G.jahrBis ? G.jahrVon : G.jahrVon + '–' + G.jahrBis}: ${esc(kurz(G.neu.p, 50))}</option>`).join('')
+      + ausListe.map(z => `<option value="${esc(z.rep.schluessel)}"${f.statt === z.rep.schluessel ? ' selected' : ''}>${esc(kurz(z.rep.neu.p, 60))}</option>`).join('') + '</select></label>';
+  }
+  return `<form class="formular" id="markForm" autocomplete="off">${kopf}${wer}
+    <label>Warum? (Pflicht)<textarea id="mWarum" placeholder="Kurz, in einem Satz" style="min-height:74px">${esc(f.warum || '')}</textarea></label>${statt}
+    <div class="fehlertext" id="mFehler" role="alert">${esc(f.fehler || '')}</div>
+    <div class="knoepfe"><button class="sp-knopf sp-knopf-app" type="submit" id="btnMarkeOk"${f.laeuft ? ' disabled' : ''}>${f.laeuft ? 'Speichert …' : f.art === 'zurueck' ? 'Zurücknehmen' : 'Markieren'}</button><button class="sp-knopf" type="button" id="btnMarkeAbbrechen">Abbrechen</button></div>
+    <div class="hinweis">Der Absatz wird nicht gelöscht und nicht versteckt. ${f.art === 'zurueck' ? 'Die Markierung bleibt als Verlauf sichtbar.' : 'Zurücknehmen geht jederzeit, auch mit Name und Grund.'}</div></form>`;
+}
+function renderFamilie() {
+  const o = S.abs.offen, haupt = $('absatzHaupt'), seite = $('absatzSeite'), a = aktuelleSuche(), t = suchTitel(a);
+  $('btnAbsatzZurueck').textContent = t ? 'Zurück zu ' + t : 'Zurück zur Suche';
+  if (!o) { haupt.innerHTML = ''; seite.innerHTML = ''; return; }
+  if (!S.abs.E) { haupt.innerHTML = `<div class="leer">Die Absätze werden verglichen … ${Math.round(S.abs.anteil * 100)} %</div>`; seite.innerHTML = ''; return; }
+  const fam = S.abs.E.von.get(o.id);
+  if (!fam) { haupt.innerHTML = '<div class="leer">Diesen Absatz gibt es im Archiv nicht mehr.</div>'; seite.innerHTML = ''; return; }
+  $('absatzPille').textContent = K.klassenName(fam.k) + (a.thema ? ' · Thema ' + a.thema.name : '');
+  const reihe = K.familieFassungen(fam, S.abs.stand), n = reihe.length, faelleAlle = new Set(), berichte = new Set();
+  for (const F of fam.mitglieder) { F.faelle.forEach(x => faelleAlle.add(x)); F.berichte.forEach(x => berichte.add(x)); }
+  const vork = fam.mitglieder.flatMap(F => F.vork.map(v => ({ v, k: F.k })))
+    .sort((x, y) => (y.v.f.jahr - x.v.f.jahr) || (y.v.f.pnr - x.v.f.pnr) || ((y.v.b.nr || 0) - (x.v.b.nr || 0)))
+    .filter((x, i, l) => l.findIndex(y => y.v.f.projekt === x.v.f.projekt) === i).slice(0, 5);
+  S.abs.vorkSicht = vork;
+  let html = `<section class="karte"><div class="pr-kopf"><h1 style="margin:0;font-size:24px">${n === 1 ? 'Ein Absatz, eine Fassung' : `Ein Absatz, ${ZAHLWORT_F[n] || zahl(n)} Fassungen`}</h1><span class="leise" style="font-size:15px">zusammen ${zahl(berichte.size)} ${berichte.size === 1 ? 'Bericht' : 'Berichte'} in ${faelleIn(faelleAlle.size)}</span></div>`
+    + reihe.map((x, i) => fassungHtml(x, i === 0 ? (reihe[1] ? reihe[1].F.neu.p : '') : reihe[0].F.neu.p)).join('') + '</section>';
+  html += `<section class="karte"><h2 style="margin:0;font-size:20px">Zuletzt so geschrieben in</h2><div style="margin-top:8px">${vork.map((x, i) => `<div class="fa-fall"><span><strong>${esc(x.v.f.kennung)}</strong> · ${esc(K.mitteilungLabel(x.v.b))}${x.v.h ? ' · ' + esc(x.v.h) : ''}</span><button class="linkknopf" type="button" data-fallauf="${i}" style="font-size:15px">Fall öffnen</button></div>`).join('')}</div></section>`;
+  if (o.aehnliche) {
+    const tt = K.lockerer(S.abs.stufe), ae = K.aehnlicheFamilien(S.abs.E, fam, tt);
+    html += `<section class="karte"><h2 style="margin:0;font-size:20px">Ähnliche Absätze</h2><div class="leise" style="font-size:15px;margin-top:4px">lockerer gezählt: ab ${Math.round(tt * 100)} % gleiche Wörter – nur für diesen Absatz</div><div style="margin-top:8px">`
+      + (ae.length ? ae.map(x => `<div class="fa-fall" style="align-items:flex-start"><span style="min-width:0"><span class="ab-text">${esc(kurz(x.fam.leit.neu.p, 260))}</span><br><span class="leise">${Math.round(x.s * 100)} % gleiche Wörter · in ${faelleIn(x.fam.mitglieder.reduce((s, F) => s + F.faelle.size, 0))}</span></span><span class="ab-knoepfe"><button class="sp-knopf" type="button" data-familie="${esc(x.fam.leit.id)}">Ansehen</button></span></div>`).join('') : '<p class="leise" style="font-size:15px">Kein anderer Absatz ist so ähnlich.</p>')
+      + '</div></section>';
+  }
+  haupt.innerHTML = html;
+  const pz = Math.round((K.AEHNLICHKEIT[S.abs.stufe] || 0.85) * 100);
+  seite.innerHTML = (S.abs.form ? markFormHtml(fam) : '')
+    + `<section class="karte"><div class="lab">So wird gezählt</div><div class="fa-stufen"><span class="leise" style="font-size:15px">Ähnlichkeit</span>${K.AEHNLICHKEIT_STUFEN.map(st => `<button class="sp-knopf" type="button" data-stufe="${st}" aria-pressed="${st === S.abs.stufe}">${st}</button>`).join('')}</div>
+      <div class="leise" style="font-size:15px;margin-top:6px">Gilt fürs ganze Büro. Zähler und Markierungen bleiben beim Umstellen erhalten.</div>
+      <div class="fa-schritt"><div class="fa-punkt">1</div><div>Nur die Abschnitte Sanierungsmaßnahmen, Schlussfolgerungen und Arbeitsschutz.</div></div>
+      <div class="fa-schritt"><div class="fa-punkt">2</div><div>Zahlen, Probennummern und Anschriften zählen beim Vergleich nicht.</div></div>
+      <div class="fa-schritt"><div class="fa-punkt">3</div><div>Absätze gehören zusammen, wenn ${pz} % ihrer Wörter in derselben Reihenfolge gleich sind. Wörter wie „nicht“, „vor/nach“ oder „trocken/feucht“ trennen immer.</div></div>
+      <div class="fa-schritt"><div class="fa-punkt">4</div><div>Gezeigt wird jeder Absatz der passenden Fälle, so wie er im Bericht steht. Beim Kopieren werden Name und Anschrift aus dem Berichtskopf durch [VN] und [Risikoort] ersetzt.</div></div></section>
+    <section class="karte"><div class="lab">Wo es gespeichert ist</div><p style="margin:10px 0 0;font-size:15px">Gezählt wird bei jedem Start aus dem Index. Gespeichert werden nur die Kopier-Zähler und die Markierungen des Büros mit Name, Datum und Grund – in <strong>_LexiKit</strong>, wie die Themenliste.</p></section>`;
+}
+function markFormWerte() { const f = S.abs.form; if (!f) return; if ($('mWer')) f.wer = $('mWer').value; if ($('mWarum')) f.warum = $('mWarum').value; if ($('mStatt')) f.statt = $('mStatt').value; }
+async function markeSpeichern() {
+  const f = S.abs.form; if (!f || f.laeuft) return;
+  markFormWerte(); f.fehler = '';
+  const F = S.abs.A && S.abs.A.von.get(f.id); if (!F) return;
+  await maLaden();   // frisch: wer steht gerade in der Liste?
+  const personen = S.abs.ma && S.abs.ma.personen, jetzt = jetztIso();
+  let r;
+  if (f.art === 'zurueck') { const akt = (S.abs.stand.get(F.schluessel) || {}).aktiv; r = akt ? K.markeZurueck(akt, { wer: f.wer, warum: f.warum }, personen, jetzt) : { fehler: 'Diese Fassung ist nicht mehr markiert.' }; }
+  else r = K.markeNeu({ w: F.schluessel, art: f.art, wer: f.wer, warum: f.warum, statt: f.statt, beispiel: F.neu.p, k: F.k }, personen, jetzt);
+  if (!r.fehler && !S.schreiben) r = { fehler: 'Markierungen können gerade nicht gespeichert werden – LexiKit darf nicht in _LexiKit schreiben.' };
+  if (!r.fehler && S.abs.kaputt.marken) r = { fehler: `${K.GEMEINSAM.marken.datei} ist nicht lesbar – LexiKit überschreibt sie nicht.` };
+  if (r.fehler) { f.fehler = r.fehler; renderFamilie(); const x = $('mFehler'); if (x) x.focus && x.scrollIntoView({ block: 'nearest' }); return; }
+  f.laeuft = true; renderFamilie();
+  S.abs.ausstehend.marken.push(r.marke);
+  const ok = await speichernAbs('marken');
+  f.laeuft = false;
+  if (!ok) { S.abs.ausstehend.marken = S.abs.ausstehend.marken.filter(x => x !== r.marke); f.fehler = 'Speichern ging nicht – bitte noch einmal versuchen.'; renderFamilie(); return; }
+  lokal.set('lexikit-ich', f.wer);
+  S.abs.form = null; standNeu(); renderFamilie();
+  toast(f.art === 'zurueck' ? 'Markierung zurückgenommen – sie bleibt als Verlauf sichtbar.' : `„${markName(f.art)}“ gespeichert – gilt fürs ganze Büro.`, 4000);
+}
+function renderStufen() {
+  $('stufen').innerHTML = K.AEHNLICHKEIT_STUFEN.map(st => `<button class="sp-kachel" type="button" data-stufe="${st}" aria-pressed="${st === S.abs.stufe}">${st}<small>ab ${Math.round(K.AEHNLICHKEIT[st] * 100)} % gleiche Wörter</small></button>`).join('');
+  const e = S.abs.einst;
+  $('stufeStand').innerHTML = (e && e.geaendert ? `Zuletzt umgestellt am ${datum(e.geaendert)}${e.wer ? ' von ' + esc(e.wer) : ''}.` : 'Noch nie umgestellt – es gilt „normal“.')
+    + (S.abs.E && S.abs.A ? ` Gerade ${zahl(S.abs.E.familien.length)} Absätze aus ${zahl(S.abs.A.liste.length)} Fassungen.` : S.abs.A ? ' Die Absätze werden verglichen …' : '');
+}
+async function stufeSetzen(stufe) {
+  if (!K.AEHNLICHKEIT[stufe] || stufe === S.abs.stufe) return;
+  if (!S.schreiben) { toast('Die Einstellung kann gerade nicht gespeichert werden – LexiKit darf nicht in _LexiKit schreiben.'); return; }
+  if (S.abs.kaputt.einstellung) { toast(`${K.GEMEINSAM.einstellung.datei} ist nicht lesbar – LexiKit überschreibt sie nicht.`); return; }
+  const neu = { aehnlichkeit: stufe, geaendert: jetztIso(), wer: lokal.get('lexikit-ich') || '' };
+  try { const disk = await K.gemeinsamSchreiben(absIo, 'einstellung', neu, { warten: nachpruefMs() }); S.abs.einst = disk; S.abs.stufe = K.AEHNLICHKEIT[disk.aehnlichkeit] ? disk.aehnlichkeit : 'normal'; }
+  catch (e) { toast('Die Einstellung ließ sich nicht speichern: ' + esc(e.message || e.name)); return; }
+  absaetzeNeu(true);
+  toast(`Ähnlichkeit „${esc(S.abs.stufe)}“ – gilt fürs ganze Büro. Zähler und Markierungen bleiben erhalten.`, 4000);
+}
+function absatzKlick(b) {
+  const d = b.dataset;
+  if (d.fkopieren) { fassungKopieren(d.fkopieren); return; }
+  if (d.fzeigen) { const z = S.abs.zeilenSicht && S.abs.zeilenSicht.get(d.fzeigen); if (z) faelleZeigen(z.faelle, z.rep, null); return; }
+  if (d.ffaelle) { const F = S.abs.A && S.abs.A.von.get(d.ffaelle); if (F) faelleZeigen(F.faelle, F, S.abs.offen); return; }
+  if (d.familie) { S.abs.offen = { id: d.familie, aehnliche: false }; S.abs.form = null; zeige('absatz'); return; }
+  if (d.aehnliche) { S.abs.offen = { id: d.aehnliche, aehnliche: true }; S.abs.form = null; zeige('absatz'); return; }
+  if (d.marke) { S.abs.form = { id: d.fassung, art: d.marke }; maLaden().then(() => { renderFamilie(); const x = $('mWer') || $('mWarum') || $('btnMarkeAbbrechen'); if (x) x.focus(); }); return; }
+  if (d.fallauf != null) { const x = S.abs.vorkSicht && S.abs.vorkSicht[+d.fallauf]; if (x) fallOeffnen(x); return; }
+  if (d.stufe) { stufeSetzen(d.stufe); return; }
+}
+function absaetzeVerdrahten() {
+  $('absaetze').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    const fokus = sel => { const x = document.querySelector(sel); if (x) x.focus(); };
+    if (b.dataset.sort) { S.abs.sort = b.dataset.sort; renderAbsaetze(); fokus(`#absaetze [data-sort="${b.dataset.sort}"]`); return; }
+    if (b.dataset.abtab) { S.abs.tab = b.dataset.abtab; S.abs.alle = false; renderAbsaetze(); fokus(`#absaetze [data-abtab="${b.dataset.abtab}"]`); return; }
+    if (b.hasAttribute('data-aballe')) { S.abs.alle = true; renderAbsaetze(); return; }
+    absatzKlick(b);
+  });
+  $('absatzHaupt').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { markFormWerte(); absatzKlick(b); } });
+  $('absatzSeite').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.id === 'btnMarkeAbbrechen') { S.abs.form = null; renderFamilie(); return; }
+    if (b.id === 'btnMarkeOk') return;   // über submit
+    absatzKlick(b);
+  });
+  $('absatzSeite').addEventListener('submit', e => { e.preventDefault(); markeSpeichern(); });
+  $('stufen').addEventListener('click', e => { const b = e.target.closest('[data-stufe]'); if (b) stufeSetzen(b.dataset.stufe); });
+  $('btnAbsatzZurueck').onclick = () => { S.abs.form = null; S.abs.offen = null; zeige('suche'); };
+}
+
 /* ---------- Themen bearbeiten ---------- */
 function formOeffnen(thema) {
   S.form = { id: thema ? thema.id : null, basis: thema ? thema.geaendert || '' : '' };
@@ -2041,7 +2847,9 @@ async function archivWaehlen() {
 }
 async function archivWechseln(h) {
   await laufStoppen();   // erst das Einlesen des alten Archivs beenden, dann den Stand leeren
-  S.archiv = h; S.lx = null; S.berichte.clear(); S.aend = {}; S.themen = null; S.meldungen = []; S.offen.clear(); S.mehrTags.clear(); S.auswahl = []; S.kopie = null; geaendert();
+  S.archiv = h; S.lx = null; S.berichte.clear(); S.indexStand++; S.aend = {}; S.themen = null; S.meldungen = []; S.offen.clear(); S.mehrTags.clear(); S.auswahl = []; S.kopie = null;
+  Object.assign(S.abs, { A: null, E: null, quelle: null, gen: S.abs.gen + 1, einst: null, stufe: 'normal', kopien: [], marken: [], stand: new Map(), ausstehend: { kopien: [], marken: [] }, kaputt: {}, ma: null, maFehler: '', offen: null, form: null, kette: {} });
+  S.wahl.nur = null; geaendert();
   await verbinden(true);
 }
 
@@ -2063,6 +2871,7 @@ function verdrahten() {
     else if (was === 'alle') { einlesen({ alle: true, zeigen: true }); }
     else if (was === 'einlesen') zeige('einlesen');
     else if (was === 'einstellungen') zeige('einstellungen');
+    else if (was === 'aehnlichkeit') zeige('aehnlichkeitSeite');
     else if (was === 'ueber') zeige('ueberLexi');
   };
   document.addEventListener('click', e => { if ($('mehr').open && !e.target.closest('#mehr')) $('mehr').open = false; });
@@ -2070,13 +2879,14 @@ function verdrahten() {
   $('btnPfadStandard').onclick = () => { $('pfadBasis').value = PFAD_STANDARD; };
   // Suche
   let qTimer = 0;
-  $('q').addEventListener('input', () => { clearTimeout(qTimer); qTimer = setTimeout(() => { S.wahl.q = $('q').value; S.zeigeN = 20; renderTreffer(); }, 250); });
+  $('q').addEventListener('input', () => { clearTimeout(qTimer); qTimer = setTimeout(() => { S.wahl.q = $('q').value; S.wahl.nur = null; S.zeigeN = 20; renderTreffer(); }, 250); });
   $('q').addEventListener('keydown', e => { if (e.key === 'Escape') { $('q').value = ''; S.wahl.q = ''; renderTreffer(); } });
   // Thema: antippen wählt, noch einmal antippen wählt ab; die eigenen Wörter bleiben stehen
-  const themaKlick = e => { const b = e.target.closest('[data-thema]'); if (!b) return; S.wahl.thema = S.wahl.thema === b.dataset.thema ? null : b.dataset.thema; S.zeigeN = 20; renderThemen(); renderTreffer(); const neu = document.querySelector(`[data-thema="${CSS.escape(b.dataset.thema)}"]`); if (neu) neu.focus(); };
+  const themaKlick = e => { const b = e.target.closest('[data-thema]'); if (!b) return; S.wahl.nur = null; S.abs.alle = false; S.wahl.thema = S.wahl.thema === b.dataset.thema ? null : b.dataset.thema; S.zeigeN = 20; renderThemen(); renderTreffer(); const neu = document.querySelector(`[data-thema="${CSS.escape(b.dataset.thema)}"]`); if (neu) neu.focus(); };
   $('themen').onclick = themaKlick; $('themenFall').onclick = themaKlick;
-  $('jahre').onclick = e => { const b = e.target.closest('[data-jahr]'); if (!b) return; S.wahl.jahr = b.dataset.jahr; S.zeigeN = 20; renderJahre(); renderTreffer(); };
-  $('chips').onclick = e => { const b = e.target.closest('[data-param]'); if (!b) return; const id = b.dataset.param, i = S.wahl.parameter.indexOf(id); if (i >= 0) S.wahl.parameter.splice(i, 1); else S.wahl.parameter.push(id); S.zeigeN = 20; renderChips(); renderTreffer(); const neu = document.querySelector(`[data-param="${CSS.escape(id)}"]`); if (neu) neu.focus(); };
+  $('jahre').onclick = e => { const b = e.target.closest('[data-jahr]'); if (!b) return; S.wahl.nur = null; S.wahl.jahr = b.dataset.jahr; S.zeigeN = 20; renderJahre(); renderTreffer(); };
+  const paramKlick = e => { const b = e.target.closest('[data-param]'); if (!b) return; const id = b.dataset.param, i = S.wahl.parameter.indexOf(id); if (i >= 0) S.wahl.parameter.splice(i, 1); else S.wahl.parameter.push(id); S.wahl.nur = null; S.zeigeN = 20; renderChips(); renderTreffer(); const neu = document.querySelector(`#${e.currentTarget.id} [data-param="${CSS.escape(id)}"]`); if (neu) neu.focus(); };
+  $('chips').onclick = paramKlick; $('profil').onclick = paramKlick;   // Balken „Untersucht auf“ im Profil filtern wie die Schildchen
   $('btnMehrTreffer').onclick = () => { S.zeigeN += 20; renderTreffer(); };
   $('treffer').addEventListener('click', async e => {
     const karte = e.target.closest('[data-fall]'); if (!karte) return;
@@ -2104,16 +2914,28 @@ function verdrahten() {
     if (e.target.closest('[data-kopieren]')) {
       const o = S.offen.get(projekt); if (!o) return;
       const k = f.ohne ? 'alles' : f.klassen.includes(o.tab) ? o.tab : f.klassen[0] || 'alles';
-      const text = K.bloecke(f, k).map(x => K.berichtBeschriftung(f, x.b) + (x.h ? ' · ' + x.h : '') + '\n' + x.p.join('\n')).join('\n\n');
-      const ok = await kopiere(text); toast(ok ? `${f.ohne ? 'Text' : 'Abschnitt „' + esc(K.klassenName(k)) + '“'} kopiert (${zahl(text.length)} Zeichen).` : 'Kopieren ging nicht – bitte den Text markieren und mit Strg+C kopieren.', 4000);
+      // ab 0.4.0: je Bericht den Kopf frisch lesen und Namen/Adressen daraus durch Platzhalter ersetzen (wie beim Kopieren eines Absatzes)
+      const koepfe = new Map(), fach = K.fachwoerter(aktiveThemen()); let n = 0, ohneKopf = 0;
+      const teile = [];
+      for (const x of K.bloecke(f, k)) {
+        if (!koepfe.has(x.b.pfad)) { let kopf = null; try { kopf = (await berichtFrisch(x.b.pfad)).kopf; } catch (err) { kopf = null; } koepfe.set(x.b.pfad, kopf); if (!kopf || !kopf.length) ohneKopf++; }
+        const r = K.absatzErsetzen(K.berichtBeschriftung(f, x.b) + (x.h ? ' · ' + x.h : '') + '\n' + x.p.join('\n'), koepfe.get(x.b.pfad), f.projekt, fach);
+        n += r.n; teile.push(r.t);
+      }
+      const text = teile.join('\n\n');
+      const ok = await kopiere(text);
+      toast(ok ? `${f.ohne ? 'Text' : 'Abschnitt „' + esc(K.klassenName(k)) + '“'} kopiert (${zahl(text.length)} Zeichen)${n ? ` – ${n === 1 ? '1 Name oder Adresse' : n + ' Namen und Adressen'} aus dem Berichtskopf durch Platzhalter ersetzt` : ''}.`
+        + (ohneKopf ? ' Der Berichtskopf ließ sich nicht lesen – nur der Projektordner wurde ersetzt, bitte selbst prüfen.' : '') : 'Kopieren ging nicht – bitte den Text markieren und mit Strg+C kopieren.', ohneKopf ? 8000 : 5000);
     }
   });
   document.addEventListener('click', e => {
     const a = e.target.closest('[data-aktion]'); if (!a) return;
     if (a.dataset.aktion === 'thema-bearbeiten') { const t = aktiveThemen().find(x => x.id === S.wahl.thema); if (t) formOeffnen(t); }
     if (a.dataset.aktion === 'schreiben-erlauben') $('btnSchreibenErlauben').onclick();
+    if (a.dataset.aktion === 'nur-aus') { const z = S.wahl.nur && S.wahl.nur.zurueck; S.wahl.nur = null; S.zeigeN = 20; if (z) { S.abs.offen = z; zeige('absatz'); } else renderTreffer(); }
   });
   kopieVerdrahten();
+  absaetzeVerdrahten();
   // Themenformular
   $('btnNeuesThema').onclick = () => formOeffnen(null);
   $('themaForm').onsubmit = e => { e.preventDefault(); themaSpeichern(false); };
@@ -2123,7 +2945,11 @@ function verdrahten() {
   $('btnLoeschenNein').onclick = () => { $('themaRueckfrage').hidden = true; };
   $('btnLoeschenJa').onclick = () => themaSpeichern(true);
   // zurück ins Fenster: Themen anderer PCs übernehmen
-  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && S.lx && !S.form) themenLaden(false); });
+  document.addEventListener('visibilitychange', async () => {
+    if (document.visibilityState !== 'visible' || !S.lx) return;
+    if (!S.form) themenLaden(false);
+    if (!S.abs.form) { const stufe = S.abs.stufe; await absatzDateienLaden(); await maLaden(); if (stufe !== S.abs.stufe) absaetzeNeu(true); else absaetzeZeigen(); }
+  });
   window.addEventListener('beforeunload', e => { if (L.aktiv && S.schreiben) { e.preventDefault(); e.returnValue = ''; } });
 }
 verdrahten();

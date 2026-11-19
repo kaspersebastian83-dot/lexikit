@@ -3,13 +3,15 @@
 **Frühere Fälle aus den fertigen Word-Berichten des Büros finden** – „Wie haben wir das früher gemacht?“. Für alle, die ein altes
 Vorgehen nachsehen wollen, ohne jemanden fragen zu müssen. Läuft im Browser (Edge/Chrome), ohne Server, ohne KI, ohne Netz.
 Ab 0.2.0 ist die Einheit der **Fall**: ein Projektordner mit allen seinen Mitteilungen. Ab 0.3.0 lassen sich bis zu drei Fälle
-**für ChatGPT kopieren** – LexiKit selbst sendet nichts, man fügt den Text selbst ein.
+**für ChatGPT kopieren** – LexiKit selbst sendet nichts, man fügt den Text selbst ein. Ab 0.4.0 zeigt LexiKit über den Fällen,
+**wie wir es meist machen**, und darunter **unsere Absätze** zum Thema – zum Kopieren, mit Markierungen „Vorbild“ / „So nicht mehr“.
 
 Adresse: `https://kaspersebastian83-dot.github.io/lexikit/` (GitHub Pages muss für dieses Repo eingeschaltet sein).
 Gleiche Adresse wie die anderen Apps → LexiKit nimmt den Archivordner, den die Projektzentrale gewählt hat
 (Browser-Speicher `mosaik-suite`, Schlüssel `archiv`, nur gelesen). Eine eigene Wahl steht unter `lexikit-archiv`.
 
 Plan und Entscheidungen: Projekt-Docs `claude/lexikit-plan.md`, `claude/lexikit-stufe2-plan.md`, `claude/lexikit-stufe2-zaehlung.md`,
+`claude/lexikit-oft-verwendet-plan.md` (0.4.0),
 Stand: `claude/lexikit-stand.md`.
 
 ## Was gelesen wird
@@ -41,7 +43,8 @@ Stand: `claude/lexikit-stand.md`.
 ## Gemeinsame Dateien in `_LexiKit`
 
 Der Ordner `_LexiKit` im Archivordner ist **der einzige Ort, an dem LexiKit schreibt** (Funktion `schreibe`: nur
-`lexikit-themen.json` und `lexikit-index-<Jahr>.json`). LexiKit legt den Ordner nicht selbst an.
+`lexikit-themen.json`, `lexikit-index-<Jahr>.json`, ab 0.4.0 `lexikit-kopien.json`, `lexikit-markierungen.json`,
+`lexikit-einstellungen.json`). LexiKit legt den Ordner nicht selbst an.
 
 - **Schreibprobe** beim Start: kleine Datei anlegen, zurücklesen, entfernen. Geht das nicht → rote Zeile, Suche geht in dieser
   Sitzung, gespeichert wird nichts.
@@ -56,6 +59,12 @@ Der Ordner `_LexiKit` im Archivordner ist **der einzige Ort, an dem LexiKit schr
   nicht an (zeigt „bitte LexiKit neu laden“). Gelöschte Themen bleiben als Vermerk,
   damit kein anderer PC sie zurückbringt. Hat ein anderer PC das Thema geändert, seit das Formular aufging → nicht gespeichert, das
   Formular zeigt den neuen Stand. Unlesbare Themenliste wird nie überschrieben.
+- **Kopier-Zähler** (`lexikit-kopien.json`, ab 0.4.0): je Kopie `{ id, w (Fassung), am }`, ohne Namen. **Markierungen**
+  (`lexikit-markierungen.json`): `{ id, w, art: vorbild|nicht, wer (Kürzel), warum, statt?, am, beispiel, k, zurueck? }`.
+  **Einstellung** (`lexikit-einstellungen.json`): `aehnlichkeit` (streng/normal/locker), `geaendert`. Kopien und Markierungen werden nie
+  gelöscht, nur ergänzt; Zurücknehmen ist ein Vermerk an der Markierung. Schreiben: neu lesen, nach id vereinigen, schreiben, nach
+  1,5 s zurücklesen und prüfen, ob alles Eigene darin steht – sonst noch einmal (bis zu 4 Mal, dann Fehlermeldung). Unlesbare oder
+  fremde Datei → wird nie überschrieben. Bei der Einstellung gilt die jüngere Änderung.
 - Der Index enthält Berichtstext und ist so vertraulich wie die Berichte.
 
 ## Einlesen
@@ -102,9 +111,42 @@ Im offenen Fall:
 
 - **Bericht in Word öffnen**: `ms-word:ofv|u|file:///…` aus dem Pfad in den Einstellungen (Standard `C:\Daten\Mosaik Archivordner`,
   je PC) – der Browser kennt den echten Pfad nicht. Der Pfad wird zusätzlich kopiert.
-- **Abschnitt kopieren**: der gezeigte Reiter in die Zwischenablage (LexiKit fügt nirgends ein).
+- **Abschnitt kopieren**: der gezeigte Reiter in die Zwischenablage (LexiKit fügt nirgends ein). Ab 0.4.0 liest es dafür den
+  Berichtskopf jeder Mitteilung frisch und ersetzt Namen und Adressen daraus durch Platzhalter (wie unten).
 - **Projektordner**: kopiert den Pfad (im Explorer in die Adresszeile einfügen).
 - **Für ChatGPT kopieren**: öffnet die Vorschau mit diesem Fall (siehe unten).
+
+## So machen wir es meist · Unsere Absätze (ab 0.4.0)
+
+- **Praxisprofil** über den Fällen eines Themas oder einer Suche: „Untersucht auf“ als Balken (gezählt aus den „Untersucht“-Schildchen;
+  ein Klick setzt denselben Filter wie die Schildchen oben), Proben je Fall (mittlere Hälfte, „meist 8 bis 10“), Berichtsform,
+  Mitteilungen je Fall, Fälle mit Sanierungsmaßnahmen. Nur gezählt, nicht bewertet.
+- **Unsere Absätze**: die Absätze aus Sanierungsmaßnahmen, Schlussfolgerungen und Arbeitsschutz der passenden Fälle (ohne
+  Tabellenzeilen, ohne Absätze unter fünf Wörtern), so gezeigt, wie sie im Bericht stehen. Je Absatz „n × kopiert“, „zuletzt verwendet
+  <Jahr>“, „in n Fällen im Archiv“ (ganzes Archiv), „n Fassungen“, „Ähnliche Absätze zeigen“, Knöpfe „Kopieren“ und „Fälle zeigen“.
+- **Fassung** = Absatz nach dem Angleichen: Groß/Klein, Leerraum, Satzzeichen; jedes Wort mit Ziffer (Zahlen, Proben- und
+  Labornummern) wird zu `#`; Straße + Hausnummer und PLZ + Ort (Muster wie bei den „Stellen“) zu je einem Zeichen. Werte aus dem
+  Berichtskopf werden nicht benutzt. Zähler und Markierungen hängen an der Fassung (Schlüssel = Hash der angeglichenen Wörter; die
+  Markierung speichert dazu ein Beispiel, damit sie nach einer Regeländerung wieder zugeordnet werden kann).
+- **Familie** = fast gleiche Fassungen, je Abschnittsklasse. Ähnlichkeit = längste gemeinsame Wortfolge / Wortzahl des längeren
+  Absatzes (Basti, 19.11.2026: Wörter in derselben Reihenfolge statt Dreiwortfolgen – ein anderer Ort in einem Absatz mit 27 Wörtern
+  ergab mit Dreiwortfolgen 72 %, so 93 %). Einstellung „Ähnlichkeit“ unter „Mehr“: streng 90 %, normal 85 %, locker 75 %, eine fürs
+  ganze Büro. „Ähnliche Absätze zeigen“: eine Stufe lockerer (unter „locker“ 60 %), nur für diesen Absatz.
+  **Kippwörter** (nicht, kein…, vor, nach, trocken…, feucht…, mindestens, höchstens): Sind sie der einzige Unterschied, bleiben die
+  Absätze getrennt. Eine Familie bildet sich um eine **Leitfassung** (die mit den meisten Fällen); jede andere muss ihr selbst ähnlich
+  genug sein – keine Ketten über eine dritte Fassung. Vergleich mit Vorfilter (seltene Wörter), in Schritten, damit die Seite bedienbar bleibt.
+- **Sortieren**: „Oft verwendet“ = Kopien der letzten zwei Jahre (Summe der Familie), Gleichstand → Fälle im Archiv → neuer;
+  „Oft im Archiv“ = Fälle im Archiv. Gezeigt wird je Familie das „Vorbild“, sonst die neueste Fassung.
+- **Kopieren** kopiert die neueste Stelle genau dieser Fassung, wie geschrieben; den Kopf dieses einen Berichts liest LexiKit frisch und
+  ersetzt Namen und Adressen daraus und die Wörter des Projektordners (`[VN]`, `[Risikoort]`, `[Projekt]` …, Regeln wie 0.3.0). Keine
+  Vorschau, keine Sperre. Kopfwörter, die Fachwörter sind, bleiben stehen. Ist der Kopf nicht lesbar, wird trotzdem kopiert (nur der
+  Ordner ersetzt) und die Meldung sagt das. Gezählt wird für genau diese Fassung.
+- **Familienansicht**: Fassungen nach Zeitraum, die aktuelle (neueste) oben, Unterschiede hinterlegt; „Zuletzt so geschrieben in“ mit
+  „Fall öffnen“ (Stelle markiert).
+- **Markierungen** „Vorbild …“ / „So nicht mehr …“: jeder darf; Formular „Wer bist du?“ (aktive Personen aus `_Spektron-Mitarbeiter.json`
+  im Archivordner – nur gelesen; fehlt oder unlesbar → Markieren geht nicht, mit Hinweis), „Warum? (Pflicht)“, „Stattdessen“ (optional).
+  „So nicht mehr“ stellt die Fassung ans Ende, grau, mit Name, Datum und Grund – sie bleibt in Suche, Fall und Word. Zurücknehmen
+  braucht Name und Grund; die frühere Markierung bleibt als Verlauf sichtbar.
 
 ## Für ChatGPT kopieren (ab 0.3.0)
 
@@ -141,10 +183,13 @@ Eine Datei `index.html` (Spektron-Look v1 byte-gleich, Kern-Block `LEXIKIT-KERN`
 
 ```
 node tests/kern.cjs       # Word lesen (erfundene .docx), Abschnitte, Kopf weg, Auswahl, Fälle, „Untersucht“, Rangfolge, Zusammenführen,
-                          # Kopie für ChatGPT: Kopf, Platzhalter, Stellen, nie kopierte Abschnitte, 300 erzeugte Köpfe ohne Leck
+                          # Kopie für ChatGPT: Kopf, Platzhalter, Stellen, nie kopierte Abschnitte, 300 erzeugte Köpfe ohne Leck,
+                          # ab 0.4.0 Fassungen, Ähnlichkeit, Kippwörter, Familien je Stufe, Sortierung, zwei Jahre, Markierungen,
+                          # zwei PCs auf denselben Dateien, Platzhalter beim Kopieren, Praxisprofil
 node tests/dateien.cjs    # Spektron-Look gleich wie ../berichtkit, Offline-Dateien, kein Netz
 node tests/browser.cjs    # Chromium mit erfundenem Archiv im OPFS (NODE_PATH auf playwright; CHROME=… optional);
                           # ab 0.3.0 zweites Archiv: Auswahl, Vorschau, Stellen, Zwischenablage = Vorschau
+                          # ab 0.4.0 drittes Archiv: Profil, Absätze, Kopieren mit Platzhaltern, Markieren, zweiter PC, Ähnlichkeit
 node tests/zeit-archivgroesse.cjs   # nicht in CI: Startzeit mit 4.663 erfundenen Berichten (einige Minuten; LC_ALL=C.UTF-8)
 ```
 
@@ -156,4 +201,4 @@ Testberichte (`tests/daten/berichte.cjs`) sind erfunden – keine echten Bericht
 - Keine KI, kein Netz – Wortsuche im Index.
 - Außerhalb der Spektron-Kette (kein Schritt in der Leiste, kein Projektstand).
 - Keine KI und kein Netz in LexiKit, auch nicht beim Kopieren für ChatGPT (`connect-src 'self'`).
-- Nicht in 0.3.0: „Vorbild“-Markierungen, Links aus BerichtKit, Suchprotokoll, PDF, `.doc`.
+- Nicht in 0.4.0: Links aus BerichtKit, Suchprotokoll, PDF, `.doc`.
