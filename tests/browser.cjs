@@ -650,6 +650,26 @@ const b64 = x => (Buffer.isBuffer(x) ? x : Buffer.from(String(x))).toString('bas
       const lx3 = Object.keys(await p.evaluate(() => __liste())).filter(k => k.startsWith('_LexiKit/')).sort();
       assert.deepEqual(lx3, ['_LexiKit/lexikit-einstellungen.json', '_LexiKit/lexikit-index-2022.json', '_LexiKit/lexikit-index-2023.json', '_LexiKit/lexikit-index-2024.json', '_LexiKit/lexikit-index-2025.json', '_LexiKit/lexikit-index-2026.json', '_LexiKit/lexikit-kopien.json', '_LexiKit/lexikit-markierungen.json', '_LexiKit/lexikit-themen.json']);
       for (const k of lx3.filter(k => /index/.test(k))) { const j = await p.evaluate(q => __lies(q), k); assert.equal(JSON.parse(j).version, 1); for (const v of ['Tobias', 'Probe Versicherung', '55-1234567', 'Gisela', '"_d"']) assert.ok(!j.includes(v), k + ': ' + v); }
+      // Archiv wechseln, während ein Kopier-Zähler noch geschrieben wird (Codex-Hinweis PR #4): er landet im alten _LexiKit, nicht im neuen
+      await p.evaluate(async ([pr, b]) => {
+        const a2 = await (await navigator.storage.getDirectory()).getDirectoryHandle('Archiv3', { create: true });
+        await a2.getDirectoryHandle('_LexiKit', { create: true });
+        const d = await (await a2.getDirectoryHandle(pr, { create: true })).getDirectoryHandle('Mitteilungen', { create: true });
+        const wr = await (await d.getFileHandle('1. Mitteilung.docx', { create: true })).createWritable(); await wr.write(Uint8Array.from(atob(b), c => c.charCodeAt(0))); await wr.close();
+      }, ['21.0002 Drittarchiv Musterort Tst', b64(require('./daten/berichte.cjs').docx(require('./daten/berichte.cjs').BERICHTE.ohne, 0, 'dritt'))]);
+      await p.evaluate(() => { window.LEXIKIT_NACHPRUEF_MS = 1500; });   // Nachprüfung läuft noch, wenn gewechselt wird
+      const vorWechsel = JSON.parse(await p.evaluate(() => __lies('_LexiKit/lexikit-kopien.json'))).kopien.length;
+      await p.evaluate(() => navigator.clipboard.writeText('VORHER'));
+      await p.click(`#absaetze [data-fkopieren="massnahmen|${w('T1')}"]`);
+      await p.waitForFunction(() => window.LexiKit.S.abs.ausstehend.kopien.length > 0);
+      await p.evaluate(async () => { const a3 = await (await navigator.storage.getDirectory()).getDirectoryHandle('Archiv3'); await LexiKit.archivWechseln(a3); });
+      await p.waitForFunction(() => window.LexiKit && !window.LexiKit.L.aktiv && window.LexiKit.L.ende, null, { timeout: 30000 });
+      await p.waitForTimeout(4000);   // die Nachprüfung (1,5 s) und ein möglicher zweiter Versuch sind vorbei
+      const alt = JSON.parse(await p.evaluate(() => __lies('_LexiKit/lexikit-kopien.json'))).kopien;
+      assert.equal(alt.length, vorWechsel + 1, 'Kopie im alten Archiv gezählt'); assert.equal(alt.at(-1).w, w('T1'));
+      const neuLx = await p.evaluate(async () => { const d = await (await (await navigator.storage.getDirectory()).getDirectoryHandle('Archiv3')).getDirectoryHandle('_LexiKit'); const n = []; for await (const [k] of d.entries()) n.push(k); return n.sort(); });
+      assert.deepEqual(neuLx, ['lexikit-index-2021.json', 'lexikit-themen.json'], 'neues _LexiKit ohne Kopien und Markierungen');
+      assert.deepEqual(await p.evaluate(() => [LexiKit.S.abs.kopien.length, LexiKit.S.abs.ausstehend.kopien.length]), [0, 0], 'neuer Stand bleibt leer');
       await ctx3.close();
     }
 

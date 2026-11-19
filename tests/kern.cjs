@@ -614,6 +614,13 @@ let n = 0; const test = async (name, f) => { await f(); n++; console.log('ok', n
     assert.deepEqual([P.mitteilungen, P.mitMassnahmen], [1, 5]);
     assert.equal(K.profilBauen([]).n, 0);
   });
+  await test('„Ähnliche Absätze“: ein Fall mit zwei Fassungen zählt einmal (Codex-Hinweis PR #4)', async () => {
+    const F = (id, ids, faelle) => ({ id, k: 'massnahmen', ids: Int32Array.from(ids), sid: Int32Array.from(ids).sort(), faelle: new Set(faelle), neu: { f: { jahr: 2026, pnr: 1 } } });
+    const a = F('a', [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], ['p1']), b1 = F('b1', [1, 2, 3, 4, 5, 6, 7, 8, 11, 12], ['p2']), b2 = F('b2', [1, 2, 3, 4, 5, 6, 7, 8, 11, 13], ['p2', 'p3']);
+    const E = { familien: [{ k: 'massnahmen', leit: a, mitglieder: [a] }, { k: 'massnahmen', leit: b1, mitglieder: [b1, b2] }] };
+    const r = K.aehnlicheFamilien(E, E.familien[0], 0.6);
+    assert.equal(r.length, 1); assert.equal(r[0].faelle, 2, 'p2 steht in beiden Fassungen – zusammen 2 Fälle, nicht 3');
+  });
   await test('Unterschiede innerhalb einer Familie markieren', async () => {
     const d = K.wortUnterschiede(AB.T1, AB.T2);
     assert.deepEqual(d.filter(x => x.anders).map(x => x.t), ['Lager']);

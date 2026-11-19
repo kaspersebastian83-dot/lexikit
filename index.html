@@ -1607,7 +1607,7 @@ mark.sus-ok{background:#eef1f3;color:inherit;border-radius:4px;padding:0 3px}
       const L = g.leit, lmax = Math.max(F.ids.length, L.ids.length);
       if (Math.min(F.ids.length, L.ids.length) < t * lmax || ueberlapp(F.sid, L.sid) < t * lmax) continue;
       const s = lcsLaenge(F.ids, L.ids) / lmax;
-      if (s >= t) aus.push({ fam: g, s });
+      if (s >= t) aus.push({ fam: g, s, faelle: new Set(g.mitglieder.flatMap(G => [...G.faelle])).size });   // jeder Fall einmal (Codex-Hinweis PR #4)
     }
     return aus.sort((x, y) => y.s - x.s || fassungReihe(x.fam.leit, y.fam.leit)).slice(0, 12);
   }
@@ -1929,15 +1929,19 @@ async function schreibenPruefen(fragen) {
     return false;
   }
 }
-async function leseText(name) {
-  try { return await (await (await S.lx.getFileHandle(name)).getFile()).text(); }
+async function leseText(name, lx) {
+  try { return await (await (await (lx || S.lx).getFileHandle(name)).getFile()).text(); }
   catch (e) { if (e && (e.name === 'NotFoundError' || e.name === 'TypeMismatchError')) return null; throw e; }
 }
 /** Die einzige Stelle, an der LexiKit schreibt – nur in _LexiKit, nur eigene Dateien */
 async function schreibe(name, text) {
   if (!S.schreiben || !S.lx) throw new Error('Schreiben in _LexiKit ist nicht erlaubt');
+  return schreibeIn(S.lx, name, text);
+}
+/** … in genau dieses _LexiKit (Schreiben, das vor einem Archivwechsel begann, bleibt im alten Archiv – Codex-Hinweis PR #4) */
+async function schreibeIn(lx, name, text) {
   if (!/^lexikit-(themen|index-\d{4}|kopien|markierungen|einstellungen)\.json$/.test(name)) throw new Error('LexiKit schreibt nur seine eigenen Dateien');
-  const fh = await S.lx.getFileHandle(name, { create: true }), w = await fh.createWritable();
+  const fh = await lx.getFileHandle(name, { create: true }), w = await fh.createWritable();
   try { await w.write(text); await w.close(); } catch (e) { try { await w.abort(); } catch (e2) { /* schon zu */ } throw e; }
 }
 const ohneCache = (k, v) => k[0] === '_' ? undefined : v;
@@ -2464,7 +2468,9 @@ const faelleIn = n => n === 1 ? '1 Fall' : zahl(n) + ' Fällen';     // „in 27
 const faelleN = n => n === 1 ? '1 Fall' : zahl(n) + ' Fälle';       // „27 Fälle zeigen“
 const kurz = (t, n) => { t = String(t); if (t.length <= n) return t; const x = t.slice(0, n), sp = x.lastIndexOf(' '); return (sp > n * 0.6 ? x.slice(0, sp) : x) + ' …'; };
 const nachpruefMs = () => (typeof window.LEXIKIT_NACHPRUEF_MS === 'number' ? window.LEXIKIT_NACHPRUEF_MS : 1500);
-const absIo = { lesen: name => leseText(name), schreiben: (name, text) => schreibe(name, text), warten: ms => new Promise(r => setTimeout(r, ms)) };
+/** Lesen/Schreiben fest an ein _LexiKit gebunden – ein Archivwechsel mitten im Schreiben lenkt nichts ins neue Archiv um */
+const ioFuer = lx => ({ lesen: name => leseText(name, lx), schreiben: (name, text) => schreibeIn(lx, name, text), warten: ms => new Promise(r => setTimeout(r, ms)) });
+let archivNr = 0;   // je gewähltem Archivordner eine neue Nummer (archivWechseln)
 const ABS_DATEI_TEXT = { kopien: 'Die Kopier-Zähler', marken: 'Die Markierungen', einstellung: 'Die Einstellung „Ähnlichkeit“' };
 
 async function absatzDateienLaden() {
@@ -2492,21 +2498,24 @@ async function maLaden() {
   } catch (e) { S.abs.maFehler = e && e.name === 'NotFoundError' ? 'fehlt im Archivordner' : 'ist nicht lesbar (' + (e.message || e.name) + ')'; }
 }
 function standNeu() { const A = S.abs.A; S.abs.stand = K.standBauen(S.abs.kopien, S.abs.marken, jetztIso(), A ? w => A.schluessel.has(w) : null); }
-/** Eigene Einträge schreiben (je Datei nacheinander). → true/false, wirft nie */
+/** Eigene Einträge schreiben (je Datei nacheinander). → true/false, wirft nie. Archiv, Erlaubnis und ausstehende Einträge werden beim
+    Anstoßen festgehalten: Wird inzwischen das Archiv gewechselt, schreibt es noch ins alte _LexiKit und lässt den neuen Stand in Ruhe. */
 function speichernAbs(art) {
-  const k = S.abs.kette;
+  const k = S.abs.kette, lx = S.lx, darf = S.schreiben, nr = archivNr, aus = S.abs.ausstehend, kaputt = S.abs.kaputt;
+  const hier = () => nr === archivNr;
   return (k[art] = (k[art] || Promise.resolve(true)).then(async () => {
     try {
-      if (!S.schreiben) throw new Error('LexiKit darf nicht in _LexiKit schreiben');
-      if (S.abs.kaputt[art]) throw new Error('die Datei ist nicht lesbar');
-      const neu = S.abs.ausstehend[art].slice(); if (!neu.length) return true;
-      const disk = await K.gemeinsamSchreiben(absIo, art, neu, { warten: nachpruefMs() });
-      S.abs.ausstehend[art] = S.abs.ausstehend[art].filter(x => !neu.includes(x));
-      S.abs[art] = K.gemeinsamMergen(art, disk, S.abs.ausstehend[art])[K.GEMEINSAM[art].feld];
+      if (!darf || !lx) throw new Error('LexiKit darf nicht in _LexiKit schreiben');
+      if (kaputt[art]) throw new Error('die Datei ist nicht lesbar');
+      const neu = aus[art].slice(); if (!neu.length) return true;
+      const disk = await K.gemeinsamSchreiben(ioFuer(lx), art, neu, { warten: nachpruefMs() });
+      aus[art] = aus[art].filter(x => !neu.includes(x));
+      if (!hier()) return true;
+      S.abs[art] = K.gemeinsamMergen(art, disk, aus[art])[K.GEMEINSAM[art].feld];
       meldung('', '', 'abs-speichern-' + art); standNeu(); absaetzeZeigen();
       return true;
     } catch (e) {
-      meldung('err', `${ABS_DATEI_TEXT[art]} ließen sich nicht speichern (${esc(e.message || e.name)}).${art === 'kopien' ? ' Gezählt wird in dieser Sitzung trotzdem; LexiKit versucht es beim nächsten Kopieren noch einmal.' : ''}`, 'abs-speichern-' + art);
+      if (hier()) meldung('err', `${ABS_DATEI_TEXT[art]} ließen sich nicht speichern (${esc(e.message || e.name)}).${art === 'kopien' ? ' Gezählt wird in dieser Sitzung trotzdem; LexiKit versucht es beim nächsten Kopieren noch einmal.' : ''}`, 'abs-speichern-' + art);
       return false;
     }
   }));
@@ -2695,7 +2704,7 @@ function renderFamilie() {
   if (o.aehnliche) {
     const tt = K.lockerer(S.abs.stufe), ae = K.aehnlicheFamilien(S.abs.E, fam, tt);
     html += `<section class="karte"><h2 style="margin:0;font-size:20px">Ähnliche Absätze</h2><div class="leise" style="font-size:15px;margin-top:4px">lockerer gezählt: ab ${Math.round(tt * 100)} % gleiche Wörter – nur für diesen Absatz</div><div style="margin-top:8px">`
-      + (ae.length ? ae.map(x => `<div class="fa-fall" style="align-items:flex-start"><span style="min-width:0"><span class="ab-text">${esc(kurz(x.fam.leit.neu.p, 260))}</span><br><span class="leise">${Math.round(x.s * 100)} % gleiche Wörter · in ${faelleIn(x.fam.mitglieder.reduce((s, F) => s + F.faelle.size, 0))}</span></span><span class="ab-knoepfe"><button class="sp-knopf" type="button" data-familie="${esc(x.fam.leit.id)}">Ansehen</button></span></div>`).join('') : '<p class="leise" style="font-size:15px">Kein anderer Absatz ist so ähnlich.</p>')
+      + (ae.length ? ae.map(x => `<div class="fa-fall" style="align-items:flex-start"><span style="min-width:0"><span class="ab-text">${esc(kurz(x.fam.leit.neu.p, 260))}</span><br><span class="leise">${Math.round(x.s * 100)} % gleiche Wörter · in ${faelleIn(x.faelle)}</span></span><span class="ab-knoepfe"><button class="sp-knopf" type="button" data-familie="${esc(x.fam.leit.id)}">Ansehen</button></span></div>`).join('') : '<p class="leise" style="font-size:15px">Kein anderer Absatz ist so ähnlich.</p>')
       + '</div></section>';
   }
   haupt.innerHTML = html;
@@ -2724,7 +2733,8 @@ async function markeSpeichern() {
   if (r.fehler) { f.fehler = r.fehler; renderFamilie(); const x = $('mFehler'); if (x) x.focus && x.scrollIntoView({ block: 'nearest' }); return; }
   f.laeuft = true; renderFamilie();
   S.abs.ausstehend.marken.push(r.marke);
-  const ok = await speichernAbs('marken');
+  const nr = archivNr, ok = await speichernAbs('marken');
+  if (nr !== archivNr) return;   // inzwischen anderes Archiv – die Markierung steht im alten
   f.laeuft = false;
   if (!ok) { S.abs.ausstehend.marken = S.abs.ausstehend.marken.filter(x => x !== r.marke); f.fehler = 'Speichern ging nicht – bitte noch einmal versuchen.'; renderFamilie(); return; }
   lokal.set('lexikit-ich', f.wer);
@@ -2742,8 +2752,12 @@ async function stufeSetzen(stufe) {
   if (!S.schreiben) { toast('Die Einstellung kann gerade nicht gespeichert werden – LexiKit darf nicht in _LexiKit schreiben.'); return; }
   if (S.abs.kaputt.einstellung) { toast(`${K.GEMEINSAM.einstellung.datei} ist nicht lesbar – LexiKit überschreibt sie nicht.`); return; }
   const neu = { aehnlichkeit: stufe, geaendert: jetztIso(), wer: lokal.get('lexikit-ich') || '' };
-  try { const disk = await K.gemeinsamSchreiben(absIo, 'einstellung', neu, { warten: nachpruefMs() }); S.abs.einst = disk; S.abs.stufe = K.AEHNLICHKEIT[disk.aehnlichkeit] ? disk.aehnlichkeit : 'normal'; }
-  catch (e) { toast('Die Einstellung ließ sich nicht speichern: ' + esc(e.message || e.name)); return; }
+  const nr = archivNr;
+  try {
+    const disk = await K.gemeinsamSchreiben(ioFuer(S.lx), 'einstellung', neu, { warten: nachpruefMs() });
+    if (nr !== archivNr) return;
+    S.abs.einst = disk; S.abs.stufe = K.AEHNLICHKEIT[disk.aehnlichkeit] ? disk.aehnlichkeit : 'normal';
+  } catch (e) { if (nr === archivNr) toast('Die Einstellung ließ sich nicht speichern: ' + esc(e.message || e.name)); return; }
   absaetzeNeu(true);
   toast(`Ähnlichkeit „${esc(S.abs.stufe)}“ – gilt fürs ganze Büro. Zähler und Markierungen bleiben erhalten.`, 4000);
 }
@@ -2847,6 +2861,8 @@ async function archivWaehlen() {
 }
 async function archivWechseln(h) {
   await laufStoppen();   // erst das Einlesen des alten Archivs beenden, dann den Stand leeren
+  archivNr++;            // laufendes Schreiben von Zählern/Markierungen bleibt im alten _LexiKit …
+  await Promise.all(Object.values(S.abs.kette));   // … und wird noch zu Ende gebracht (wirft nie)
   S.archiv = h; S.lx = null; S.berichte.clear(); S.indexStand++; S.aend = {}; S.themen = null; S.meldungen = []; S.offen.clear(); S.mehrTags.clear(); S.auswahl = []; S.kopie = null;
   Object.assign(S.abs, { A: null, E: null, quelle: null, gen: S.abs.gen + 1, einst: null, stufe: 'normal', kopien: [], marken: [], stand: new Map(), ausstehend: { kopien: [], marken: [] }, kaputt: {}, ma: null, maFehler: '', offen: null, form: null, kette: {} });
   S.wahl.nur = null; geaendert();
