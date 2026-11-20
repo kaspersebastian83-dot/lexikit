@@ -14,6 +14,8 @@ Plan und Entscheidungen: Projekt-Docs `claude/lexikit-plan.md`, `claude/lexikit-
 `claude/lexikit-oft-verwendet-plan.md` (0.4.0),
 Stand: `claude/lexikit-stand.md`.
 
+**0.4.1 (20.11.2026, Audit Lauf 4):** „⋯ Mehr“ › „Fehler oder Wunsch melden ↗“ öffnet `../rueckmeldung/?app=lexikit&version=…` im Fenster `rueckmeldung` (ohne Projekt – LexiKit hat keins). Die CI läuft zusätzlich nachts, damit der Look-Vergleich mit BerichtKit (`tests/dateien.cjs`) eine Änderung dort gleich meldet. Offline-Cache v5.
+
 ## Was gelesen wird
 
 - **Nur Projektordner direkt im Archivordner** (`26.0137 …`, `22.00114 …`). `ALT_2022`, `ALT_2023`, `Div Kunden`, `Sonstige`,
