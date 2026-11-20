@@ -85,6 +85,8 @@ mark{background:var(--mark);color:var(--sp-text);border-radius:3px;padding:0 2px
 .mehr-pop{position:absolute;right:0;top:50px;z-index:5;background:var(--sp-panel);border:1px solid var(--sp-line);border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,.14);padding:6px;min-width:270px;display:flex;flex-direction:column}
 .mehr-pop button{background:none;border:0;text-align:left;padding:11px 12px;border-radius:8px;font-size:15px;color:var(--sp-text)}
 .mehr-pop button:hover{background:var(--sp-bg)}
+.mehr-pop a{padding:11px 12px;border-radius:8px;font-size:15px;color:var(--sp-text);text-decoration:none}
+.mehr-pop a:hover{background:var(--sp-bg)}
 /* Rahmen */
 .seite{max-width:1240px;margin:0 auto;padding:24px;display:flex;flex-direction:column;gap:16px}
 .meldung{border-radius:12px;padding:12px 16px;font-size:15px;line-height:1.45;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
@@ -295,6 +297,7 @@ mark.sus-ok{background:#eef1f3;color:inherit;border-radius:4px;padding:0 3px}
         <button type="button" role="menuitem" data-mehr="aehnlichkeit">Ähnlichkeit der Absätze …</button>
         <button type="button" role="menuitem" data-mehr="einstellungen">Einstellungen …</button>
         <button type="button" role="menuitem" data-mehr="ueber">Über LexiKit</button>
+        <a role="menuitem" id="lnkRueck" href="../rueckmeldung/?app=lexikit" target="rueckmeldung" rel="noopener" title="Fehler oder Wunsch melden – öffnet das Rückmeldeformular, Programm und Version sind schon eingetragen">Fehler oder Wunsch melden ↗</a>
       </div>
     </details>
   </div>
@@ -1807,8 +1810,9 @@ mark.sus-ok{background:#eef1f3;color:inherit;border-radius:4px;padding:0 3px}
 <script id="lexikit-app">
 /* LexiKit – Oberfläche. Liest das Archiv, hält den Index im Speicher, schreibt nur nach _LexiKit (Funktion schreibe). */
 'use strict';
-const APP_VERSION = '0.4.0';
+const APP_VERSION = '0.4.1';
 const AENDERUNGEN = [
+  ['0.4.1', '20.11.2026', '„⋯ Mehr“ › „Fehler oder Wunsch melden ↗“ öffnet die Rückmeldung der Suite mit Programm und Version (Audit Lauf 4, D3). Die Prüfungen laufen jetzt auch nachts, damit eine Änderung am gemeinsamen Spektron-Look in BerichtKit gleich auffällt.'],
   ['0.4.0', '19.11.2026', '„So machen wir es meist“: Über den Fällen eines Themas oder einer Suche steht, worauf meist untersucht wurde (ein Klick zeigt genau diese Fälle), wie viele Proben, welche Berichtsform und wie viele Mitteilungen üblich sind. Darunter „Unsere Absätze“ aus Sanierungsmaßnahmen, Schlussfolgerungen und Arbeitsschutz – fast gleiche Absätze zählen als einer mit mehreren Fassungen, sortiert nach „Oft verwendet“ (Kopien der letzten zwei Jahre) oder „Oft im Archiv“. „Kopieren“ setzt für Namen und Adressen aus dem Berichtskopf Platzhalter ein, „Abschnitt kopieren“ jetzt auch. Markierungen „Vorbild“ und „So nicht mehr“ mit Name und Grund; nichts wird versteckt. Einstellung „Ähnlichkeit“ unter „Mehr“. Der Index bleibt, wie er ist.'],
   ['0.3.0', '13.11.2026', 'Für ChatGPT kopieren: bis zu drei Fälle auswählen (oder im offenen Fall) und in der Vorschau genau sehen, was in die Zwischenablage kommt – Prompt, Frage und Auszüge aus Befund, Schlussfolgerungen, Maßnahmen, Arbeitsschutz. Veranlassung, Aufgabenstellung und Ortstermin/Probenahme werden nie kopiert. Namen und Adressen aus dem Berichtskopf und dem Projektordner werden durch Platzhalter ersetzt; verdächtige Stellen müssen vor dem Kopieren entfernt oder bestätigt werden. LexiKit sendet nichts – der Text wird selbst in ChatGPT eingefügt.'],
   ['0.2.0', '13.11.2026', 'Fälle statt Textstellen: Ein Treffer ist jetzt ein Projektordner mit allen Mitteilungen – mit „Was war“, „Untersucht“ (Probenzahl und Parameter, ein Klick zeigt die Stelle), Verlauf und Reitern für Veranlassung, Probenahme, Befund, Schlussfolgerungen, Sanierungsmaßnahmen und Arbeitsschutz. Thema und eigene Wörter lassen sich verbinden; Fälle mit Fund in der Veranlassung stehen oben. Neue Filter „Untersucht auf“, zweite Themengruppe „Art des Falls“. Der Index bleibt, wie er ist – neu eingelesen wird nichts.'],
@@ -1886,6 +1890,7 @@ function zugang(titel, text, opt) {
 }
 async function start() {
   $('version').textContent = 'v' + APP_VERSION;
+  $('lnkRueck').href = '../rueckmeldung/?app=lexikit&version=' + encodeURIComponent(APP_VERSION);   // Muster TeamKit 0.5.1 – ohne Projekt (LexiKit hat keins)
   $('aenderungen').innerHTML = AENDERUNGEN.map(a => `<li><b>${esc(a[0])}</b> (${esc(a[1])}): ${esc(a[2])}</li>`).join('');
   if (/^https?:$/.test(location.protocol) && location.hostname !== '127.0.0.1' && 'serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(() => {});
   if (!('showDirectoryPicker' in window) && !window.LEXIKIT_TEST) { zugang('Bitte Edge oder Chrome benutzen', 'LexiKit braucht den Zugriff auf Ordner, den nur Edge und Chrome haben.', { keinWaehlen: true }); return; }
@@ -2881,6 +2886,7 @@ function verdrahten() {
   $('stand').onclick = () => zeige('einlesen');
   document.querySelectorAll('[data-zurueck]').forEach(b => { b.onclick = () => zeige(S.archiv && S.lx ? 'suche' : 'zugang'); });
   document.querySelector('.mehr-pop').onclick = e => {
+    if (e.target.closest('#lnkRueck')) { $('mehr').open = false; return; }   // Link öffnet die Rückmeldung im eigenen Fenster
     const b = e.target.closest('[data-mehr]'); if (!b) return; const was = b.dataset.mehr; $('mehr').open = false;
     if (!S.lx && (was === 'pruefen' || was === 'alle' || was === 'einlesen')) { toast('Erst den Archivordner verbinden.'); return; }
     if (was === 'pruefen') { einlesen({ alle: false, zeigen: true }); }
