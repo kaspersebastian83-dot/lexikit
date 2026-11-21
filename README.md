@@ -14,6 +14,8 @@ Plan und Entscheidungen: Projekt-Docs `claude/lexikit-plan.md`, `claude/lexikit-
 `claude/lexikit-oft-verwendet-plan.md` (0.4.0),
 Stand: `claude/lexikit-stand.md`.
 
+**0.4.2 (21.11.2026, Audit Lauf 5, E8):** Menü „Mehr …“ (statt „⋯ Mehr“), Link „💬 Rückmeldung ↗“, Tooltip „Fehler oder Wunsch melden – …“ – gleiche Namen wie in den anderen Spektron-Apps.
+
 **0.4.1 (20.11.2026, Audit Lauf 4):** „⋯ Mehr“ › „Fehler oder Wunsch melden ↗“ öffnet `../rueckmeldung/?app=lexikit&version=…` im Fenster `rueckmeldung` (ohne Projekt – LexiKit hat keins). Die CI läuft zusätzlich nachts, damit der Look-Vergleich mit BerichtKit (`tests/dateien.cjs`) eine Änderung dort gleich meldet. Offline-Cache v5.
 
 ## Was gelesen wird
@@ -73,7 +75,7 @@ Der Ordner `_LexiKit` im Archivordner ist **der einzige Ort, an dem LexiKit schr
 
 Erster Start: alles, neueste Jahre zuerst, mit Fortschritt (Projektordner), Suchen geht schon währenddessen. Gespeichert wird nach
 jedem Jahr, alle 90 s und bei „Anhalten“. Danach bei jedem Start im Hintergrund: nur Berichte mit anderer Größe oder Dateizeit,
-neue, nicht mehr ausgewählte (ersetzt, gelöscht) fallen heraus. „⋯ Mehr“: Neue Berichte suchen · Einlesen ansehen · Alle neu
+neue, nicht mehr ausgewählte (ersetzt, gelöscht) fallen heraus. „Mehr …“: Neue Berichte suchen · Einlesen ansehen · Alle neu
 einlesen · Einstellungen · Über.
 
 ## Fälle (ab 0.2.0)

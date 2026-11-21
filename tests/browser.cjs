@@ -68,8 +68,12 @@ const b64 = x => (Buffer.isBuffer(x) ? x : Buffer.from(String(x))).toString('bas
   try {
     await page.goto(url);
     await page.waitForSelector('#zugang:not([hidden])');   // noch kein Archiv
-    // Rückmeldung (Audit Lauf 4, D3): unter „⋯ Mehr“, Programm und Version, eigenes Fenster
-    assert.equal(await page.getAttribute('#lnkRueck', 'href'), '../rueckmeldung/?app=lexikit&version=0.4.1');
+    // Rückmeldung (Audit Lauf 4, D3): unter „Mehr …“, Programm und Version, eigenes Fenster
+    // E8 (Audit Lauf 5, Entscheidung 4): ein Wort für alle Apps – Menü „Mehr …“, Link „💬 Rückmeldung ↗“, Tooltip „Fehler oder Wunsch melden – …“
+    assert.equal((await page.textContent('#mehr summary')).trim(), 'Mehr …');
+    assert.equal(await page.textContent('#lnkRueck'), '💬 Rückmeldung ↗');
+    assert.match(await page.getAttribute('#lnkRueck', 'title'), /^Fehler oder Wunsch melden – /);
+    assert.equal(await page.getAttribute('#lnkRueck', 'href'), '../rueckmeldung/?app=lexikit&version=0.4.2');
     assert.equal(await page.getAttribute('#lnkRueck', 'target'), 'rueckmeldung');
     await page.evaluate(H);
     for (const [pfad, inhalt] of Object.entries(archiv())) {

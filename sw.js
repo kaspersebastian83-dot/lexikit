@@ -3,7 +3,7 @@
    laufen nie hierüber. Berührt nur Caches mit eigenem Präfix. */
 const SCOPE = self.registration.scope;
 const PREFIX = 'lexikit:' + SCOPE + ':';
-const CACHE = PREFIX + 'v5';
+const CACHE = PREFIX + 'v6';
 const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon.svg'].map(f => new URL(f, SCOPE).href);
 const INDEX = new URL('index.html', SCOPE).href;
 
