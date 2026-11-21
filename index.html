@@ -289,7 +289,7 @@ mark.sus-ok{background:#eef1f3;color:inherit;border-radius:4px;padding:0 3px}
     <div class="marke"><b>LexiKit</b><span>Wie haben wir das früher gemacht?</span></div>
     <button id="stand" class="stand" type="button" hidden></button>
     <details class="mehr" id="mehr">
-      <summary aria-label="Mehr">⋯ Mehr</summary>
+      <summary>Mehr …</summary>
       <div class="mehr-pop" role="menu">
         <button type="button" role="menuitem" data-mehr="pruefen">Neue Berichte suchen</button>
         <button type="button" role="menuitem" data-mehr="einlesen">Einlesen ansehen</button>
@@ -297,7 +297,7 @@ mark.sus-ok{background:#eef1f3;color:inherit;border-radius:4px;padding:0 3px}
         <button type="button" role="menuitem" data-mehr="aehnlichkeit">Ähnlichkeit der Absätze …</button>
         <button type="button" role="menuitem" data-mehr="einstellungen">Einstellungen …</button>
         <button type="button" role="menuitem" data-mehr="ueber">Über LexiKit</button>
-        <a role="menuitem" id="lnkRueck" href="../rueckmeldung/?app=lexikit" target="rueckmeldung" rel="noopener" title="Fehler oder Wunsch melden – öffnet das Rückmeldeformular, Programm und Version sind schon eingetragen">Fehler oder Wunsch melden ↗</a>
+        <a role="menuitem" id="lnkRueck" href="../rueckmeldung/?app=lexikit" target="rueckmeldung" rel="noopener" title="Fehler oder Wunsch melden – öffnet das Rückmeldeformular, Programm und Version sind schon eingetragen">💬 Rückmeldung ↗</a>
       </div>
     </details>
   </div>
@@ -1810,8 +1810,9 @@ mark.sus-ok{background:#eef1f3;color:inherit;border-radius:4px;padding:0 3px}
 <script id="lexikit-app">
 /* LexiKit – Oberfläche. Liest das Archiv, hält den Index im Speicher, schreibt nur nach _LexiKit (Funktion schreibe). */
 'use strict';
-const APP_VERSION = '0.4.1';
+const APP_VERSION = '0.4.2';
 const AENDERUNGEN = [
+  ['0.4.2', '21.11.2026', 'Gleiche Namen wie in den anderen Spektron-Apps: Das Menü oben heißt „Mehr …“ (statt „⋯ Mehr“), der Link darin „💬 Rückmeldung ↗“ – „Fehler oder Wunsch melden“ steht im Tooltip (Audit Lauf 5, E8).'],
   ['0.4.1', '20.11.2026', '„⋯ Mehr“ › „Fehler oder Wunsch melden ↗“ öffnet die Rückmeldung der Suite mit Programm und Version (Audit Lauf 4, D3). Die Prüfungen laufen jetzt auch nachts, damit eine Änderung am gemeinsamen Spektron-Look in BerichtKit gleich auffällt.'],
   ['0.4.0', '19.11.2026', '„So machen wir es meist“: Über den Fällen eines Themas oder einer Suche steht, worauf meist untersucht wurde (ein Klick zeigt genau diese Fälle), wie viele Proben, welche Berichtsform und wie viele Mitteilungen üblich sind. Darunter „Unsere Absätze“ aus Sanierungsmaßnahmen, Schlussfolgerungen und Arbeitsschutz – fast gleiche Absätze zählen als einer mit mehreren Fassungen, sortiert nach „Oft verwendet“ (Kopien der letzten zwei Jahre) oder „Oft im Archiv“. „Kopieren“ setzt für Namen und Adressen aus dem Berichtskopf Platzhalter ein, „Abschnitt kopieren“ jetzt auch. Markierungen „Vorbild“ und „So nicht mehr“ mit Name und Grund; nichts wird versteckt. Einstellung „Ähnlichkeit“ unter „Mehr“. Der Index bleibt, wie er ist.'],
   ['0.3.0', '13.11.2026', 'Für ChatGPT kopieren: bis zu drei Fälle auswählen (oder im offenen Fall) und in der Vorschau genau sehen, was in die Zwischenablage kommt – Prompt, Frage und Auszüge aus Befund, Schlussfolgerungen, Maßnahmen, Arbeitsschutz. Veranlassung, Aufgabenstellung und Ortstermin/Probenahme werden nie kopiert. Namen und Adressen aus dem Berichtskopf und dem Projektordner werden durch Platzhalter ersetzt; verdächtige Stellen müssen vor dem Kopieren entfernt oder bestätigt werden. LexiKit sendet nichts – der Text wird selbst in ChatGPT eingefügt.'],
